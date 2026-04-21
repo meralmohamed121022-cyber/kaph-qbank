@@ -1,1042 +1,1333 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expiry Check System</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #4F46E5; --primary-light: #EEF2FF;
-            --bg: #F8FAFC; --surface: #FFFFFF;
-            --text-main: #1E293B; --text-light: #64748B;
-            --success: #10B981; --danger: #EF4444; --warning: #F59E0B;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); min-height: 100vh; font-size: 14px; padding-bottom: 50px; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Pharmacy Learning Hub Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg-1:#06162b;--bg-2:#0d2747;--bg-3:#133763;
+  --surface:rgba(255,255,255,0.96);--surface-2:rgba(245,249,255,0.92);--surface-3:rgba(232,240,252,0.9);
+  --border:rgba(13,39,71,0.12);--text:#0b1e35;--muted:#64748b;
+  --primary:#0f3d73;--primary-2:#1d5fa8;--primary-3:#2e7ad4;
+  --orange:#f58a1f;--orange-2:#ffab40;
+  --success:#0fa968;--danger:#e65252;--warning:#f59e0b;
+  --shadow:0 18px 45px rgba(4,19,43,0.18);--shadow-soft:0 10px 24px rgba(8,25,52,0.1);
+  --radius:24px;--radius-sm:18px;
+}
+body.dark-mode{
+  --bg-1:#03101f;--bg-2:#08203b;--bg-3:#11355e;
+  --surface:rgba(11,28,49,0.95);--surface-2:rgba(16,38,64,0.92);--surface-3:rgba(20,48,80,0.88);
+  --border:rgba(255,255,255,0.08);--text:#f4f8ff;--muted:#a9b9cf;
+  --primary:#2e7ad4;--primary-2:#4b94ea;--primary-3:#71adff;
+  --orange:#ff962f;--orange-2:#ffbb69;
+  --success:#29c781;--danger:#ff6b6b;--warning:#ffb547;
+  --shadow:0 22px 50px rgba(0,0,0,0.28);--shadow-soft:0 12px 26px rgba(0,0,0,0.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Cairo",sans-serif;min-height:100vh;color:var(--text);
+  background:radial-gradient(circle at top right,rgba(245,138,31,.16),transparent 22%),
+             radial-gradient(circle at top left,rgba(78,131,214,.22),transparent 28%),
+             linear-gradient(135deg,var(--bg-1),var(--bg-2) 55%,var(--bg-3));
+}
+button,input,select,textarea{font-family:inherit}
+.hidden{display:none!important}
+.glass{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);backdrop-filter:blur(18px);border-radius:var(--radius)}
+.soft-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-soft)}
+.app-shell{width:min(1260px,calc(100% - 24px));margin:0 auto;padding:22px 0 42px}
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:22px}
+.auth-card{width:min(560px,100%);padding:28px;position:relative;overflow:hidden}
+.auth-card::before,.hero-card::before,.result-card::before{content:"";position:absolute;border-radius:50%;filter:blur(2px);opacity:.3;pointer-events:none}
+.auth-card::before{width:200px;height:200px;top:-80px;left:-60px;background:linear-gradient(135deg,var(--orange),transparent)}
+.auth-head{text-align:center;margin-bottom:22px;position:relative;z-index:2}
+.auth-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;position:relative;z-index:2}
+.tab-btn,.btn,.icon-btn,.mode-btn,.nav-btn,.category-chip,.option-btn{transition:.25s ease;cursor:pointer}
+.tab-btn{min-height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-weight:800}
+.tab-btn.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
+.form-grid{display:grid;gap:14px;position:relative;z-index:2}
+.form-group label{display:block;margin-bottom:8px;font-weight:800;font-size:.96rem}
+.form-control{width:100%;min-height:52px;border-radius:15px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);padding:12px 14px;outline:none;font-size:.98rem}
+.form-control:focus{border-color:var(--primary-3);box-shadow:0 0 0 4px rgba(46,122,212,.16)}
+.btn,.nav-btn{border:none;min-height:50px;border-radius:15px;padding:12px 18px;font-weight:800;font-size:1rem}
+.btn:hover,.nav-btn:hover,.tab-btn:hover,.icon-btn:hover,.mode-btn:hover,.category-chip:hover,.option-btn:hover{transform:translateY(-2px)}
+.btn-primary,.next-btn{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.btn-secondary,.prev-btn{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn-warning{background:linear-gradient(135deg,var(--orange),var(--orange-2));color:#fff}
+.btn-success,.submit-btn{background:linear-gradient(135deg,#109f62,#15c278);color:#fff}
+.btn-danger{background:linear-gradient(135deg,#e55252,#ff7c7c);color:#fff}
+.small-note{color:var(--muted);font-size:.92rem;line-height:1.9;margin-top:10px;text-align:center}
+.status-box{margin-bottom:14px;padding:12px 14px;border-radius:14px;font-weight:700;display:none;line-height:1.8}
+.status-box.success{display:block;background:rgba(15,169,104,.12);color:var(--success);border:1px solid rgba(15,169,104,.2)}
+.status-box.error{display:block;background:rgba(230,82,82,.12);color:var(--danger);border:1px solid rgba(230,82,82,.2)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-badge{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:26px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--orange));box-shadow:var(--shadow)}
+/* KAPH Header */
+.kaph-header-container{display:flex;flex-direction:column;justify-content:center}
+.kaph-animated-header{background-color:#0d1b33;padding:10px 20px;border-radius:12px;display:inline-block;box-shadow:var(--shadow-soft);border:1px solid var(--border);margin-bottom:5px}
+.kaph-word{display:flex;justify-content:center;gap:4px;direction:ltr}
+.kaph-word span{font-size:1.8rem;font-weight:900;color:#1a73e8;display:inline-block;animation:kaph-wave 2s ease-in-out infinite;font-family:'Cairo',sans-serif}
+.kaph-word span:nth-child(1){animation-delay:0.0s}
+.kaph-word span:nth-child(2){animation-delay:0.2s}
+.kaph-word span:nth-child(3){animation-delay:0.4s}
+.kaph-word span:nth-child(4){animation-delay:0.6s}
+@keyframes kaph-wave{
+  0%,100%{transform:translateY(0) scale(1);text-shadow:0 2px 5px rgba(0,0,0,0.1)}
+  50%{transform:translateY(-8px) scale(1.05);text-shadow:0 10px 15px rgba(26,115,232,0.4);color:#34a853}
+}
+.kaph-subtitle{color:#a9b9cf;font-size:.75rem;font-weight:700;margin-top:4px;direction:ltr;text-align:center;letter-spacing:.5px}
+/* User Profile Badge */
+.top-actions-container{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap}
+.icon-btn{min-height:38px;padding:6px 14px;border-radius:999px;background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow-soft);font-weight:800;font-size:.85rem}
+.user-profile-badge{background:linear-gradient(135deg,var(--surface-2),var(--surface-3));border:1px solid var(--border);padding:4px 14px;border-radius:999px;box-shadow:var(--shadow-soft);display:inline-flex;align-items:center;justify-content:center}
+.authenticated-welcome{color:var(--muted);font-size:.9rem;font-weight:700;margin:0}
+.authenticated-welcome strong{color:var(--orange);font-weight:900;margin-right:4px}
+.hero-card{position:relative;overflow:hidden;padding:24px;margin-bottom:18px}
+.hero-card::before{width:260px;height:260px;left:-70px;top:-120px;background:radial-gradient(circle,rgba(245,138,31,.45),transparent 65%)}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;position:relative;z-index:2}
+.hero-card h2{font-size:1.7rem;margin-bottom:10px;font-weight:900}
+.hero-card p{color:var(--muted);line-height:1.9;max-width:720px}
+.mini-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.mini-kpi{padding:14px;border-radius:18px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--border);box-shadow:var(--shadow-soft)}
+.mini-kpi span{display:block;color:var(--muted);font-size:.84rem;margin-bottom:6px;font-weight:700}
+.mini-kpi strong{font-size:1.25rem;font-weight:900}
+.mode-switcher{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.mode-btn{min-height:48px;padding:11px 18px;border-radius:999px;background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow-soft);font-weight:800}
+.mode-btn.active{background:linear-gradient(135deg,var(--primary),var(--orange));color:#fff;border-color:transparent}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat-card{position:relative;overflow:hidden;padding:18px;border-radius:22px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--border);box-shadow:var(--shadow)}
+.stat-card::after{content:"";position:absolute;width:110px;height:110px;border-radius:50%;top:-35px;left:-25px;background:radial-gradient(circle,rgba(245,138,31,.16),transparent 65%)}
+.stat-card span{display:block;color:var(--muted);font-size:.92rem;margin-bottom:8px;font-weight:700;position:relative;z-index:2}
+.stat-card strong{font-size:1.55rem;font-weight:900;position:relative;z-index:2}
+.dashboard-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-bottom:18px}
+.panel{padding:20px}
+.panel h3{font-size:1.1rem;margin-bottom:12px;font-weight:900}
+.info-list{display:grid;gap:10px}
+.info-item{padding:13px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:.95rem}
+.info-item b{font-weight:900}
+.quick-actions{display:grid;gap:10px}
+.section-box{margin-top:18px;padding:20px}
+.section-title{font-size:1.3rem;margin-bottom:8px;font-weight:900}
+.section-subtitle{color:var(--muted);margin-bottom:18px;line-height:1.8}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.chart-card{padding:18px;min-height:340px}
+.chart-card h3{margin-bottom:14px;font-size:1.05rem;font-weight:900}
+.chart-wrap{position:relative;height:260px}
+.category-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.category-chip{padding:9px 14px;border-radius:999px;background:var(--surface-2);color:var(--text);border:1px solid var(--border);font-weight:700}
+.category-chip.active{background:linear-gradient(135deg,var(--primary),var(--orange));color:#fff;border-color:transparent}
+.cards-grid{display:grid;gap:16px;grid-template-columns:repeat(2,1fr)}
+.flip-card-wrapper{perspective:1800px}
+.flip-card{position:relative;width:100%;min-height:290px;transform-style:preserve-3d;transition:transform .7s ease;cursor:pointer}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-card-side{position:absolute;inset:0;border-radius:24px;padding:22px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--border)}
+.flip-card-front{background:linear-gradient(180deg,var(--surface),var(--surface-2))}
+.flip-card-back{background:linear-gradient(135deg,var(--primary),var(--orange));color:#fff;transform:rotateY(180deg)}
+.question-icon,.answer-icon{font-size:2.2rem;margin-bottom:14px}
+.question-text-card,.answer-text{font-size:1.08rem;line-height:2;font-weight:800}
+.answer-list{list-style:none;display:grid;gap:10px;line-height:1.9;margin-top:10px}
+.answer-list li{position:relative;padding-right:24px}
+.answer-list li::before{content:"✓";position:absolute;right:0;top:0;font-weight:900}
+.badge-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px}
+.badge{padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.18);color:inherit;font-size:.88rem;font-weight:900}
+.front-badge{background:rgba(245,138,31,.12);color:var(--orange)}
+.quiz-shell{display:grid;gap:16px}
+.quiz-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.meta-pill{padding:14px;border-radius:18px;background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow-soft);text-align:center}
+.meta-pill span{display:block;color:var(--muted);font-size:.88rem;margin-bottom:6px;font-weight:700}
+.meta-pill strong{font-size:1.2rem;font-weight:900}
+.progress-wrap{background:rgba(255,255,255,.22);border-radius:999px;height:18px;overflow:hidden;border:1px solid var(--border)}
+.progress-bar{height:100%;width:0%;background:linear-gradient(135deg,var(--orange),var(--primary-3));color:#fff;font-size:.78rem;font-weight:900;display:flex;align-items:center;justify-content:center;transition:.25s ease}
+.question-box{padding:22px;border-radius:24px;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--border);box-shadow:var(--shadow-soft)}
+.question-number{color:var(--orange);font-weight:900;margin-bottom:10px;font-size:1rem}
+.question-main{font-size:1.18rem;line-height:2;font-weight:900}
+.options-container{display:grid;gap:12px}
+.option-btn{width:100%;text-align:right;padding:16px 18px;border-radius:18px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-size:1rem;font-weight:800;box-shadow:var(--shadow-soft)}
+.option-btn.selected{background:linear-gradient(135deg,var(--primary),var(--orange));color:#fff;border-color:transparent}
+/* Review Colors */
+.option-btn.correct-answer{background:linear-gradient(135deg,var(--success),#15c278)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 8px 20px rgba(15,169,104,.3)!important}
+.option-btn.wrong-answer{background:linear-gradient(135deg,var(--danger),#ff7c7c)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 8px 20px rgba(230,82,82,.3)!important}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.result-card{position:relative;overflow:hidden;padding:26px;border-radius:28px;background:linear-gradient(135deg,var(--primary),#144881,var(--orange));color:#fff;box-shadow:var(--shadow);margin-bottom:16px}
+.result-card::before{width:240px;height:240px;top:-90px;left:-60px;background:rgba(255,255,255,.1)}
+.result-card::after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;bottom:-55px;right:-30px;background:rgba(255,255,255,.08)}
+.result-card>*{position:relative;z-index:2}
+.result-card h3{font-size:1.5rem;margin-bottom:12px;font-weight:900}
+.result-card p{line-height:2;font-weight:700;margin-bottom:4px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.result-pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px}
+.result-pill span{display:block;opacity:.85;font-size:.88rem;margin-bottom:5px}
+.result-pill strong{font-size:1.3rem;font-weight:900}
+.result-actions{display:flex;flex-wrap:wrap;gap:10px}
+.footer-note{text-align:center;color:var(--muted);margin-top:18px;line-height:1.8;font-size:.92rem}
+.history-filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.history-filters .form-group{margin:0;flex:1;min-width:150px}
+.history-card{display:grid;grid-template-columns:1.2fr 1fr 0.8fr;gap:14px;align-items:center;padding:18px;margin-bottom:12px}
+.history-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.82rem;font-weight:800;margin-bottom:6px}
+.badge-quiz{background:rgba(15,61,115,.14);color:var(--primary-2)}
+.badge-qbank{background:rgba(245,138,31,.14);color:var(--orange)}
+.score-bar-wrap{background:rgba(0,0,0,.08);border-radius:999px;height:8px;overflow:hidden;margin-top:6px;border:1px solid var(--border)}
+.score-bar-fill{height:100%;border-radius:999px;transition:.4s ease}
+.history-empty{text-align:center;padding:44px;color:var(--muted);font-size:1rem;font-weight:700}
+.history-chart-wrap{position:relative;height:260px;margin-bottom:18px}
+.admin-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px}
+.admin-users-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.admin-user-card{padding:14px;border-radius:18px;background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow-soft);cursor:pointer}
+.admin-user-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.admin-user-card strong{display:block;font-size:1rem;font-weight:900}
+.admin-user-card span{color:var(--muted);font-size:.9rem}
+.admin-results-list{display:grid;gap:12px;max-height:520px;overflow:auto}
+.admin-result-card{padding:16px;border-radius:18px;border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface-2));box-shadow:var(--shadow-soft)}
+.admin-result-card .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.admin-result-card .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.admin-result-card .meta div{padding:10px;border-radius:14px;background:var(--surface-3);border:1px solid var(--border);text-align:center}
+.admin-history-table{width:100%;border-collapse:collapse}
+.admin-history-table th,.admin-history-table td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:center}
+.admin-history-table th{color:var(--muted);font-weight:800}
 
-        /* --- Components --- */
-        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-ghost { background: white; color: var(--text-main); border: 1px solid #E2E8F0; }
-        .btn-reset { background: white; color: var(--primary); border: 1px solid var(--primary); }
-        .btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 50%; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
-
-        /* --- MONTH NAVIGATION BAR --- */
-        .month-nav-container {
-            background: var(--surface);
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            overflow-x: auto;
-            white-space: nowrap;
-            display: flex;
-            gap: 10px;
-            -webkit-overflow-scrolling: touch; 
-        }
-        .month-nav-container::-webkit-scrollbar { height: 6px; }
-        .month-nav-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
-
-        .month-chip {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 100px;
-            padding: 8px 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid transparent;
-            text-align: center;
-            background: #F1F5F9;
-        }
-        .month-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        
-        .month-chip .m-date { font-weight: 700; font-size: 13px; color: var(--text-main); }
-        .month-chip .m-count { font-size: 10px; opacity: 0.7; margin-top: 2px; }
-
-        /* Colors for Chips based on status */
-        .month-chip.st-expired { background: #FEF2F2; border: 1px solid #FECACA; }
-        .month-chip.st-expired .m-date { color: var(--danger); }
-        
-        .month-chip.st-warning { background: #FFFBEB; border: 1px solid #FDE68A; }
-        .month-chip.st-warning .m-date { color: #B45309; }
-        
-        .month-chip.st-safe { background: #F0FDF4; border: 1px solid #BBF7D0; }
-        .month-chip.st-safe .m-date { color: var(--success); }
-
-        /* --- Login Screen --- */
-        .login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); z-index: 5000; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-        .login-logo { width: 80px; height: 80px; background: var(--primary-light); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: var(--primary); }
-        .login-input { width: 100%; padding: 14px; border: 2px solid #E2E8F0; border-radius: 12px; margin: 20px 0; text-align: center; font-size: 16px; transition: 0.3s; }
-        .login-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px var(--primary-light); }
-
-        /* --- App Layout --- */
-        .app-container { display: none; max-width: 1440px; margin: 0 auto; padding: 20px; }
-        
-        header { background: var(--surface); padding: 15px 25px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .logo-area { display: flex; align-items: center; gap: 12px; }
-        
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--surface); padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
-        .stat-card:hover, .stat-card.active { border-color: var(--primary); background: var(--primary-light); }
-        .stat-value { font-size: 2.2rem; font-weight: 800; display: block; line-height: 1; margin-bottom: 5px; }
-        .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Filters */
-        .controls-area { background: var(--surface); padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .filters-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .filter-box { position: relative; }
-        .filter-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-light); margin-bottom: 5px; text-transform: uppercase; }
-        select, input.search-main { width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: white; font-size: 13px; color: var(--text-main); outline: none; }
-        select:focus, input:focus { border-color: var(--primary); }
-
-        .action-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 15px; flex-wrap: wrap; gap: 10px; }
-        .bulk-actions { display: flex; gap: 10px; }
-
-        .danger-zone { margin-top: 20px; padding: 15px; border: 2px dashed #FECACA; background: #FEF2F2; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .danger-zone-title { color: var(--danger); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap:8px;}
-
-        /* --- GROUPING STYLES --- */
-        .date-section { margin-bottom: 30px; animation: fadeIn 0.5s ease; scroll-margin-top: 20px; }
-        
-        .date-header {
-            width: 100%;
-            background: linear-gradient(to right, #ffffff, #F8FAFC);
-            padding: 12px 20px;
-            border-radius: 12px;
-            border-left: 6px solid var(--primary);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--text-main);
-        }
-        
-        .date-header.expired-header { border-left-color: var(--danger); color: var(--danger); background: #FEF2F2; }
-        .date-header.warning-header { border-left-color: var(--warning); color: #B45309; background: #FFFBEB; }
-        .date-header.safe-header { border-left-color: var(--success); color: var(--success); background: #F0FDF4; }
-
-        .date-info { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 700; }
-        .date-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-
-        /* Card Styles */
-        .card { background: var(--surface); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; border: 1px solid #F1F5F9; position: relative; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-        .card-header { height: 180px; background: #F8FAFC; position: relative; display: flex; justify-content: center; align-items: center; }
-        .card-img { max-width: 90%; max-height: 90%; object-fit: contain; mix-blend-mode: multiply; opacity: 0; transition: 0.5s; }
-        .card-img.loaded { opacity: 1; }
-        
-        .status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; color: white; font-size: 10px; font-weight: 700; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .bg-exp { background: var(--danger); } 
-        .bg-warn { background: var(--warning); color: #000; } 
-        .bg-safe { background: var(--success); }
-
-        .card-tools { position: absolute; top: 10px; left: 10px; display: flex; gap: 5px; z-index: 2; }
-        .card-body { padding: 15px; }
-        .brand { color: var(--primary); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        
-        /* Names Styling */
-        .name-en { font-weight: 700; font-size: 14px; margin-bottom: 2px; line-height: 1.3; color: var(--text-main); }
-        .name-ar { font-weight: 400; font-size: 12px; margin-bottom: 10px; line-height: 1.4; color: var(--text-light); direction: rtl; }
-
-        /* Barcode Styling */
-        .barcode-container { text-align: center; margin: 10px 0; border-top: 1px dashed #E2E8F0; padding-top: 10px; }
-        .barcode-container svg { max-width: 100%; height: 40px; }
-
-        .meta-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); background: #F8FAFC; padding: 8px; border-radius: 6px; margin-bottom: 12px; }
-        
-        .status-actions { display: flex; gap: 8px; }
-        .st-btn { flex: 1; padding: 8px; border: 1px solid #E2E8F0; background: white; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
-        .st-btn.found:hover, .st-btn.found.active { background: var(--success); color: white; border-color: var(--success); }
-        .st-btn.missing:hover, .st-btn.missing.active { background: var(--danger); color: white; border-color: var(--danger); }
-
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
-        /* Modals & Toasts */
-        #toast-box { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-left: 5px solid; display: flex; align-items: center; gap: 15px; min-width: 300px; transform: translateX(120%); transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-        .toast.show { transform: translateX(0); }
-        
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 6000; display: none; align-items: center; justify-content: center; }
-        .modal-box { background: white; padding: 30px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; transform: scale(0.9); opacity: 0; transition: 0.3s; }
-        .modal-overlay.open .modal-box { transform: scale(1); opacity: 1; }
-        .modal-icon { font-size: 48px; margin-bottom: 15px; }
-
-        @media (max-width: 768px) {
-            .filters-row { grid-template-columns: 1fr 1fr; }
-            .action-row { flex-direction: column; align-items: stretch; gap: 15px; }
-            .bulk-actions { width: 100%; justify-content: space-between; }
-            .danger-zone { flex-direction: column; gap: 10px; text-align: center; }
-        }
-        /* تنسيق نافذة المراجعة (Modal Style) */
-.upload-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85); z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-    backdrop-filter: blur(5px);
+/* QBank Categories Selection Grid */
+.qbank-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+.qbank-cat-box {
+  background: var(--surface-3);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 800;
+  transition: 0.2s ease;
+  user-select: none;
+}
+.qbank-cat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+.qbank-cat-box.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-soft);
 }
 
-.upload-box {
-    background: #fff; width: 500px; max-width: 90%;
-    border-radius: 12px; padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    text-align: center; font-family: sans-serif;
-    animation: slideUp 0.3s ease-out;
+@media(max-width:1100px){.dashboard-grid,.hero-grid,.charts-grid,.history-card{grid-template-columns:1fr}.stats-grid,.quiz-meta,.result-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:992px){.admin-users-grid{grid-template-columns:1fr 1fr}.admin-result-card .meta{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  .auth-tabs{grid-template-columns:repeat(2,1fr)}
+  .top-actions-container{align-items:center;width:100%;margin-top:10px}
+  .topbar,.controls{flex-direction:column;align-items:stretch}
+  .auth-tabs,.stats-grid,.dashboard-grid,.charts-grid,.mini-kpis,.cards-grid,.quiz-meta,.result-grid{grid-template-columns:1fr}
+  .question-main,.question-text-card,.answer-text{font-size:1.02rem}
+  .flip-card{min-height:350px}
+  .admin-users-grid,.admin-result-card .meta{grid-template-columns:1fr}
 }
-
-@keyframes slideUp { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
-
-.upload-icon { font-size: 50px; margin-bottom: 15px; }
-.upload-title { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: #333; }
-.upload-summary { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left; }
-.summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
-.summary-val { font-weight: bold; color: #2563eb; }
-.summary-val.danger { color: #dc3545; }
-.summary-val.success { color: #198754; }
-
-.upload-actions { display: flex; gap: 10px; margin-top: 20px; }
-.btn-confirm { background: #198754; color: white; border: none; padding: 12px; flex: 1; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
-.btn-confirm:hover { background: #146c43; }
-.btn-cancel { background: #dc3545; color: white; border: none; padding: 12px; flex: 1; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
-.btn-cancel:hover { background: #b02a37; }
-
-/* تحذير لو لقى شهر 1 */
-.alert-jan { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #ffeeba; }
-/* دعم الاتجاهات */
-body.rtl { direction: rtl; text-align: right; }
-body.rtl .stat-card { text-align: center; }
-body.rtl .date-header { border-left: none; border-right: 6px solid var(--primary); }
-body.rtl .card-tools { left: auto; right: 10px; }
-body.rtl .status-badge { right: auto; left: 10px; }
-header {
-    background: var(--surface);
-    padding: 15px 25px;
-    border-radius: 16px;
-    display: flex;
-    justify-content: space-between; /* دي اللي بتطرد العناصر للأطراف */
-    align-items: center;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-}/* تنسيق قائمة المستخدمين */
-.user-selector-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-}
-.user-chip {
-    padding: 8px 12px;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: center;
-    transition: 0.2s;
-    font-weight: 600;
-}
-.user-chip.selected {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-.explore-header {
-    background: var(--primary-light);
-    padding: 20px;
-    border-radius: 16px;
-    margin-bottom: 20px;
-    border: 2px dashed var(--primary);
-}
-    </style>
-    
+</style>
 </head>
-<body>
-<div id="toast-box"></div>
+<body class="dark-mode">
 
-<div class="login-overlay" id="loginScreen">
-    <div class="login-card">
-        <div class="login-logo">🔐</div>
-        <h1 style="margin-bottom:10px; color:var(--text-main)">Expiry Check</h1>
-        <p style="color:var(--text-light); margin-bottom:20px">Inventory Management System</p>
-        <input type="number" id="userId" class="login-input" placeholder="Enter User ID">
-        <button class="btn btn-primary" style="width:100%; padding:14px" onclick="app.login()">Access System</button>
+<!-- ========== AUTH ========== -->
+<section id="authScreen" class="auth-wrap">
+  <div class="auth-card glass">
+    <div class="auth-head">
+      <div class="logo">💊</div>
+      <div class="kaph-header-container" style="margin-bottom:15px;">
+        <div class="kaph-animated-header">
+          <div class="kaph-word"><span>K</span><span>A</span><span>P</span><span>H</span></div>
+          <div class="kaph-subtitle">Knowledge Of Aldawaa Pharmacists Hub</div>
+        </div>
+      </div>
+      <p>منصة تعليمية لصيادلة الدواء</p>
     </div>
-</div>
-
-<div class="modal-overlay" id="deleteModal">
-    <div class="modal-box">
-        <div class="modal-icon">🗑️</div>
-        <h2>Confirm Action</h2>
-        <p id="deleteMsg" style="color:var(--text-light); margin:10px 0 25px">Are you sure?</p>
-        <div style="display:flex; gap:10px; justify-content:center">
-            <button class="btn btn-ghost" onclick="app.closeModal('deleteModal')">Cancel</button>
-            <button class="btn btn-danger" onclick="app.confirmDelete()">Confirm</button>
-        </div>
+    <div class="auth-tabs">
+      <button class="tab-btn active" onclick="switchAuthTab('login',this)">تسجيل الدخول</button>
+      <button class="tab-btn" onclick="switchAuthTab('register',this)">حساب جديد</button>
+      <button class="tab-btn" onclick="switchAuthTab('forgot',this)">نسيت كلمة المرور</button>
+      <button class="tab-btn" onclick="switchAuthTab('admin',this)">👑 الأدمن</button>
     </div>
-</div>
+    <div id="authStatus" class="status-box"></div>
 
-<div class="modal-overlay" id="dateModal">
-    <div class="modal-box">
-        <div class="modal-icon">📅</div>
-        <h2>Update Expiry</h2>
-        <input type="date" id="newDateInput" class="login-input">
-        <div style="display:flex; gap:10px; justify-content:center">
-            <button class="btn btn-ghost" onclick="app.closeModal('dateModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="app.confirmDate()">Save Changes</button>
-        </div>
+    <div id="loginTab">
+      <div class="form-grid">
+        <div class="form-group"><label>الرقم الوظيفي</label><input id="loginLicense" class="form-control" type="text" placeholder="الرقم الوظيفي"/></div>
+        <div class="form-group"><label>كلمة المرور</label><input id="loginPassword" class="form-control" type="password" placeholder="كلمة المرور"/></div>
+        <button class="btn btn-primary" onclick="handleLogin()">دخول</button>
+      </div>
     </div>
-</div>
+    <div id="registerTab" class="hidden">
+      <div class="form-grid">
+        <div class="form-group"><label>الاسم</label><input id="registerName" class="form-control" type="text" placeholder="اسم الصيدلي"/></div>
+        <div class="form-group"><label>الرقم الوظيفي</label><input id="registerLicense" class="form-control" type="text" placeholder="الرقم الوظيفي"/></div>
+        <div class="form-group"><label>كلمة المرور</label><input id="registerPassword" class="form-control" type="password" placeholder="كلمة المرور"/></div>
+        <button class="btn btn-primary" onclick="handleRegister()">تسجيل</button>
+      </div>
+    </div>
+    <div id="forgotTab" class="hidden">
+      <div class="form-grid">
+        <div class="form-group"><label>الرقم الوظيفي</label><input id="forgotLicense" class="form-control" type="text" placeholder="الرقم الوظيفي"/></div>
+        <button class="btn btn-warning" onclick="openForgotWhatsApp()">استعادة عبر واتساب</button>
+      </div>
+      <p class="small-note">سيتم فتح واتساب على: 966541932559</p>
+    </div>
+    <div id="adminTab" class="hidden">
+      <div class="form-grid">
+        <div class="form-group"><label>اسم مستخدم الأدمن</label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
+        <div class="form-group"><label>كلمة مرور الأدمن</label><input id="adminPassword" class="form-control" type="password" placeholder="Admin Password"/></div>
+        <button class="btn btn-primary" onclick="handleAdminLogin()">دخول الأدمن</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-<div class="app-container" id="mainApp">
-    <header>
-        <div class="logo-area">
-            <div style="width:40px; height:40px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold">EC</div>
-            <div>
-                <h2 style="font-size:18px">Expiry Check</h2>
-                <div style="font-size:11px; color:var(--text-light)" id="syncStatus">Online • Synced</div>
-            </div>
-        </div>
+<!-- ========== APP ========== -->
+<section id="appScreen" class="hidden">
+  <div class="app-shell">
 
-        <div style="display:flex; align-items:center; gap:12px">
-            <div id="userBadge" style="font-weight:600; color:var(--text-main)"></div>
-            <button class="btn btn-danger" style="padding:8px 12px" onclick="app.logout()">Logout</button>
-            <button class="btn btn-ghost" onclick="app.toggleLanguage()" id="langBtn">English 🌐</button>
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">💊</div>
+        <div class="kaph-header-container">
+          <div class="kaph-animated-header">
+            <div class="kaph-word"><span>K</span><span>A</span><span>P</span><span>H</span></div>
+            <div class="kaph-subtitle">Knowledge Of Aldawaa Pharmacists Hub</div>
+          </div>
         </div>
-    </header>
-
-    <div class="stats-grid">
-        <div class="stat-card active" onclick="app.setStatFilter('all', this)">
-            <span class="stat-value" style="color:var(--primary)" id="stTotal">0</span>
-            <span class="stat-label">Total Items</span>
+      </div>
+      <div class="top-actions-container">
+        <div class="top-actions">
+          <button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn">☀️ الثيم الفاتح</button>
+          <button class="icon-btn" onclick="goDashboard()">🏠 الرئيسية</button>
+          <button class="icon-btn" onclick="logout()">خروج</button>
         </div>
-
-        <div class="stat-card" onclick="app.setStatFilter('found', this)">
-            <span class="stat-value" style="color:var(--success)" id="stFound">0</span>
-            <span class="stat-label">Found</span>
+        <div class="user-profile-badge">
+          <p id="welcomeText" class="authenticated-welcome">مرحباً</p>
         </div>
-
-        <div class="stat-card" onclick="app.setStatFilter('not-found', this)">
-            <span class="stat-value" style="color:var(--danger)" id="stMissing">0</span>
-            <span class="stat-label">Missing</span>
-        </div>
-
-        <div class="stat-card" onclick="app.setStatFilter('pending', this)">
-            <span class="stat-value" style="color:var(--primary)" id="stPending">0</span>
-            <span class="stat-label">Pending</span>
-        </div>
-
-        <div class="stat-card" onclick="app.setStatFilter('expired', this)">
-            <span class="stat-value" style="color:var(--danger)" id="stExpired">0</span>
-            <span class="stat-label">Expired</span>
-        </div>
-
-        <div class="stat-card" onclick="app.setStatFilter('explore', this)" style="border: 2px dashed #4F46E5; background: #EEF2FF;">
-            <span class="stat-value" style="color:var(--primary)" id="stExplore">0</span>
-            <span class="stat-label">Explore Global</span>
-        </div>
+      </div>
     </div>
 
-    <div class="controls-area">
-        <div class="filters-row">
-            <div class="filter-box">
-                <span class="filter-label">Search</span>
-                <input type="text" class="search-main" id="search" placeholder="Code or Name..." oninput="app.render()">
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Category A</span>
-                <select id="catA" onchange="app.handleCatAChange()"><option value="all">All Categories</option></select>
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Category B</span>
-                <select id="catB" onchange="app.render()"><option value="all">All Sub-Cats</option></select>
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Brand</span>
-                <select id="brand" onchange="app.render()"><option value="all">All Brands</option></select>
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Expiry Month</span>
-                <select id="month" onchange="app.render()"><option value="all">All Months</option></select>
-            </div>
-            <div class="filter-box">
-                <span class="filter-label">Status</span>
-                <select id="status" onchange="app.render()">
-                    <option value="all">All Status</option>
-                    <option value="found">Found</option>
-                    <option value="not-found">Missing</option>
-                    <option value="pending">Pending</option>
-                </select>
-            </div>
+    <div class="hero-card glass">
+      <div class="hero-grid">
+        <div>
+          <h2>منصة مراجعة واختبار احترافية للصيادلة</h2>
+          <p>Quiz، QBank داخلي، Flashcards، إحصائيات Charts، وسجل كامل لكل الاختبارات.</p>
+          <div class="mini-kpis">
+            <div class="mini-kpi"><span>واجهة احترافية</span><strong>Pro UI</strong></div>
+            <div class="mini-kpi"><span>اختبار مباشر</span><strong>QBank</strong></div>
+            <div class="mini-kpi"><span>سجل الأداء</span><strong>History</strong></div>
+          </div>
         </div>
-
-        <div class="action-row">
-            <div class="bulk-actions">
-                <button class="btn btn-reset" onclick="app.resetFilters()">
-                    🔄 Reset Filters
-                </button>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input type="file" id="file" hidden accept=".xlsx,.csv" onchange="app.handleUpload(event)">
-                <button class="btn btn-primary" onclick="document.getElementById('file').click()">
-                    📤 Upload Excel
-                </button>
-                <button class="btn btn-ghost" onclick="app.export()">📥 Export</button>
-            </div>
+        <div class="soft-card panel">
+          <h3>إجراءات سريعة</h3>
+          <div class="quick-actions">
+            <button class="btn btn-primary" onclick="startQuiz()">▶ ابدأ Quiz</button>
+            <button class="btn btn-warning" onclick="startQbank()">▶ ابدأ QBank</button>
+            <button class="btn btn-secondary" onclick="showSection('flashcards')">📖 Flashcards</button>
+          </div>
         </div>
-
-        <div class="danger-zone">
-            <div class="danger-zone-title">⚠️ DANGER ZONE</div>
-            <button class="btn btn-ghost" style="color:var(--danger); border-color:var(--danger);" onclick="app.promptClearAll()">
-                💣 Clear All Database
-            </button>
-        </div>
+      </div>
     </div>
 
-    <div id="monthNav" class="month-nav-container" style="display:none"></div>
+    <div class="mode-switcher">
+      <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
+      <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
+      <button id="quizBtn" class="mode-btn" onclick="showSection('quiz')">📝 Quiz</button>
+      <button id="qbankBtn" class="mode-btn" onclick="showSection('qbank')">🧪 QBank</button>
+      <button id="historyBtn" class="mode-btn" onclick="showSection('history')">📋 السجل</button>
+      <button id="resultBtn" class="mode-btn hidden" onclick="showSection('result')">🏆 النتيجة</button>
+      <button id="reviewBtn" class="mode-btn hidden" onclick="showSection('review')">👁️ المراجعة</button>
+      <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
+    </div>
 
-    <div id="inventoryContainer"></div>
-</div>
+    <!-- DASHBOARD -->
+    <section id="dashboardSection">
+      <div class="stats-grid">
+        <div class="stat-card"><span>الاسم</span><strong id="dashName">-</strong></div>
+        <div class="stat-card"><span>الرقم الوظيفي</span><strong id="dashLicense">-</strong></div>
+        <div class="stat-card"><span>آخر إجابات</span><strong id="dashAnswered">0</strong></div>
+        <div class="stat-card"><span>إجابات صحيحة</span><strong id="dashCorrect">0</strong></div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="panel glass">
+          <h3>📊 بيانات آخر اختبار</h3>
+          <div class="info-list">
+            <div class="info-item"><span>نوع الاختبار</span><b id="dashExamType">-</b></div>
+            <div class="info-item"><span>إجمالي الأسئلة</span><b id="dashTotal">0</b></div>
+            <div class="info-item"><span>الأسئلة المفتوحة</span><b id="dashOpened">0</b></div>
+            <div class="info-item"><span>نسبة الإنجاز</span><b id="dashCompletion">0%</b></div>
+            <div class="info-item"><span>نسبة الصح</span><b id="dashScore">0%</b></div>
+            <div class="info-item"><span>تاريخ آخر اختبار</span><b id="dashDate">-</b></div>
+          </div>
+        </div>
+        <div class="panel glass">
+          <h3>⚡ إجراءات سريعة</h3>
+          <div class="quick-actions">
+            <button class="btn btn-primary" onclick="startQuiz()">ابدأ Quiz</button>
+            <button class="btn btn-warning" onclick="startQbank()">ابدأ QBank</button>
+            <button class="btn btn-secondary" onclick="showSection('flashcards')">راجع Flashcards</button>
+            <button class="btn btn-success" onclick="showSection('result')">آخر نتيجة</button>
+            <button class="btn btn-secondary" onclick="showSection('history')">📋 السجل الكامل</button>
+          </div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card glass"><h3>🍩 مؤشرات الأداء الدائرية</h3><div class="chart-wrap"><canvas id="performanceDoughnut"></canvas></div></div>
+        <div class="chart-card glass"><h3>📊 مقارنة الأداء</h3><div class="chart-wrap"><canvas id="performanceBar"></canvas></div></div>
+      </div>
+    </section>
 
-<div id="uploadModal" class="upload-modal" style="display:none;">
-    <div class="upload-box">
-        <div class="upload-icon">📊</div>
-        <div class="upload-title">Data Review</div>
-        <p style="color:#666; font-size:14px;">We analyzed your file. Please confirm the dates:</p>
+    <!-- FLASHCARDS -->
+    <section id="flashcardsSection" class="section-box glass hidden">
+      <h2 class="section-title">📖 Flashcards</h2>
+      <p class="section-subtitle">اضغط على أي كارت ليقلب ويظهر الإجابة.</p>
+      <div class="category-filter-bar" id="categoryFilterBar"></div>
+      <div class="cards-grid" id="cardsContainer"></div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quizSection" class="section-box glass hidden">
+      <h2 class="section-title">📝 Quiz</h2>
+      <p class="section-subtitle">اختر الإجابة الصحيحة والتنقل مفتوح بين الأسئلة.</p>
+      <div class="quiz-shell">
+        <div class="quiz-meta">
+          <div class="meta-pill"><span>عدد الأسئلة</span><strong id="totalQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>المفتوح</span><strong id="openedQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>المجاب</span><strong id="answeredQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>النوع</span><strong>Quiz</strong></div>
+        </div>
+        <div class="progress-wrap"><div id="quizProgressBar" class="progress-bar">0%</div></div>
+        <div class="question-box">
+          <div class="question-number" id="questionNumber">السؤال 1</div>
+          <div class="question-main" id="questionText">...</div>
+        </div>
+        <div class="options-container" id="optionsContainer"></div>
+        <div class="controls">
+          <button class="nav-btn prev-btn" onclick="prevQuestion()">السابق</button>
+          <button class="nav-btn next-btn" onclick="nextQuestion()">التالي</button>
+          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء الاختبار</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- QBANK -->
+    <section id="qbankSection" class="section-box glass hidden">
+      <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
+      <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها، يمكنك اختيار قسم واحد أو عدة أقسام.</p>
+      
+      <!-- إعداد الاختبار -->
+      <div id="qbankSetup" class="soft-card" style="padding:22px; margin-bottom:18px;">
+        <h3 style="margin-bottom:8px;">⚙️ اختر الأقسام (Categories)</h3>
+        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">اضغط على الصندوق لتحديده أو إلغاء تحديده. سيتم سحب الأسئلة عشوائياً من الأقسام المحددة.</p>
         
-        <div class="upload-summary">
-            <div class="summary-row">
-                <span>Total Items:</span>
-                <span class="summary-val" id="uTotal">0</span>
-            </div>
-            <div class="summary-row">
-                <span>Earliest Date (Start):</span>
-                <span class="summary-val success" id="uMinDate">-</span>
-            </div>
-            <div class="summary-row">
-                <span>Latest Date (End):</span>
-                <span class="summary-val" id="uMaxDate">-</span>
-            </div>
-            <div id="janAlert" class="alert-jan" style="display:none;">
-                ⚠️ Warning: Month 1 (January) detected!
-            </div>
+        <div class="qbank-cat-grid" id="qbankCatSelector">
+          <div class="qbank-cat-box selected" data-cat="CVS">CVS</div>
+          <div class="qbank-cat-box selected" data-cat="CNS">CNS</div>
+          <div class="qbank-cat-box selected" data-cat="GIT">GIT</div>
+          <div class="qbank-cat-box selected" data-cat="URT">URT</div>
+          <div class="qbank-cat-box selected" data-cat="UTI">UTI</div>
+          <div class="qbank-cat-box selected" data-cat="Endocrine">Endocrine</div>
+          <div class="qbank-cat-box selected" data-cat="OTC">OTC</div>
         </div>
+        
+        <div class="form-group" style="margin-top:20px; max-width:300px;">
+          <label>مستوى الصعوبة (Difficulty)</label>
+          <select id="qbankDifficultyFilter" class="form-control">
+            <option value="All">منوع (الكل)</option>
+            <option value="Easy">🟢 سهل</option>
+            <option value="Medium">🟡 متوسط</option>
+            <option value="Hard">🔴 صعب</option>
+          </select>
+        </div>
+        
+        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ الاختبار</button>
+      </div>
 
-        <div style="font-size:13px; color:#888; margin-bottom:15px; border-top:1px solid #eee; padding-top:10px;">
-            Sample: <span id="uSampleCode">...</span> ➝ <b style="color:#333" id="uSampleDate">...</b>
+      <!-- منطقة الاختبار -->
+      <div id="qbankQuizArea" class="quiz-shell hidden">
+        <div class="quiz-meta">
+          <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>المفتوح</span><strong id="qbankOpenedQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>المجاب</span><strong id="qbankAnsweredQuestionsLabel">0</strong></div>
+          <div class="meta-pill"><span>النوع</span><strong id="qbankCurrentBadge" style="font-size:0.9rem">QBank</strong></div>
         </div>
+        <div class="progress-wrap"><div id="qbankProgressBar" class="progress-bar">0%</div></div>
+        <div class="question-box">
+          <div class="badge-row" style="margin-bottom:10px;">
+             <span id="qbankQuestionBadgeCategory" class="badge" style="background:var(--primary-2); color:#fff"></span>
+             <span id="qbankQuestionBadgeDiff" class="badge" style="background:var(--orange); color:#fff"></span>
+          </div>
+          <div class="question-number" id="qbankQuestionNumber">السؤال 1</div>
+          <div class="question-main" id="qbankQuestionText">...</div>
+        </div>
+        <div class="options-container" id="qbankOptionsContainer"></div>
+        <div class="controls">
+          <button class="nav-btn prev-btn" onclick="prevQbankQuestion()">السابق</button>
+          <button class="nav-btn next-btn" onclick="nextQbankQuestion()">التالي</button>
+          <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء وإرسال</button>
+        </div>
+      </div>
+    </section>
 
-        <div class="upload-actions">
-            <button class="btn-cancel" onclick="app.cancelUpload()">Cancel ❌</button>
-            <button class="btn-confirm" onclick="app.confirmUpload()">Confirm & Save ✅</button>
+    <!-- HISTORY -->
+    <section id="historySection" class="section-box glass hidden">
+      <h2 class="section-title">📋 سجل الاختبارات</h2>
+      <p class="section-subtitle">استعرض نتائجك السابقة واختر شهراً أو يوماً محدداً.</p>
+      <div class="history-filters">
+        <div class="form-group"><label>🗓 اختر شهر</label><input type="month" id="historyMonth" class="form-control" onchange="filterHistory()"/></div>
+        <div class="form-group"><label>📅 اختر يوم</label><input type="date" id="historyDate" class="form-control" onchange="filterHistory()"/></div>
+        <div class="form-group">
+          <label>🏷 النوع</label>
+          <select id="historyType" class="form-control" onchange="filterHistory()">
+            <option value="">الكل</option>
+            <option value="Quiz">Quiz</option>
+            <option value="QBank">QBank</option>
+          </select>
         </div>
-    </div>
-</div>
+        <button class="btn btn-secondary" style="min-width:110px" onclick="clearHistoryFilter()">مسح الفلتر</button>
+      </div>
+      <div class="chart-card glass" style="margin-bottom:18px">
+        <h3>📈 تطور الأداء عبر الوقت</h3>
+        <div class="history-chart-wrap"><canvas id="historyLineChart"></canvas></div>
+      </div>
+      <div id="historyStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px"></div>
+      <div id="historyContainer"><p class="history-empty">جاري التحميل...</p></div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="resultSection" class="section-box glass hidden">
+      <h2 class="section-title">🏆 نتيجة الاختبار</h2>
+      <p class="section-subtitle">تقدر تحمل النتيجة كصورة أو ترسلها للأدمن، وتراجع إجاباتك.</p>
+      <div id="resultCard" class="result-card">
+        <h3>نتيجة الاختبار</h3>
+        <p id="resultName">الاسم: -</p>
+        <p id="resultLicense">الرقم الوظيفي: -</p>
+        <p id="resultExamType">نوع الاختبار: -</p>
+        <p id="resultDate">تاريخ الاختبار: -</p>
+        <div class="result-grid">
+          <div class="result-pill"><span>إجمالي الأسئلة</span><strong id="resultTotal">0</strong></div>
+          <div class="result-pill"><span>الأسئلة المفتوحة</span><strong id="resultOpened">0</strong></div>
+          <div class="result-pill"><span>المجاب</span><strong id="resultAnswered">0</strong></div>
+          <div class="result-pill"><span>الإجابات الصحيحة</span><strong id="resultCorrect">0</strong></div>
+          <div class="result-pill"><span>نسبة الإنجاز</span><strong id="resultCompletion">0%</strong></div>
+          <div class="result-pill"><span>نسبة الصح</span><strong id="resultScore">0%</strong></div>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" style="background: linear-gradient(135deg, #2e7ad4, #1d5fa8);" onclick="startReview()">👁️ مراجعة الإجابات</button>
+        <button class="btn btn-primary" onclick="downloadResultImage()">📥 تحميل صورة</button>
+        <button class="btn btn-warning" onclick="shareLatestResultToAdmin()">📤 إرسال للأدمن</button>
+        <button class="btn btn-success" onclick="openEmailWithResult()">📧 إرسال بالإيميل</button>
+        <button class="btn btn-secondary" onclick="goDashboard()">🏠 الداشبورد</button>
+        <button class="btn btn-secondary" onclick="showSection('history')">📋 السجل</button>
+      </div>
+    </section>
+
+    <!-- REVIEW -->
+    <section id="reviewSection" class="section-box glass hidden">
+      <h2 class="section-title">👁️ مراجعة الإجابات</h2>
+      <p class="section-subtitle">اللون الأخضر هو الإجابة الصحيحة، والأحمر هو إجابتك الخاطئة.</p>
+      <div class="quiz-shell">
+        <div class="question-box">
+          <div class="question-number" id="reviewQuestionNumber">السؤال 1</div>
+          <div class="question-main" id="reviewQuestionText">...</div>
+        </div>
+        <div class="options-container" id="reviewOptionsContainer"></div>
+        <div class="controls">
+          <button class="nav-btn prev-btn" onclick="prevReviewQuestion()">السابق</button>
+          <button class="nav-btn next-btn" onclick="nextReviewQuestion()">التالي</button>
+          <button class="nav-btn btn-secondary" onclick="showSection('result')">العودة للنتيجة</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="adminSection" class="section-box glass hidden">
+      <h2 class="section-title">👑 Admin Dashboard</h2>
+      <p class="section-subtitle">اختر مستخدمًا أو عدة مستخدمين لعرض آخر نتيجة أو الهيستوري الكامل، أو اعرض النتائج المرسلة للأدمن.</p>
+      <div class="admin-toolbar">
+        <div class="form-group" style="margin:0;flex:1;min-width:220px">
+          <label>بحث عن يوزر</label>
+          <input id="adminUserSearch" class="form-control" type="text" placeholder="اكتب الاسم أو الرقم الوظيفي" oninput="renderAdminUsers()"/>
+        </div>
+        <button class="btn btn-secondary" onclick="selectAllAdminUsers()">تحديد الكل</button>
+        <button class="btn btn-secondary" onclick="clearAdminSelection()">إلغاء التحديد</button>
+        <button class="btn btn-primary" onclick="loadAdminLatestForSelected()">آخر نتيجة للمحدد</button>
+        <button class="btn btn-success" onclick="loadAdminHistoryForSelected()">هيستوري المحدد</button>
+        <button class="btn btn-warning" onclick="loadAdminSharedResults()">النتائج المرسلة للأدمن</button>
+      </div>
+      <div id="adminUsersGrid" class="admin-users-grid"></div>
+      <div class="charts-grid" style="margin-top:18px">
+        <div class="chart-card glass">
+          <h3>أحدث النتائج للمحدد</h3>
+          <div id="adminLatestContainer" class="admin-results-list"></div>
+        </div>
+        <div class="chart-card glass">
+          <h3>النتائج المرسلة للأدمن</h3>
+          <div id="adminSharedContainer" class="admin-results-list"></div>
+        </div>
+      </div>
+      <div class="section-box soft-card" style="margin-top:18px">
+        <h3 style="margin-bottom:12px">هيستوري المستخدمين المحددين</h3>
+        <div id="adminHistoryContainer"></div>
+      </div>
+    </section>
+
+  </div>
+</section>
+
 <script>
-    // 🛑 REPLACE WITH YOUR WORKER URL
-    const WORKER_URL = "https://tracker-new.meralmohamed121022.workers.dev";
-    let LOCAL_DB = [];
-    let DB_MAP = new Map();
-
-    const app = {
-        data: [], 
-        exploreData: [], 
-        allRegisteredUsers: [], 
-        selectedUsers: new Set(), 
-        userId: null,
-        statFilter: 'all', 
-        exploreMode: false, 
-        language: 'ar',
-        displayLimit: 50, 
-        currentPage: 1,
-        fullFilteredList: [], 
-        pendingUploadRows: [],
-
-        i18n: {
-            ar: {
-                total: "إجمالي الأصناف", found: "تم العثور", missing: "مفقودات", pending: "قيد الانتظار",
-                expired: "منتهي (+1)", nearExp: "قريب الانتهاء", search: "بحث بالاسم أو الكود...",
-                catA: "القسم الرئيسي", catB: "القسم الفرعي", brand: "البراند", month: "شهر الانتهاء",
-                status: "الحالة", reset: "إعادة ضبط", upload: "رفع ملف", export: "تصدير",
-                sync: "متصل • مزامنة", logout: "خروج", deleteGrp: "حذف المجموعة", noData: "لا توجد بيانات مطابقة",
-                langToggleBtn: "English 🌐", explore: "استكشاف المستخدمين", added: "تم النسخ لحسابك",
-                selectUsers: "اختر الصيادلة لعرض بياناتهم:", empty: "(فارغ)"
-            },
-            en: {
-                total: "Total Items", found: "Found", missing: "Missing", pending: "Pending",
-                expired: "Expired (+1M)", nearExp: "Near Expiry", search: "Search name or code...",
-                catA: "Category A", catB: "Category B", brand: "Brand", month: "Expiry Month",
-                status: "Status", reset: "Reset Filters", upload: "Upload Excel", export: "Export",
-                sync: "Online • Synced", logout: "Logout", deleteGrp: "Delete Group", noData: "No matching items found",
-                langToggleBtn: "العربية 🌐", explore: "Explore Users", added: "Copied to your account",
-                selectUsers: "Select pharmacists to view their data:", empty: "(Empty)"
-            }
-        },
-
-        loadExternalDB: async () => {
-            try {
-                const [res1, res2] = await Promise.all([fetch('products1.json'), fetch('products2.json')]);
-                const data1 = await res1.json(); const data2 = await res2.json();
-                LOCAL_DB = [...data1, ...data2];
-                DB_MAP = new Map(LOCAL_DB.map(i => [String(i.Code), i]));
-            } catch (e) { console.error("JSON Load Error", e); }
-        },
-
-        loadAllUsersData: async () => {
-            try {
-                const res = await fetch(`${WORKER_URL}/api/inventory/loadAll`); 
-                const json = await res.json();
-                app.exploreData = json.allProducts || [];
-                app.allRegisteredUsers = json.allUsers || [];
-                if(app.exploreMode) app.render(true);
-            } catch (e) { console.error("Explore Data Error", e); }
-        },
-
-        init: async () => {
-            await app.loadExternalDB();
-            const uid = localStorage.getItem('inv_uid');
-            document.body.classList.toggle('rtl', app.language === 'ar');
-
-            window.addEventListener('scroll', () => {
-                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-                    app.loadNextPage();
-                }
-            });
-
-            if (uid) {
-                document.getElementById('userId').value = uid;
-                app.login();
-            }
-            app.observer = new IntersectionObserver((entries) => {
-                entries.forEach(e => { if (e.isIntersecting) { app.loadImage(e.target); app.observer.unobserve(e.target); } });
-            }, { rootMargin: "200px" });
-        },
-
-        login: async () => {
-            const id = String(document.getElementById('userId').value || '').trim();
-            if (!id) return app.notify("Enter user ID", "error");
-            try {
-                const res = await fetch(`${WORKER_URL}/api/login`, { 
-                    method: 'POST', 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ userId: id }) 
-                });
-                const json = await res.json();
-                if (!res.ok || !json.success) throw new Error(json.error || "Login failed");
-                app.userId = id;
-                localStorage.setItem('inv_uid', id);
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('userBadge').innerText = `👤 User: ${json.displayName || id}`;
-                app.load();
-            } catch (e) { app.notify(e.message || "Login failed", "error"); }
-        },
-
-        load: async () => {
-            try {
-                const res = await fetch(`${WORKER_URL}/api/inventory/load?userId=${app.userId}`);
-                const json = await res.json();
-                app.data = json.products.map(p => {
-                    const local = DB_MAP.get(String(p.code));
-                    return { ...p, 
-                        nameEn: local ? local['Item Description'] : p.name, 
-                        nameAr: local ? local['أسم المنتج'] : '',
-                        brand: local ? local.Brand : (p.brand || "OTHER")
-                    };
-                });
-                await app.loadAllUsersData(); 
-                app.initFilters();
-                app.render(true);
-            } catch (e) { console.error(e); }
-        },
-
-        logout: () => {
-            localStorage.clear();
-            location.reload(); 
-        },
-
-        setStatFilter: (type, el) => {
-            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
-            if (el) el.classList.add('active');
-
-            if (type === 'explore') {
-                app.exploreMode = true;
-                app.statFilter = 'all'; 
-            } else {
-                app.exploreMode = false;
-                app.statFilter = type;
-            }
-            app.render(true);
-        },
-
-        toggleUserSelection: (userId) => {
-            if (app.selectedUsers.has(userId)) app.selectedUsers.delete(userId);
-            else app.selectedUsers.add(userId);
-            app.render(false);
-        },
-
-        render: (resetPagination = true) => {
-            if (resetPagination) app.currentPage = 1;
-            const t = app.i18n[app.language];
-            const search = document.getElementById('search').value.toLowerCase().trim();
-
-            // 🔥 التعديل الأهم: فلترة الأصناف في وضع الاستكشاف 🔥
-            let baseData = app.exploreMode ? 
-                app.exploreData
-                .filter(it => app.selectedUsers.has(it.userId))
-                // إخفاء الأصناف اللي متسجلة عندك مسبقاً بنفس التاريخ
-                .filter(it => {
-                    const alreadyHaveIt = app.data.some(myItem => 
-                        String(myItem.code) === String(it.code) && myItem.expiryDate === it.expiryDate
-                    );
-                    return !alreadyHaveIt; 
-                })
-                .map(it => {
-                    const local = DB_MAP.get(String(it.code));
-                    return { ...it, nameEn: local ? local['Item Description'] : 'Unknown', nameAr: local ? local['أسم المنتج'] : '', brand: local ? local.Brand : 'OTHER', isExplore: true, ownerId: it.userId };
-                }) : 
-                app.data;
-
-            let s = { total: 0, found: 0, missing: 0, pending: 0, exp: 0 };
-            baseData.forEach(i => {
-                const alert = app.getAlert(i.expiryDate);
-                s.total++;
-                if (i.status === 'found') s.found++;
-                else if (i.status === 'not-found') s.missing++;
-                else { s.pending++; if (alert === 'expired') s.exp++; }
-            });
-
-            document.getElementById('stTotal').innerText = s.total;
-            document.getElementById('stFound').innerText = s.found;
-            document.getElementById('stMissing').innerText = s.missing;
-            document.getElementById('stPending').innerText = s.pending;
-            document.getElementById('stExpired').innerText = s.exp;
-
-            const container = document.getElementById('inventoryContainer');
-
-            if (app.exploreMode) {
-                const usersHtml = app.allRegisteredUsers.map(id => {
-                    const isSelected = app.selectedUsers.has(id);
-                    const hasData = app.exploreData.some(it => it.userId === id);
-                    return `
-                        <div class="user-chip ${isSelected ? 'selected' : ''}" onclick="app.toggleUserSelection('${id}')">
-                            👤 Pharmacist: ${id} ${!hasData ? t.empty : ''}
-                        </div>`;
-                }).join('');
-
-                const usersHeader = document.getElementById('exploreHeaderSection');
-                if(!usersHeader) {
-                    const div = document.createElement('div');
-                    div.id = 'exploreHeaderSection';
-                    div.className = 'explore-header';
-                    container.parentNode.insertBefore(div, container);
-                }
-                document.getElementById('exploreHeaderSection').innerHTML = `
-                    <h3>${t.selectUsers}</h3>
-                    <div class="user-selector-grid">${usersHtml}</div>
-                `;
-                document.getElementById('exploreHeaderSection').style.display = 'block';
-
-            } else {
-                const header = document.getElementById('exploreHeaderSection');
-                if(header) header.style.display = 'none';
-            }
-
-            app.fullFilteredList = baseData.filter(item => {
-                const alert = app.getAlert(item.expiryDate);
-                if (app.statFilter === 'found' && item.status !== 'found') return false;
-                if (app.statFilter === 'not-found' && item.status !== 'not-found') return false;
-                if (app.statFilter === 'pending' && item.status !== 'pending') return false;
-                if (app.statFilter === 'expired' && (alert !== 'expired' || item.status !== 'pending')) return false;
-
-                const monthFilter = document.getElementById('month')?.value;
-                if (monthFilter && monthFilter !== 'all' && !item.expiryDate.startsWith(monthFilter)) return false;
-
-                return true;
-            });
-
-            if (search) {
-                app.fullFilteredList = app.fullFilteredList.filter(item => 
-                    String(item.nameEn).toLowerCase().includes(search) || String(item.code).includes(search)
-                );
-            }
-
-            const navContainer = document.getElementById('monthNav');
-            navContainer.innerHTML = '';
-            const uniqueMonths = [...new Set(app.fullFilteredList.map(it => it.expiryDate.slice(0, 7)))].sort();
-
-            if (uniqueMonths.length > 0) {
-                navContainer.style.display = 'flex';
-                uniqueMonths.forEach(mKey => {
-                    const monthItems = app.fullFilteredList.filter(it => it.expiryDate.startsWith(mKey));
-                    const alert = app.getAlert(mKey + "-01");
-                    const chip = document.createElement('div');
-                    chip.className = `month-chip ${alert === 'expired' ? 'st-expired' : alert === 'warning' ? 'st-warning' : 'st-safe'}`;
-                    chip.innerHTML = `<div class="m-date">${mKey}</div><div class="m-count">${monthItems.length}</div>`;
-                    chip.onclick = () => document.getElementById(`sec-${mKey}`)?.scrollIntoView({ behavior: 'smooth' });
-                    navContainer.appendChild(chip);
-                });
-            } else { navContainer.style.display = 'none'; }
-
-            app.renderVisiblePart();
-        },
-
-        renderVisiblePart: () => {
-            const t = app.i18n[app.language];
-            const resultContainer = document.getElementById('inventoryContainer');
-            if (!resultContainer) return;
-
-            const limit = app.currentPage * app.displayLimit;
-            const visibleList = app.fullFilteredList.slice(0, limit);
-
-            if (visibleList.length === 0) {
-                if (app.exploreMode && app.selectedUsers.size === 0) {
-                    resultContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ccc;">رجاءً اختر صيدلي واحد على الأقل</div>`;
-                } else {
-                    resultContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ccc;">${t.noData}</div>`;
-                }
-                return;
-            }
-
-            const grouped = {};
-            visibleList.forEach(it => {
-                const mKey = it.expiryDate.slice(0, 7);
-                if (!grouped[mKey]) grouped[mKey] = [];
-                grouped[mKey].push(it);
-            });
-
-            let finalHtml = "";
-            Object.keys(grouped).sort().forEach(mKey => {
-                const alert = app.getAlert(mKey + "-01");
-                let headerClass = alert === 'expired' ? 'expired-header' : alert === 'warning' ? 'warning-header' : 'safe-header';
-                finalHtml += `<div class="date-section" id="sec-${mKey}"><div class="date-header ${headerClass}">📅 ${mKey}</div><div class="date-grid">`;
-                grouped[mKey].forEach(item => {
-                    finalHtml += `
-                    <div class="card" style="${item.isExplore ? 'border: 2px solid var(--primary); background: #fdfdfd' : ''}">
-                        <div class="card-header">
-                            ${item.isExplore ? `<span class="status-badge" style="background:var(--primary)">BY: ${item.ownerId}</span>` : ''}
-                            <img data-code="${item.code}" class="card-img">
-                        </div>
-                        <div class="card-body">
-                            <div class="brand">${item.brand}</div>
-                            <div class="name-en"><b>${item.nameEn}</b></div>
-                            <div class="name-ar">${item.nameAr}</div>
-                            <div class="status-actions">
-                                <button class="st-btn found ${item.status === 'found' ? 'active' : ''}" onclick="app.update('${item.code}','${item.expiryDate}','found', ${item.isExplore || false}, '${item.ownerId || ''}')">${t.found}</button>
-                                <button class="st-btn missing ${item.status === 'not-found' ? 'active' : ''}" onclick="app.update('${item.code}','${item.expiryDate}','not-found', ${item.isExplore || false}, '${item.ownerId || ''}')">${t.missing}</button>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-                finalHtml += `</div></div>`;
-            });
-            resultContainer.innerHTML = finalHtml;
-            document.querySelectorAll('.card-img').forEach(img => app.observer.observe(img));
-        },
-
-        update: async (code, date, actionStatus, isExplore = false, ownerId = null) => {
-            try {
-                if (isExplore) {
-                    const local = DB_MAP.get(String(code)) || {};
-                    // 🔥 منع الإضافة إذا كان مسجل مسبقاً 🔥
-                    const existing = app.data.find(i => String(i.code) === String(code) && i.expiryDate === date);
-
-                    if (existing) {
-                        app.notify("هذا الصنف مسجل لديك بالفعل بنفس التاريخ!", "warning");
-                        return; // وقف العملية عشان مايتكررش
-                    }
-
-                    app.data.push({
-                        code: String(code),
-                        expiryDate: date,
-                        status: actionStatus,
-                        name: local['Item Description'] || '',
-                        nameEn: local['Item Description'] || '',
-                        nameAr: local['أسم المنتج'] || '',
-                        brand: local.Brand || 'OTHER'
-                    });
-
-                    await fetch(`${WORKER_URL}/api/inventory/upsert`, {
-                        method: 'POST',
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            userId: app.userId,
-                            code,
-                            expiryDate: date,
-                            status: actionStatus,
-                            name: local['Item Description'] || '',
-                            brand: local.Brand || 'OTHER',
-                            sourceUserId: ownerId
-                        })
-                    });
-
-                    app.notify("تمت الإضافة لحسابك بنجاح");
-                } else {
-                    const item = app.data.find(i => String(i.code) === String(code) && i.expiryDate === date);
-                    if (!item) return;
-
-                    item.status = (item.status === actionStatus) ? 'pending' : actionStatus;
-
-                    await fetch(`${WORKER_URL}/api/inventory/update`, {
-                        method: 'POST',
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            userId: app.userId,
-                            code,
-                            oldDate: date,
-                            status: item.status
-                        })
-                    });
-                }
-                app.render(false);
-            } catch (e) {
-                console.error(e);
-                app.notify("فشل تحديث الحالة", "error");
-            }
-        },
-
-        loadNextPage: () => {
-            if (app.currentPage * app.displayLimit < app.fullFilteredList.length) {
-                app.currentPage++;
-                app.renderVisiblePart();
-            }
-        },
-
-        getAlert: (dateStr) => {
-            const today = new Date();
-            const exp = new Date(dateStr);
-            const diffMonths = ((exp.getFullYear() * 12) + exp.getMonth()) - ((today.getFullYear() * 12) + today.getMonth());
-            if (diffMonths <= 1) return 'expired';
-            if (diffMonths <= 4) return 'warning';
-            return 'safe';
-        },
-
-        loadImage: async (img) => {
-            const code = img.dataset.code;
-            const local = DB_MAP.get(String(code));
-            img.src = (local && local.itemurl) ? local.itemurl : `https://placehold.co/400x300/f1f5f9/cbd5e1?text=${code}`;
-            img.onload = () => img.classList.add('loaded');
-        },
-
-        notify: (msg, type = 'success') => {
-            const box = document.getElementById('toast-box');
-            const t = document.createElement('div');
-            t.className = `toast show`;
-            t.style.borderLeft = `5px solid ${type === 'success' ? 'var(--success)' : 'var(--danger)'}`;
-            t.innerHTML = `<div>${msg}</div>`;
-            box.appendChild(t);
-            setTimeout(() => { t.remove(); }, 3000);
-        },
-
-        initFilters: () => {
-            const t = app.i18n[app.language];
-            const brands = [...new Set(app.data.map(i => i.brand))].sort();
-            const catAs = [...new Set(app.data.map(i => i.catA))].sort();
-            app.fillSelect('brand', brands, t.brand);
-            app.fillSelect('catA', catAs, t.catA);
-            app.handleCatAChange();
-        },
-
-        fillSelect: (id, arr, label) => {
-            const el = document.getElementById(id);
-            if(el) el.innerHTML = `<option value="all">All ${label}</option>` + arr.map(v => `<option value="${v}">${v}</option>`).join('');
-        },
-
-        handleCatAChange: () => {
-            const selectedA = document.getElementById('catA').value;
-            let filtered = app.data;
-            if (selectedA !== 'all') filtered = app.data.filter(i => i.catA === selectedA);
-            const catBs = [...new Set(filtered.map(i => i.catB))].sort();
-            app.fillSelect('catB', catBs, 'Sub-Cats');
-            app.render(true);
-        },
-
-        toggleLanguage: () => {
-            app.language = app.language === 'ar' ? 'en' : 'ar';
-            document.body.classList.toggle('rtl', app.language === 'ar');
-            document.getElementById('langBtn').innerText = app.i18n[app.language].langToggleBtn;
-            app.render(true);
-        },
-
-        // Excel Upload Functions
-        excelDateToISO(value) {
-            if (value == null || value === '') return null;
-            if (typeof value === 'number') {
-                const parsed = XLSX.SSF.parse_date_code(value);
-                if (!parsed) return null;
-                const mm = String(parsed.m).padStart(2, '0');
-                const dd = String(parsed.d).padStart(2, '0');
-                return `${parsed.y}-${mm}-${dd}`;
-            }
-            if (value instanceof Date && !isNaN(value)) {
-                return value.toISOString().slice(0, 10);
-            }
-            const str = String(value).trim();
-            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-            const d = new Date(str);
-            if (!isNaN(d)) return d.toISOString().slice(0, 10);
-            return null;
-        },
-
-        findColumn(row, names) {
-            const keys = Object.keys(row || {});
-            const lowered = keys.map(k => ({ raw: k, key: String(k).trim().toLowerCase() }));
-            const found = lowered.find(k => names.includes(k.key));
-            return found ? row[found.raw] : undefined;
-        },
-
-        handleUpload: async (event) => {
-            try {
-                const file = event.target.files?.[0];
-                if (!file) return;
-
-                const buffer = await file.arrayBuffer();
-                const wb = XLSX.read(buffer, { type: 'array' });
-                const sheet = wb.Sheets[wb.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-                if (!rows.length) {
-                    app.notify("الملف فارغ", "error");
-                    return;
-                }
-
-                const parsed = rows.map(row => {
-                    const code = app.findColumn(row, ['code', 'item code', 'barcode', 'كود', 'الكود', 'الصنف']);
-                    const expiryRaw = app.findColumn(row, ['expiry', 'expiry date', 'exp', 'date', 'تاريخ الانتهاء', 'انتهاء', 'تاريخ']);
-                    const name = app.findColumn(row, ['name', 'item name', 'description', 'اسم المنتج', 'الاسم']) || '';
-                    const brand = app.findColumn(row, ['brand', 'الشركة', 'البراند']) || '';
-
-                    return {
-                        code: String(code || '').trim(),
-                        name: String(name || '').trim(),
-                        brand: String(brand || '').trim(),
-                        expiryDate: app.excelDateToISO(expiryRaw)
-                    };
-                }).filter(item => item.code && item.expiryDate);
-
-                if (!parsed.length) {
-                    app.notify("لم يتم العثور على أكواد أو تواريخ صالحة داخل الملف", "error");
-                    return;
-                }
-
-                app.pendingUploadRows = parsed;
-
-                const dates = parsed.map(x => x.expiryDate).sort();
-                const minDate = dates[0];
-                const maxDate = dates[dates.length - 1];
-                const sample = parsed[0];
-                const hasJanuary = parsed.some(x => x.expiryDate.slice(5, 7) === '01');
-
-                document.getElementById('uTotal').innerText = parsed.length;
-                document.getElementById('uMinDate').innerText = minDate;
-                document.getElementById('uMaxDate').innerText = maxDate;
-                document.getElementById('uSampleCode').innerText = sample.code;
-                document.getElementById('uSampleDate').innerText = sample.expiryDate;
-                document.getElementById('janAlert').style.display = hasJanuary ? 'flex' : 'none';
-                document.getElementById('uploadModal').style.display = 'flex';
-            } catch (e) {
-                console.error(e);
-                app.notify("فشل قراءة الملف", "error");
-            }
-        },
-
-        confirmUpload: async () => {
-            try {
-                if (!app.pendingUploadRows.length) {
-                    return app.notify("لا توجد بيانات للحفظ", "error");
-                }
-
-                const res = await fetch(`${WORKER_URL}/api/inventory/sync`, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        userId: app.userId,
-                        newProducts: app.pendingUploadRows
-                    })
-                });
-
-                const json = await res.json();
-                if (!res.ok || !json.success) throw new Error(json.error || "Sync failed");
-
-                app.pendingUploadRows = [];
-                document.getElementById('uploadModal').style.display = 'none';
-                document.getElementById('file').value = '';
-                app.notify(`تمت إضافة ${json.addedCount || 0} صنف`);
-                await app.load();
-            } catch (e) {
-                app.notify(e.message || "Upload failed", "error");
-            }
-        },
-
-        cancelUpload: () => {
-            app.pendingUploadRows = [];
-            document.getElementById('uploadModal').style.display = 'none';
-            document.getElementById('file').value = '';
-        },
-
-        resetFilters: () => {
-            document.getElementById('search').value = '';
-            document.getElementById('catA').value = 'all';
-            document.getElementById('brand').value = 'all';
-            document.getElementById('month').value = 'all';
-            document.getElementById('status').value = 'all';
-            app.handleCatAChange();
-        },
-
-        promptClearAll: () => {
-            document.getElementById('deleteMsg').innerText = "هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع.";
-            app.currentDeleteAction = 'clearAll';
-            document.getElementById('deleteModal').style.display = 'flex';
-        },
-
-        closeModal: (id) => {
-            document.getElementById(id).style.display = 'none';
-        },
-
-        confirmDelete: async () => {
-            app.closeModal('deleteModal');
-            if (app.currentDeleteAction === 'clearAll') {
-                try {
-                    const res = await fetch(`${WORKER_URL}/api/inventory/clear-all`, {
-                        method: 'POST',
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ userId: app.userId })
-                    });
-                    const json = await res.json();
-                    if (!res.ok || !json.success) throw new Error(json.error);
-                    app.data = [];
-                    app.notify("تم مسح جميع البيانات");
-                    app.render();
-                } catch(e) {
-                    app.notify("فشل المسح", "error");
-                }
-            }
-        },
-
-        export: () => {
-            if (!app.data.length) return app.notify("لا توجد بيانات لتصديرها", "error");
-            const ws = XLSX.utils.json_to_sheet(app.data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Inventory");
-            XLSX.writeFile(wb, `inventory_${app.userId}.xlsx`);
-        }
+// ==================== CONFIG ====================
+const SUPABASE_URL = "https://ukowgpoiidcqfvtnxfwe.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrb3dncG9paWRjcWZ2dG54ZndlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDQ2NTMsImV4cCI6MjA5MjI4MDY1M30.8ulwLJ5i-Dw3djhotGDrFmxsp_V365lKSeUVZEh04KQ";
+const WHATSAPP_NUMBER = "966541932559";
+const headers = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  "Content-Type": "application/json",
+  Prefer: "return=representation"
+};
+
+// ==================== STATE ====================
+let currentUser            = null;
+let isAdminSession         = false;
+let currentCategory        = "All";
+let latestResultData       = null;
+let latestSavedResultId    = null;
+let allHistoryData         = [];
+let allHistoryRaw          = [];
+let adminUsersData         = [];
+let adminSelectedLicenses  = new Set();
+let currentQuestionIndex   = 0;
+let userAnswers            = [];
+let openedQuestions        = new Set();
+let doughnutChart          = null;
+let barChart               = null;
+let historyLineChart       = null;
+
+let qbankCurrentQuestionIndex = 0;
+let qbankUserAnswers       = [];
+let qbankOpenedQuestions   = new Set();
+let activeQbankQuestions   = [];
+
+let reviewQuestions = [];
+let reviewUserAnswers = [];
+let reviewCurrentIndex = 0;
+
+// ==================== FLASHCARDS DATA ====================
+const flashcardsDB = [
+  { icon:"🔬", category:"Antibiotics", question:"Which antibiotic causes Gray Baby Syndrome in neonates?", answerType:"text", answer:"Chloramphenicol causes Gray Baby Syndrome due to immature liver enzymes in neonates.", drug:"Chloramphenicol" },
+  { icon:"💉", category:"Antibiotics", question:"Which tetracycline is safest for patients with renal impairment?", answerType:"text", answer:"Doxycycline — hepatic elimination, not renal.", drug:"Doxycycline" },
+  { icon:"🧪", category:"Lab Tests", question:"Key lab tests for chronic hair loss and fatigue?", answerType:"list", answerList:["CBC","Serum Ferritin","Thyroid Profile (TSH,T3,T4)","Vitamin D","Zinc"], drug:"" },
+  { icon:"❤️", category:"Cardiovascular", question:"Which nitrate has minimal first-pass metabolism?", answerType:"text", answer:"Isosorbide mononitrate — negligible first-pass metabolism.", drug:"Isosorbide Mononitrate" },
+  { icon:"🧬", category:"Antibiotics", question:"Active ingredients in Augmentin?", answerType:"text", answer:"Amoxicillin (bactericidal) + Clavulanic acid (beta-lactamase inhibitor).", drug:"Amoxicillin+Clavulanate" },
+  { icon:"🫁", category:"Respiratory", question:"Bronchodilator in ProAir & Ventolin?", answerType:"text", answer:"Salbutamol (Albuterol) — SABA.", drug:"Salbutamol" },
+  { icon:"🩸", category:"Cardiovascular", question:"Which anticoagulant requires INR monitoring?", answerType:"text", answer:"Warfarin.", drug:"Warfarin" },
+  { icon:"⚕️", category:"Toxicology", question:"Antidote for paracetamol overdose?", answerType:"text", answer:"N-acetylcysteine (NAC).", drug:"NAC" }
+];
+
+// ==================== QUIZ QUESTIONS ====================
+const quizQuestions = [
+  { question:"أي مضاد حيوي يسبب Gray Baby Syndrome في حديثي الولادة؟", options:["Doxycycline","Chloramphenicol","Warfarin","Omeprazole"], correct:1 },
+  { question:"أي Tetracycline هو الأكثر أماناً في مرضى القصور الكلوي؟", options:["Tetracycline","Minocycline","Doxycycline","Tigecycline"], correct:2 },
+  { question:"ما الدواء الذي يحتاج متابعة INR بانتظام؟", options:["Warfarin","Aspirin","Clopidogrel","Enoxaparin"], correct:0 },
+  { question:"ما الترياق المحدد في overdose الباراسيتامول؟", options:["Atropine","Naloxone","N-acetylcysteine","Vitamin K"], correct:2 },
+  { question:"أي oral antidiabetic قد يسبب lactic acidosis مع القصور الكلوي؟", options:["Metformin","Glimepiride","Sitagliptin","Pioglitazone"], correct:0 },
+  { question:"ما آلية عمل Omeprazole؟", options:["حاصر H1","حاصر H2","يثبط H+/K+-ATPase","يزيد حركة المعدة"], correct:2 },
+  { question:"أي الفئات ممنوعة في الحمل (فئة D/X)؟", options:["PPIs","ACEIs/ARBs","Penicillins","Cephalosporins"], correct:1 },
+  { question:"ما دواء إنهاء SVT الحاد؟", options:["Adenosine","Furosemide","Metformin","NAC"], correct:0 },
+  { question:"أي اللقاحات يُفضّل في الحمل؟", options:["Live attenuated","Inactivated","Toxoid only","Oral only"], correct:1 },
+  { question:"أي class من المدرات أكثر فعالية في acute pulmonary edema؟", options:["Thiazides","Loop diuretics","Potassium sparing","Carbonic anhydrase inhibitors"], correct:1 }
+];
+
+// ==================== QBANK DATABASE ====================
+const qbankQuestionsDB = [
+  { category: "CVS", difficulty: "Easy", question: "مريض يستخدم Lisinopril ويشتكي من سعال جاف مزعج جداً، ما هو البديل الأنسب من نفس العائلة العلاجية لتجنب هذا العرض؟", options: ["Amlodipine (CCB)", "Valsartan (ARB)", "Atenolol (Beta Blocker)", "Furosemide (Diuretic)"], correct: 1 },
+  { category: "CVS", difficulty: "Medium", question: "متى يُفضل تناول دواء Rosuvastatin (Crestor)؟", options: ["قبل الإفطار مباشرة", "في المساء فقط", "في أي وقت من اليوم", "مع وجبة دهنية"], correct: 2 },
+  { category: "CVS", difficulty: "Hard", question: "مريض ضغط يستخدم Amlodipine، طلب منك مسكن لاحتقان الأنف، أي من الأدوية التالية Contraindicated؟", options: ["Chlorpheniramine", "Pseudoephedrine (Clarinase)", "Cetirizine (Zyrtec)", "Normal Saline Drops"], correct: 1 },
+  { category: "CNS", difficulty: "Easy", question: "مريض يطلب دواء Panadol Night ليساعده على النوم، ما هي المادة الفعالة المضافة للباراسيتامول التي تسبب النعاس؟", options: ["Caffeine", "Chlorpheniramine", "Diphenhydramine", "Codeine"], correct: 2 },
+  { category: "CNS", difficulty: "Medium", question: "دواء Sumatriptan (Imigran) المستخدم للشقيقة، متى يجب أن يتناوله المريض؟", options: ["يومياً للوقاية", "عند بداية ظهور نوبة الصداع مباشرة", "بعد الوصول لأقصى ألم", "فقط قبل النوم"], correct: 1 },
+  { category: "CNS", difficulty: "Hard", question: "مريض يستخدم Escitalopram لعلاج الاكتئاب، صرف له مسكن يحتوي على Tramadol. ما هو التداخل الدوائي الخطير المحتمل؟", options: ["Hypertensive Crisis", "Serotonin Syndrome", "Lactic Acidosis", "Hepatotoxicity"], correct: 1 },
+  { category: "GIT", difficulty: "Easy", question: "امرأة حامل تشتكي من حموضة وحرقة في المعدة، ما هو الخيار الأول الآمن (First-line) كـ OTC؟", options: ["Omeprazole", "Sodium Alginate/Antacids (Gaviscon)", "Famotidine", "Misoprostol"], correct: 1 },
+  { category: "GIT", difficulty: "Medium", question: "مريض يصرف دواء Mebeverine (Duspatalin). ما هي دواعي الاستعمال الأساسية؟", options: ["قرحة المعدة", "الإمساك المزمن", "القولون العصبي (Antispasmodic)", "الإسهال الحاد"], correct: 2 },
+  { category: "GIT", difficulty: "Hard", question: "لماذا يُنصح بعدم تناول Bisacodyl مع مضادات الحموضة أو الحليب في نفس الوقت؟", options: ["يسبب تشكل حصوات", "يذيب الغلاف المعوي للدواء مبكراً ويسبب مغص شديد", "يبطل مفعول الدواء تماماً", "يقلل من امتصاص الكالسيوم"], correct: 1 },
+  { category: "URT", difficulty: "Easy", question: "أي من مضادات الهيستامين التالية يُعتبر الجيل الأول ويسبب النعاس؟", options: ["Loratadine", "Desloratadine", "Chlorpheniramine", "Cetirizine"], correct: 2 },
+  { category: "URT", difficulty: "Medium", question: "أم تطلب شراب للسعال الجاف لطفلها عمره سنتين. ما هو الإجراء الصحيح؟", options: ["شراب يحتوي على Dextromethorphan", "شراب يحتوي على Codeine", "شراب عشبي (Prospan) وتجنب مثبطات السعال المركزية", "شراب مقشع (Guaifenesin)"], correct: 2 },
+  { category: "UTI", difficulty: "Medium", question: "مريضة وصفت لها كبسولات Nitrofurantoin لالتهاب المسالك، ما هي أهم نصيحة؟", options: ["على معدة فارغة تماماً", "مع الطعام وتوقع تغير لون البول", "إيقاف الدواء بمجرد زوال الأعراض", "الامتناع عن شرب الماء"], correct: 1 },
+  { category: "Endocrine", difficulty: "Easy", question: "مريض سكري يستخدم Metformin، متى يُفضل تناوله؟", options: ["قبل الأكل بنصف ساعة", "وسط أو بعد الأكل مباشرة لتجنب اضطرابات المعدة", "قبل النوم فقط", "عند الاستيقاظ مباشرة"], correct: 1 },
+  { category: "Endocrine", difficulty: "Hard", question: "أي من أدوية السكري يعمل عن طريق طرح الجلوكوز عبر البول (SGLT2) ويستوجب نصح المريض بالنظافة لتجنب UTI؟", options: ["Sitagliptin", "Empagliflozin", "Gliclazide", "Pioglitazone"], correct: 1 },
+  { category: "OTC", difficulty: "Easy", question: "مريض يطلب مرهم لعلاج التسلخات لرضيع، ما هو الخيار الأفضل كطبقة عازلة؟", options: ["Fucidin", "Sudocrem (Zinc Oxide)", "Mebo", "Betnovate"], correct: 1 },
+  { category: "OTC", difficulty: "Medium", question: "ما هي الجرعة القصوى الآمنة من Paracetamol للبالغين الأصحاء في اليوم الواحد؟", options: ["2 جرام", "3 جرام", "4 جرام (4000 mg)", "6 جرام"], correct: 2 }
+];
+
+// ==================== UTILS ====================
+function setStatus(msg, type="success") {
+  const box = document.getElementById("authStatus");
+  box.className = `status-box ${type}`;
+  box.textContent = msg;
+}
+function clearStatus() {
+  const box = document.getElementById("authStatus");
+  box.className = "status-box";
+  box.textContent = "";
+}
+function formatDate(val) {
+  const d = new Date(val);
+  return d.toLocaleString("ar-EG",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function getScoreColor(p) {
+  p = parseFloat(p) || 0;
+  if (p < 50) return "#e65252";
+  if (p < 70) return "#f59e0b";
+  if (p < 90) return "#4ade80";
+  return "#16a34a";
+}
+function sanitizeValue(v) { return encodeURIComponent(String(v).trim()); }
+async function supabaseRequest(url, options={}) {
+  const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers||{}) } });
+  if (!res.ok) throw new Error(await res.text() || "Supabase error");
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+function buildInFilter(values) { return `in.(${values.map(v=>`"${String(v).replace(/"/g,'\\"')}"`).join(",")})`; }
+function shuffleArray(array) {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
+// ==================== THEME & AUTH ====================
+function toggleTheme() {
+  document.body.classList.toggle("dark-mode");
+  const themeBtn = document.getElementById("themeToggleBtn");
+  if (document.body.classList.contains("dark-mode")) {
+      themeBtn.innerHTML = "☀️ الثيم الفاتح";
+  } else {
+      themeBtn.innerHTML = "🌙 الثيم الغامق";
+  }
+  setTimeout(updateDashboardCharts, 100);
+}
+function switchAuthTab(tabName, btn) {
+  clearStatus();
+  ["loginTab","registerTab","forgotTab","adminTab"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+  document.getElementById(`${tabName}Tab`).classList.remove("hidden");
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+}
+async function handleRegister() {
+  clearStatus();
+  const name     = document.getElementById("registerName").value.trim();
+  const license  = document.getElementById("registerLicense").value.trim();
+  const password = document.getElementById("registerPassword").value.trim();
+  if (!name||!license||!password) return setStatus("من فضلك املأ كل الحقول.", "error");
+  try {
+    const check = await supabaseRequest(`${SUPABASE_URL}/rest/v1/users?select=license_number&license_number=eq.${sanitizeValue(license)}`);
+    if (check.length) return setStatus("الرقم الوظيفي مسجل بالفعل.", "error");
+    await supabaseRequest(`${SUPABASE_URL}/rest/v1/users`, {
+      method:"POST",
+      body:JSON.stringify([{ name, license_number:license, password }])
+    });
+    setStatus("تم التسجيل بنجاح.", "success");
+    document.getElementById("loginLicense").value  = license;
+    document.getElementById("loginPassword").value = password;
+  } catch(e) { setStatus(`خطأ في التسجيل: ${e.message}`, "error"); }
+}
+async function handleLogin() {
+  clearStatus();
+  isAdminSession = false;
+  const license  = document.getElementById("loginLicense").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+  if (!license||!password) return setStatus("أدخل الرقم الوظيفي وكلمة المرور.", "error");
+  try {
+    const users = await supabaseRequest(
+      `${SUPABASE_URL}/rest/v1/users?select=*&license_number=eq.${sanitizeValue(license)}&password=eq.${sanitizeValue(password)}&limit=1`
+    );
+    if (!users.length) return setStatus("بيانات الدخول غير صحيحة.", "error");
+    currentUser = users[0];
+    latestResultData    = null;
+    latestSavedResultId = null;
+    document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("appScreen").classList.remove("hidden");
+    document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
+    document.getElementById("adminBtn").classList.add("hidden");
+    initFlashcards(); initQuiz();
+    await loadDashboard();
+    showSection("dashboard");
+  } catch(e) { setStatus(`خطأ في تسجيل الدخول: ${e.message}`, "error"); }
+}
+async function handleAdminLogin() {
+  clearStatus();
+  const username = document.getElementById("adminUsername").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
+  if (!username||!password) return setStatus("أدخل اسم مستخدم الأدمن وكلمة المرور.", "error");
+  try {
+    const rows = await supabaseRequest(
+      `${SUPABASE_URL}/rest/v1/admin_users?select=*&username=eq.${sanitizeValue(username)}&password=eq.${sanitizeValue(password)}&limit=1`
+    );
+    if (!rows.length) return setStatus("بيانات الأدمن غير صحيحة.", "error");
+    isAdminSession = true;
+    currentUser = { name: rows[0].display_name || "Admin", license_number: "ADMIN" };
+    document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("appScreen").classList.remove("hidden");
+    document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
+    document.getElementById("adminBtn").classList.remove("hidden");
+    document.getElementById("dashboardBtn").classList.add("hidden");
+    document.getElementById("flashcardsBtn").classList.add("hidden");
+    document.getElementById("quizBtn").classList.add("hidden");
+    document.getElementById("qbankBtn").classList.add("hidden");
+    document.getElementById("historyBtn").classList.add("hidden");
+    await loadAdminUsers();
+    await loadAdminSharedResults();
+    showSection("admin");
+  } catch(e) { setStatus(`خطأ في دخول الأدمن: ${e.message}`, "error"); }
+}
+function openForgotWhatsApp() {
+  const license = document.getElementById("forgotLicense").value.trim();
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`السلام عليكم، أحتاج استعادة كلمة المرور.\nالرقم الوظيفي: ${license||"-"}`)}`, "_blank");
+}
+function logout() {
+  currentUser = null; isAdminSession = false;
+  latestResultData = null; latestSavedResultId = null;
+  adminUsersData = []; adminSelectedLicenses = new Set();
+  document.getElementById("appScreen").classList.add("hidden");
+  document.getElementById("authScreen").classList.remove("hidden");
+  document.getElementById("resultBtn").classList.add("hidden");
+  document.getElementById("reviewBtn").classList.add("hidden");
+  document.getElementById("adminBtn").classList.add("hidden");
+  ["dashboardBtn","flashcardsBtn","quizBtn","qbankBtn","historyBtn"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("hidden");
+  });
+  clearStatus();
+}
+
+// ==================== NAVIGATION ====================
+function showSection(name) {
+  const map = {
+    dashboard:"dashboardSection", flashcards:"flashcardsSection",
+    quiz:"quizSection", qbank:"qbankSection",
+    history:"historySection", result:"resultSection", admin:"adminSection", review:"reviewSection"
+  };
+  Object.values(map).forEach(id => { const el=document.getElementById(id); if(el) el.classList.add("hidden"); });
+  document.getElementById(map[name])?.classList.remove("hidden");
+  
+  ["dashboardBtn","flashcardsBtn","quizBtn","qbankBtn","historyBtn","resultBtn","reviewBtn","adminBtn"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.remove("active");
+  });
+  
+  const ids = { dashboard:"dashboardBtn", flashcards:"flashcardsBtn", quiz:"quizBtn",
+                qbank:"qbankBtn", history:"historyBtn", result:"resultBtn", review:"reviewBtn", admin:"adminBtn" };
+  document.getElementById(ids[name])?.classList.add("active");
+  
+  // هنا التعديل: لما يختار qbank نعمل Reset للشاشة
+  if (name==="quiz")      renderQuestion();
+  if (name==="qbank") {
+      document.getElementById("qbankSetup").classList.remove("hidden");
+      document.getElementById("qbankQuizArea").classList.add("hidden");
+  }
+  if (name==="dashboard") setTimeout(updateDashboardCharts,80);
+  if (name==="history")   loadHistory();
+  if (name==="admin")   { loadAdminUsers(); loadAdminSharedResults(); }
+  if (name==="review")    renderReviewQuestion();
+}
+
+function goDashboard() { showSection("dashboard"); }
+
+// ==================== DASHBOARD ====================
+async function loadDashboard() {
+  if (!currentUser || isAdminSession) return;
+  document.getElementById("dashName").textContent    = currentUser.name || "-";
+  document.getElementById("dashLicense").textContent = currentUser.license_number || "-";
+  
+  // تحديث بيانات النتيجة عشان تظهر بالاسم الحالي
+  if (latestResultData) {
+      fillResultCard(latestResultData);
+  }
+
+  try {
+    const rows = await supabaseRequest(
+      `${SUPABASE_URL}/rest/v1/results?select=*&license_number=eq.${sanitizeValue(currentUser.license_number)}&order=created_at.desc&limit=1`
+    );
+    if (!rows.length) {
+      latestResultData = { exam_type:"—", total_questions:0, opened_questions:0, answered_questions:0, correct_answers:0, completion_percentage:0, score_percentage:0, exam_date:null };
+    } else {
+      latestResultData    = rows[0];
+      latestSavedResultId = rows[0].id || null;
+    }
+    fillDashboard(latestResultData);
+    fillResultCard(latestResultData);
+    updateDashboardCharts(latestResultData);
+  } catch(e) { console.error("loadDashboard error:", e.message); }
+}
+function fillDashboard(data) {
+  document.getElementById("dashAnswered").textContent   = data.answered_questions  ?? 0;
+  document.getElementById("dashCorrect").textContent    = data.correct_answers      ?? 0;
+  document.getElementById("dashTotal").textContent      = data.total_questions      ?? 0;
+  document.getElementById("dashOpened").textContent     = data.opened_questions     ?? 0;
+  document.getElementById("dashCompletion").textContent = `${Number(data.completion_percentage||0).toFixed(2)}%`;
+  document.getElementById("dashDate").textContent       = data.exam_date ? formatDate(data.exam_date) : "-";
+  document.getElementById("dashExamType").textContent   = data.exam_type || "-";
+  const scoreVal = Number(data.score_percentage||0);
+  const scoreEl  = document.getElementById("dashScore");
+  scoreEl.textContent   = `${scoreVal.toFixed(2)}%`;
+  scoreEl.style.color   = getScoreColor(scoreVal);
+}
+function fillResultCard(data) {
+  if (!data) return;
+  document.getElementById("resultName").textContent       = `الاسم: ${currentUser?.name||"-"}`;
+  document.getElementById("resultLicense").textContent    = `الرقم الوظيفي: ${currentUser?.license_number||"-"}`;
+  document.getElementById("resultExamType").textContent   = `نوع الاختبار: ${data.exam_type||"-"}`;
+  document.getElementById("resultDate").textContent       = `التاريخ: ${data.exam_date?formatDate(data.exam_date):"-"}`;
+  document.getElementById("resultTotal").textContent      = data.total_questions     ?? 0;
+  document.getElementById("resultOpened").textContent     = data.opened_questions    ?? 0;
+  document.getElementById("resultAnswered").textContent   = data.answered_questions  ?? 0;
+  document.getElementById("resultCorrect").textContent    = data.correct_answers     ?? 0;
+  document.getElementById("resultCompletion").textContent = `${Number(data.completion_percentage||0).toFixed(2)}%`;
+  const scoreVal = Number(data.score_percentage||0);
+  const scoreEl  = document.getElementById("resultScore");
+  scoreEl.textContent      = `${scoreVal.toFixed(2)}%`;
+  scoreEl.style.color      = getScoreColor(scoreVal);
+}
+
+// ==================== FLASHCARDS ====================
+function initFlashcards() { buildCategoryFilter(); renderFlashcards(); }
+function buildCategoryFilter() {
+  const bar  = document.getElementById("categoryFilterBar");
+  const cats = ["All", ...new Set(flashcardsDB.map(c=>c.category))];
+  bar.innerHTML = "";
+  cats.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = `category-chip ${cat===currentCategory?"active":""}`;
+    btn.textContent = cat;
+    btn.onclick = () => {
+      currentCategory = cat;
+      document.querySelectorAll(".category-chip").forEach(ch=>ch.classList.remove("active"));
+      btn.classList.add("active");
+      renderFlashcards();
     };
+    bar.appendChild(btn);
+  });
+}
+function renderFlashcards() {
+  const container = document.getElementById("cardsContainer");
+  container.innerHTML = "";
+  const filtered = currentCategory==="All" ? flashcardsDB : flashcardsDB.filter(c=>c.category===currentCategory);
+  filtered.forEach(card => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "flip-card-wrapper";
+    const ansHTML = card.answerType==="list" ? `<ul class="answer-list">${card.answerList.map(i=>`<li>${i}</li>`).join("")}</ul>` : `<div class="answer-text">${card.answer}</div>`;
+    wrapper.innerHTML = `
+      <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-side flip-card-front">
+          <div><div class="question-icon">${card.icon}</div><div class="question-text-card">${card.question}</div></div>
+          <div class="badge-row"><span class="badge front-badge">${card.category}</span><span class="badge front-badge">Flashcard</span></div>
+        </div>
+        <div class="flip-card-side flip-card-back">
+          <div><div class="answer-icon">✅</div>${ansHTML}</div>
+          <div class="badge-row">${card.drug?`<span class="badge">${card.drug}</span>`:"<span></span>"}<span class="badge">${card.category}</span></div>
+        </div>
+      </div>`;
+    container.appendChild(wrapper);
+  });
+}
 
-    window.onload = () => app.init();
+// ==================== QUIZ ====================
+function initQuiz() {
+  currentQuestionIndex = 0;
+  userAnswers = new Array(quizQuestions.length).fill(null);
+  openedQuestions = new Set([0]);
+  document.getElementById("totalQuestionsLabel").textContent = quizQuestions.length;
+}
+function renderQuestion() {
+  const q = quizQuestions[currentQuestionIndex];
+  openedQuestions.add(currentQuestionIndex);
+  document.getElementById("questionNumber").textContent = `السؤال ${currentQuestionIndex+1} من ${quizQuestions.length}`;
+  document.getElementById("questionText").textContent   = q.question;
+  const c = document.getElementById("optionsContainer");
+  c.innerHTML = "";
+  q.options.forEach((opt,i) => {
+    const btn = document.createElement("button");
+    btn.className = `option-btn ${userAnswers[currentQuestionIndex]===i?"selected":""}`;
+    btn.textContent = opt;
+    btn.onclick = () => { userAnswers[currentQuestionIndex]=i; renderQuestion(); };
+    c.appendChild(btn);
+  });
+  updateQuizMeta("totalQuestionsLabel","openedQuestionsLabel","answeredQuestionsLabel","quizProgressBar", quizQuestions, userAnswers, openedQuestions);
+}
+function prevQuestion() { if (currentQuestionIndex>0){ currentQuestionIndex--; renderQuestion(); } }
+function nextQuestion() { if (currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; renderQuestion(); } }
+function startQuiz()    { initQuiz(); showSection("quiz"); }
+async function submitQuiz() { await saveExamResult("Quiz", quizQuestions, userAnswers, openedQuestions); }
+
+function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers, opened) {
+  const answered = answers.filter(v=>v!==null).length;
+  const progress  = questions.length ? Math.round((answered/questions.length)*100) : 0;
+  document.getElementById(openedId).textContent   = opened.size;
+  document.getElementById(answeredId).textContent = answered;
+  const bar = document.getElementById(barId);
+  bar.style.width = `${progress}%`;
+  bar.textContent = `${progress}%`;
+}
+
+// ==================== QBANK LOGIC ====================
+// التحكم في اختيار الأقسام (Boxes)
+document.querySelectorAll(".qbank-cat-box").forEach(box => {
+  box.addEventListener("click", function() {
+    this.classList.toggle("selected");
+  });
+});
+
+function startQbank() {
+  // إعادة عرض بوكسات الاختيار (إعداد الاختبار)
+  document.getElementById("qbankSetup").classList.remove("hidden");
+  
+  // إخفاء شاشة الأسئلة السابقة
+  document.getElementById("qbankQuizArea").classList.add("hidden");
+  
+  // الانتقال لقسم بنك الأسئلة
+  showSection("qbank");
+}
+function generateAndStartQbank() {
+  // تجميع الأقسام المحددة
+  const selectedBoxes = document.querySelectorAll(".qbank-cat-box.selected");
+  const selectedCats = Array.from(selectedBoxes).map(b => b.getAttribute("data-cat"));
+  const diffFilter = document.getElementById("qbankDifficultyFilter").value;
+
+  if (selectedCats.length === 0) {
+    alert("الرجاء تحديد قسم واحد على الأقل للبدء.");
+    return;
+  }
+
+  // فلترة الأسئلة
+  let filtered = qbankQuestionsDB.filter(q => selectedCats.includes(q.category));
+
+  if (diffFilter !== "All") {
+    filtered = filtered.filter(q => q.difficulty === diffFilter);
+  }
+
+  if (filtered.length === 0) {
+    alert("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.");
+    return;
+  }
+
+  activeQbankQuestions = shuffleArray(filtered).slice(0, 20); // حد أقصى 20 سؤال
+  qbankCurrentQuestionIndex = 0;
+  qbankUserAnswers  = new Array(activeQbankQuestions.length).fill(null);
+  qbankOpenedQuestions = new Set([0]);
+
+  document.getElementById("qbankTotalQuestionsLabel").textContent = activeQbankQuestions.length;
+  const catNames = selectedCats.length > 2 ? `${selectedCats.length} أقسام` : selectedCats.join(" + ");
+  document.getElementById("qbankCurrentBadge").textContent = catNames;
+
+  document.getElementById("qbankSetup").classList.add("hidden");
+  document.getElementById("qbankQuizArea").classList.remove("hidden");
+  renderQbankQuestion();
+}
+
+function renderQbankQuestion() {
+  if(!activeQbankQuestions.length) return;
+  const q = activeQbankQuestions[qbankCurrentQuestionIndex];
+  qbankOpenedQuestions.add(qbankCurrentQuestionIndex);
+
+  document.getElementById("qbankQuestionNumber").textContent = `السؤال ${qbankCurrentQuestionIndex+1} من ${activeQbankQuestions.length}`;
+  document.getElementById("qbankQuestionText").textContent   = q.question;
+  
+  document.getElementById("qbankQuestionBadgeCategory").textContent = `🏷️ ${q.category}`;
+  const diffColors = { "Easy":"🟢 سهل", "Medium":"🟡 متوسط", "Hard":"🔴 صعب" };
+  document.getElementById("qbankQuestionBadgeDiff").textContent = diffColors[q.difficulty] || q.difficulty;
+
+  const c = document.getElementById("qbankOptionsContainer");
+  c.innerHTML = "";
+  q.options.forEach((opt,i) => {
+    const btn = document.createElement("button");
+    btn.className = `option-btn ${qbankUserAnswers[qbankCurrentQuestionIndex]===i ? "selected" : ""}`;
+    btn.textContent = opt;
+    btn.onclick = () => { qbankUserAnswers[qbankCurrentQuestionIndex] = i; renderQbankQuestion(); };
+    c.appendChild(btn);
+  });
+
+  updateQuizMeta("qbankTotalQuestionsLabel","qbankOpenedQuestionsLabel","qbankAnsweredQuestionsLabel","qbankProgressBar", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions);
+}
+
+function prevQbankQuestion() { if (qbankCurrentQuestionIndex>0){ qbankCurrentQuestionIndex--; renderQbankQuestion(); } }
+function nextQbankQuestion() { if (qbankCurrentQuestionIndex<activeQbankQuestions.length-1){ qbankCurrentQuestionIndex++; renderQbankQuestion(); } }
+async function submitQbankQuiz() { await saveExamResult("QBank", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions); }
+
+// ==================== SAVE RESULT ====================
+async function saveExamResult(examType, questions, answers, openedSet) {
+  if (!currentUser || isAdminSession) return;
+  const totalQuestions    = questions.length;
+  const answeredQuestions = answers.filter(v=>v!==null).length;
+  const openedCount       = openedSet.size;
+  let correctAnswers = 0;
+  questions.forEach((q,i) => { if (answers[i]===q.correct) correctAnswers++; });
+  const completionPercentage = totalQuestions ? Number(((answeredQuestions/totalQuestions)*100).toFixed(2)) : 0;
+  const scorePercentage      = totalQuestions ? Number(((correctAnswers/totalQuestions)*100).toFixed(2)) : 0;
+  const examDate = new Date().toISOString();
+  const payload  = [{
+    license_number:        currentUser.license_number,
+    exam_type:             examType,
+    total_questions:       totalQuestions,
+    opened_questions:      openedCount,
+    answered_questions:    answeredQuestions,
+    correct_answers:       correctAnswers,
+    completion_percentage: completionPercentage,
+    score_percentage:      scorePercentage,
+    exam_date:             examDate
+  }];
+  try {
+    const saved     = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results`, { method:"POST", body:JSON.stringify(payload) });
+    latestResultData    = saved?.[0] || payload[0];
+    latestSavedResultId = latestResultData.id || null;
+  } catch(e) {
+    latestResultData    = payload[0];
+    latestSavedResultId = null;
+  }
+  fillDashboard(latestResultData);
+  fillResultCard(latestResultData);
+  updateDashboardCharts(latestResultData);
+  
+  // إظهار أزرار النتيجة والمراجعة في mode-switcher
+  document.getElementById("resultBtn").classList.remove("hidden");
+  document.getElementById("reviewBtn").classList.remove("hidden");
+  showSection("result");
+}
+
+// ==================== REVIEW ANSWERS ====================
+function startReview() {
+  if (!latestResultData) return;
+  
+  if (latestResultData.exam_type === "QBank") {
+    reviewQuestions = activeQbankQuestions;
+    reviewUserAnswers = qbankUserAnswers;
+  } else {
+    reviewQuestions = quizQuestions;
+    reviewUserAnswers = userAnswers;
+  }
+  
+  if (!reviewUserAnswers || reviewUserAnswers.length === 0 || !reviewUserAnswers.some(ans => ans !== null)) {
+      alert("لا توجد إجابات للمراجعة.");
+      return;
+  }
+
+  reviewCurrentIndex = 0;
+  showSection("review");
+}
+
+function renderReviewQuestion() {
+  const q = reviewQuestions[reviewCurrentIndex];
+  const userAns = reviewUserAnswers[reviewCurrentIndex];
+  const correctAns = q.correct;
+
+  document.getElementById("reviewQuestionNumber").textContent = `السؤال ${reviewCurrentIndex + 1} من ${reviewQuestions.length}`;
+  document.getElementById("reviewQuestionText").textContent = q.question;
+
+  const c = document.getElementById("reviewOptionsContainer");
+  c.innerHTML = "";
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = opt;
+    btn.style.cursor = "default";
+    
+    if (i === correctAns) {
+      btn.classList.add("correct-answer");
+    } else if (i === userAns && userAns !== correctAns) {
+      btn.classList.add("wrong-answer");
+    }
+    c.appendChild(btn);
+  });
+}
+
+function prevReviewQuestion() { if (reviewCurrentIndex > 0) { reviewCurrentIndex--; renderReviewQuestion(); } }
+function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } }
+
+// ==================== CHARTS & OTHERS ====================
+function getChartColors() {
+  const s = getComputedStyle(document.body);
+  return {
+    text: s.getPropertyValue("--text").trim(), muted: s.getPropertyValue("--muted").trim(),
+    primary: s.getPropertyValue("--primary").trim(), primary2:s.getPropertyValue("--primary-2").trim(),
+    orange: s.getPropertyValue("--orange").trim(), orange2: s.getPropertyValue("--orange-2").trim(),
+    success: s.getPropertyValue("--success").trim()
+  };
+}
+function updateDashboardCharts(data=latestResultData) {
+  const d = data || { total_questions:0, opened_questions:0, answered_questions:0, correct_answers:0, completion_percentage:0, score_percentage:0 };
+  const colors = getChartColors();
+  const dCtx = document.getElementById("performanceDoughnut");
+  const bCtx = document.getElementById("performanceBar");
+  if (!dCtx||!bCtx) return;
+  const wrong      = Math.max((d.answered_questions||0)-(d.correct_answers||0), 0);
+  const unanswered = Math.max((d.total_questions||0)-(d.answered_questions||0), 0);
+  if (doughnutChart) doughnutChart.destroy();
+  doughnutChart = new Chart(dCtx, {
+    type:"doughnut",
+    data:{ labels:["صح","خطأ","غير مجاب"],
+           datasets:[{ data:[d.correct_answers||0,wrong,unanswered], backgroundColor:[colors.primary2,colors.orange,"#d9e5f4"], borderWidth:2, borderColor:"#fff" }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"68%", plugins:{ legend:{ position:"bottom", labels:{ color:colors.text, font:{family:"Cairo",weight:"700"} } } } }
+  });
+  if (barChart) barChart.destroy();
+  barChart = new Chart(bCtx, {
+    type:"bar",
+    data:{ labels:["الأسئلة","مفتوح","مجاب","صح","إنجاز%","Score%"],
+           datasets:[{ label:"الأداء", data:[d.total_questions||0,d.opened_questions||0,d.answered_questions||0, d.correct_answers||0,d.completion_percentage||0,d.score_percentage||0], backgroundColor:[colors.primary,colors.primary2,colors.orange,colors.success,colors.orange2,colors.primary2], borderRadius:12, borderSkipped:false }] },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{color:colors.text,font:{family:"Cairo",weight:"700"}}, grid:{display:false} }, y:{ beginAtZero:true, ticks:{color:colors.muted,font:{family:"Cairo",weight:"700"}}, grid:{color:"rgba(150,170,195,0.15)"} } }, plugins:{ legend:{display:false} } }
+  });
+}
+
+// HISTORY AND ADMIN LOGIC REMAINS THE SAME
+async function loadHistory() {
+  if (!currentUser || isAdminSession) return;
+  const container = document.getElementById("historyContainer");
+  container.innerHTML = `<p class="history-empty">⏳ جاري التحميل...</p>`;
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*&license_number=eq.${sanitizeValue(currentUser.license_number)}&order=created_at.desc&limit=200`);
+    allHistoryRaw = rows; allHistoryData = rows; filterHistory();
+  } catch(e) { container.innerHTML = `<p class="history-empty" style="color:var(--danger)">❌ خطأ: ${e.message}</p>`; }
+}
+function filterHistory() {
+  const byMonth = document.getElementById("historyMonth").value; const byDate  = document.getElementById("historyDate").value; const byType  = document.getElementById("historyType").value;
+  let filtered  = allHistoryRaw;
+  if (byDate) filtered = filtered.filter(r=>(r.exam_date||r.created_at||"").startsWith(byDate));
+  else if (byMonth) filtered = filtered.filter(r=>(r.exam_date||r.created_at||"").startsWith(byMonth));
+  if (byType) filtered = filtered.filter(r=>(r.exam_type||"")===byType);
+  allHistoryData = filtered; renderHistoryStats(filtered); renderHistoryLineChart(filtered); renderHistory(filtered);
+}
+function clearHistoryFilter() { document.getElementById("historyMonth").value = ""; document.getElementById("historyDate").value  = ""; document.getElementById("historyType").value  = ""; filterHistory(); }
+function renderHistoryStats(data) {
+  const el = document.getElementById("historyStats");
+  if (!data.length) { el.innerHTML=""; return; }
+  const avg = data.reduce((s,r)=>s+Number(r.score_percentage||0),0)/data.length;
+  const best = Math.max(...data.map(r=>Number(r.score_percentage||0)));
+  const total = data.length;
+  el.innerHTML = `
+    <div class="soft-card" style="padding:16px;text-align:center"><div style="color:var(--muted);font-size:.88rem;font-weight:700;margin-bottom:6px">عدد الاختبارات</div><div style="font-size:1.6rem;font-weight:900">${total}</div></div>
+    <div class="soft-card" style="padding:16px;text-align:center"><div style="color:var(--muted);font-size:.88rem;font-weight:700;margin-bottom:6px">متوسط النسبة</div><div style="font-size:1.6rem;font-weight:900;color:${getScoreColor(avg)}">${avg.toFixed(1)}%</div></div>
+    <div class="soft-card" style="padding:16px;text-align:center"><div style="color:var(--muted);font-size:.88rem;font-weight:700;margin-bottom:6px">أعلى نتيجة</div><div style="font-size:1.6rem;font-weight:900;color:${getScoreColor(best)}">${best.toFixed(1)}%</div></div>`;
+}
+function renderHistoryLineChart(data) {
+  const ctx = document.getElementById("historyLineChart");
+  if (!ctx) return;
+  const colors = getChartColors(); const reversed = [...data].reverse();
+  const labels = reversed.map(r => { const d=new Date(r.exam_date||r.created_at); return `${d.getDate()}/${d.getMonth()+1}`; });
+  const scores = reversed.map(r => Number(r.score_percentage||0));
+  if (historyLineChart) historyLineChart.destroy();
+  historyLineChart = new Chart(ctx, { type:"line", data:{ labels, datasets:[{ label:"نسبة الصح %", data:scores, borderColor:colors.orange, backgroundColor:"rgba(245,138,31,0.1)", fill:true, tension:0.4, pointBackgroundColor:scores.map(s=>getScoreColor(s)), pointRadius:5, pointHoverRadius:7, borderWidth:2.5 }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{color:colors.text,font:{family:"Cairo",weight:"700"}}, grid:{display:false} }, y:{ min:0, max:100, ticks:{color:colors.muted,font:{family:"Cairo",weight:"700"},callback:v=>`${v}%`}, grid:{color:"rgba(150,170,195,0.15)"} } }, plugins:{ legend:{ labels:{ color:colors.text, font:{family:"Cairo",weight:"700"} } } } } });
+}
+function renderHistory(data) {
+  const container = document.getElementById("historyContainer");
+  if (!data.length) { container.innerHTML=`<p class="history-empty">لا توجد نتائج للفترة المحددة.</p>`; return; }
+  container.innerHTML = data.map(r => {
+    const score = Number(r.score_percentage||0); const completion = Number(r.completion_percentage||0); const scoreColor = getScoreColor(score);
+    const typeBadge = r.exam_type==="QBank" ? `<span class="history-badge badge-qbank">🧪 QBank</span>` : `<span class="history-badge badge-quiz">📝 Quiz</span>`;
+    return `
+      <div class="soft-card history-card">
+        <div>${typeBadge}<div style="font-weight:900;font-size:.95rem;margin-top:4px">${formatDate(r.exam_date||r.created_at)}</div></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-size:.8rem;color:var(--muted);font-weight:700">الأسئلة</div><div style="font-weight:900">${r.total_questions??0}</div></div>
+          <div style="text-align:center"><div style="font-size:.8rem;color:var(--muted);font-weight:700">المجاب</div><div style="font-weight:900">${r.answered_questions??0}</div></div>
+          <div style="text-align:center"><div style="font-size:.8rem;color:var(--muted);font-weight:700">صح</div><div style="font-weight:900">${r.correct_answers??0}</div></div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:.8rem;color:var(--muted);font-weight:700;margin-bottom:4px">نسبة الصح</div>
+          <div style="font-size:1.55rem;font-weight:900;color:${scoreColor}">${score.toFixed(1)}%</div>
+          <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${completion}%;background:${scoreColor}"></div></div>
+        </div>
+      </div>`;
+  }).join("");
+}
+async function shareLatestResultToAdmin() {
+  if (!latestSavedResultId) { alert("لا يمكن إرسال النتيجة قبل حفظها."); return; }
+  try {
+    await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?id=eq.${latestSavedResultId}`, { method:"PATCH", body:JSON.stringify({ shared_with_admin:true, shared_at:new Date().toISOString() }) });
+    alert("✅ تم إرسال النتيجة للأدمن بنجاح.");
+  } catch(e) { alert("❌ فشل إرسال النتيجة للأدمن: " + e.message); }
+}
+async function downloadResultImage() {
+  const card = document.getElementById("resultCard"); const canvas = await html2canvas(card,{scale:2,backgroundColor:null,useCORS:true});
+  const link = document.createElement("a"); link.href = canvas.toDataURL("image/png"); link.download = `quiz-result-${currentUser?.license_number||"user"}.png`; link.click();
+}
+async function openEmailWithResult() {
+  await downloadResultImage(); const d = latestResultData || {}; const subject = encodeURIComponent(`Quiz Result - ${currentUser?.name||"User"}`);
+  const body = encodeURIComponent(`الاسم: ${currentUser?.name||"-"}\nالرقم الوظيفي: ${currentUser?.license_number||"-"}\nنسبة الصح: ${d.score_percentage??0}%`);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+async function loadAdminUsers() {
+  if (!isAdminSession) return;
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/users?select=name,license_number&order=name.asc`);
+    adminUsersData = rows; renderAdminUsers();
+  } catch(e) { document.getElementById("adminUsersGrid").innerHTML = `<div class="history-empty" style="color:var(--danger)">فشل التحميل: ${e.message}</div>`; }
+}
+function renderAdminUsers() {
+  const grid = document.getElementById("adminUsersGrid"); const q = (document.getElementById("adminUserSearch").value||"").trim().toLowerCase();
+  const filtered = adminUsersData.filter(u => (!q || (u.name||"").toLowerCase().includes(q) || (u.license_number||"").toLowerCase().includes(q)));
+  if (!filtered.length) { grid.innerHTML = `<div class="history-empty">لا يوجد مستخدمون.</div>`; return; }
+  grid.innerHTML = filtered.map(u => `<label class="admin-user-card"><div class="admin-user-head"><strong>${u.name}</strong><input type="checkbox" ${adminSelectedLicenses.has(u.license_number)?"checked":""} onchange="toggleAdminUserSelection('${u.license_number}',this.checked)"/></div><span>${u.license_number}</span></label>`).join("");
+}
+function toggleAdminUserSelection(lic, chk) { chk ? adminSelectedLicenses.add(lic) : adminSelectedLicenses.delete(lic); }
+function selectAllAdminUsers() {
+  const q = (document.getElementById("adminUserSearch").value||"").trim().toLowerCase();
+  adminUsersData.forEach(u => { if (!q || (u.name||"").toLowerCase().includes(q) || (u.license_number||"").toLowerCase().includes(q)) adminSelectedLicenses.add(u.license_number); });
+  renderAdminUsers();
+}
+function clearAdminSelection() { adminSelectedLicenses = new Set(); renderAdminUsers(); document.getElementById("adminLatestContainer").innerHTML=""; document.getElementById("adminHistoryContainer").innerHTML=""; }
+function renderAdminResultCard(r, includeShared=false) {
+  const scoreColor = getScoreColor(r.score_percentage||0);
+  return `<div class="admin-result-card"><div class="top"><div><strong style="font-size:1rem">${r.name||"-"}</strong><div style="color:var(--muted);font-size:.9rem">${r.license_number||"-"}</div></div><div style="text-align:left"><div style="font-weight:900">${r.exam_type||"-"}</div><div style="color:var(--muted);font-size:.85rem">${formatDate(r.exam_date||r.created_at)}</div></div></div><div class="meta"><div><div style="color:var(--muted);font-size:.8rem">إجمالي</div><strong>${r.total_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">مجاب</div><strong>${r.answered_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">صح</div><strong>${r.correct_answers??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">الإنجاز</div><strong>${Number(r.completion_percentage||0).toFixed(2)}%</strong></div><div><div style="color:var(--muted);font-size:.8rem">نسبة الصح</div><strong style="color:${scoreColor}">${Number(r.score_percentage||0).toFixed(2)}%</strong></div></div>${includeShared ? `<div style="margin-top:10px;color:var(--muted);font-size:.85rem">تم الإرسال للأدمن: ${r.shared_at?formatDate(r.shared_at):"نعم"}</div>` : ""}</div>`;
+}
+async function loadAdminLatestForSelected() {
+  if (!isAdminSession) return;
+  const container = document.getElementById("adminLatestContainer"); const sel = [...adminSelectedLicenses];
+  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/latest_results_per_user?select=*&license_number=${buildInFilter(sel)}`);
+    if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج.</div>`; return; }
+    container.innerHTML = rows.map(r=>renderAdminResultCard(r)).join("");
+  } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
+}
+async function loadAdminHistoryForSelected() {
+  if (!isAdminSession) return;
+  const container = document.getElementById("adminHistoryContainer"); const sel = [...adminSelectedLicenses];
+  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=400`);
+    if (!rows.length) { container.innerHTML=`<div class="history-empty">لا يوجد هيستوري.</div>`; return; }
+    container.innerHTML = `<table class="admin-history-table"><thead><tr><th>الاسم</th><th>الرقم الوظيفي</th><th>النوع</th><th>إجمالي</th><th>صح</th><th>النسبة</th><th>التاريخ</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r.users?.name||"-"}</td><td>${r.license_number||"-"}</td><td>${r.exam_type||"-"}</td><td>${r.total_questions??0}</td><td>${r.correct_answers??0}</td><td style="font-weight:900;color:${getScoreColor(r.score_percentage||0)}">${Number(r.score_percentage||0).toFixed(2)}%</td><td>${formatDate(r.exam_date||r.created_at)}</td></tr>`).join("")}</tbody></table>`;
+  } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
+}
+async function loadAdminSharedResults() {
+  if (!isAdminSession) return;
+  const container = document.getElementById("adminSharedContainer");
+  container.innerHTML = `<div class="history-empty">⏳ جاري تحميل النتائج...</div>`;
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/admin_shared_results?select=*&order=shared_at.desc&limit=100`);
+    if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج مرسلة.</div>`; return; }
+    container.innerHTML = rows.map(r=>renderAdminResultCard(r, true)).join("");
+  } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
+}
 </script>
 </body>
 </html>
