@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiry Check System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4F46E5; --primary-light: #EEF2FF;
+            --bg: #F8FAFC; --surface: #FFFFFF;
+            --text-main: #1E293B; --text-light: #64748B;
+            --success: #10B981; --danger: #EF4444; --warning: #F59E0B;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; font-size: 14px; padding-bottom: 50px; }
+
+        /* --- Components --- */
+        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(0.95); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-ghost { background: white; color: var(--text-main); border: 1px solid #E2E8F0; }
+        .btn-reset { background: white; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 50%; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+
+        /* --- MONTH NAVIGATION BAR --- */
+        .month-nav-container {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 10px;
+            -webkit-overflow-scrolling: touch; 
+        }
+        .month-nav-container::-webkit-scrollbar { height: 6px; }
+        .month-nav-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+
+        .month-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            padding: 8px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+            text-align: center;
+            background: #F1F5F9;
+        }
+        .month-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        .month-chip .m-date { font-weight: 700; font-size: 13px; color: var(--text-main); }
+        .month-chip .m-count { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+
+        /* Colors for Chips based on status */
+        .month-chip.st-expired { background: #FEF2F2; border: 1px solid #FECACA; }
+        .month-chip.st-expired .m-date { color: var(--danger); }
+        
+        .month-chip.st-warning { background: #FFFBEB; border: 1px solid #FDE68A; }
+        .month-chip.st-warning .m-date { color: #B45309; }
+        
+        .month-chip.st-safe { background: #F0FDF4; border: 1px solid #BBF7D0; }
+        .month-chip.st-safe .m-date { color: var(--success); }
+
+        /* --- Login Screen --- */
+        .login-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); z-index: 5000; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .login-logo { width: 80px; height: 80px; background: var(--primary-light); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: var(--primary); }
+        .login-input { width: 100%; padding: 14px; border: 2px solid #E2E8F0; border-radius: 12px; margin: 20px 0; text-align: center; font-size: 16px; transition: 0.3s; }
+        .login-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px var(--primary-light); }
+
+        /* --- App Layout --- */
+        .app-container { display: none; max-width: 1440px; margin: 0 auto; padding: 20px; }
+        
+        header { background: var(--surface); padding: 15px 25px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--surface); padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+        .stat-card:hover, .stat-card.active { border-color: var(--primary); background: var(--primary-light); }
+        .stat-value { font-size: 2.2rem; font-weight: 800; display: block; line-height: 1; margin-bottom: 5px; }
+        .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Filters */
+        .controls-area { background: var(--surface); padding: 20px; border-radius: 16px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .filters-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .filter-box { position: relative; }
+        .filter-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-light); margin-bottom: 5px; text-transform: uppercase; }
+        select, input.search-main { width: 100%; padding: 10px 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: white; font-size: 13px; color: var(--text-main); outline: none; }
+        select:focus, input:focus { border-color: var(--primary); }
+
+        .action-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 15px; flex-wrap: wrap; gap: 10px; }
+        .bulk-actions { display: flex; gap: 10px; }
+
+        .danger-zone { margin-top: 20px; padding: 15px; border: 2px dashed #FECACA; background: #FEF2F2; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .danger-zone-title { color: var(--danger); font-weight: bold; font-size: 12px; display: flex; align-items: center; gap:8px;}
+
+        /* --- GROUPING STYLES --- */
+        .date-section { margin-bottom: 30px; animation: fadeIn 0.5s ease; scroll-margin-top: 20px; }
+        
+        .date-header {
+            width: 100%;
+            background: linear-gradient(to right, #ffffff, #F8FAFC);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-main);
+        }
+        
+        .date-header.expired-header { border-left-color: var(--danger); color: var(--danger); background: #FEF2F2; }
+        .date-header.warning-header { border-left-color: var(--warning); color: #B45309; background: #FFFBEB; }
+        .date-header.safe-header { border-left-color: var(--success); color: var(--success); background: #F0FDF4; }
+
+        .date-info { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 700; }
+        .date-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        /* Card Styles */
+        .card { background: var(--surface); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; border: 1px solid #F1F5F9; position: relative; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .card-header { height: 180px; background: #F8FAFC; position: relative; display: flex; justify-content: center; align-items: center; }
+        .card-img { max-width: 90%; max-height: 90%; object-fit: contain; mix-blend-mode: multiply; opacity: 0; transition: 0.5s; }
+        .card-img.loaded { opacity: 1; }
+        
+        .status-badge { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 20px; color: white; font-size: 10px; font-weight: 700; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .bg-exp { background: var(--danger); } 
+        .bg-warn { background: var(--warning); color: #000; } 
+        .bg-safe { background: var(--success); }
+
+        .card-tools { position: absolute; top: 10px; left: 10px; display: flex; gap: 5px; z-index: 2; }
+        .card-body { padding: 15px; }
+        .brand { color: var(--primary); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        
+        /* Names Styling */
+        .name-en { font-weight: 700; font-size: 14px; margin-bottom: 2px; line-height: 1.3; color: var(--text-main); }
+        .name-ar { font-weight: 400; font-size: 12px; margin-bottom: 10px; line-height: 1.4; color: var(--text-light); direction: rtl; }
+
+        /* Barcode Styling */
+        .barcode-container { text-align: center; margin: 10px 0; border-top: 1px dashed #E2E8F0; padding-top: 10px; }
+        .barcode-container svg { max-width: 100%; height: 40px; }
+
+        .meta-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); background: #F8FAFC; padding: 8px; border-radius: 6px; margin-bottom: 12px; }
+        
+        .status-actions { display: flex; gap: 8px; }
+        .st-btn { flex: 1; padding: 8px; border: 1px solid #E2E8F0; background: white; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .st-btn.found:hover, .st-btn.found.active { background: var(--success); color: white; border-color: var(--success); }
+        .st-btn.missing:hover, .st-btn.missing.active { background: var(--danger); color: white; border-color: var(--danger); }
+
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Modals & Toasts */
+        #toast-box { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-left: 5px solid; display: flex; align-items: center; gap: 15px; min-width: 300px; transform: translateX(120%); transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+        .toast.show { transform: translateX(0); }
+        
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 6000; display: none; align-items: center; justify-content: center; }
+        .modal-box { background: white; padding: 30px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; transform: scale(0.9); opacity: 0; transition: 0.3s; }
+        .modal-overlay.open .modal-box { transform: scale(1); opacity: 1; }
+        .modal-icon { font-size: 48px; margin-bottom: 15px; }
+
+        @media (max-width: 768px) {
+            .filters-row { grid-template-columns: 1fr 1fr; }
+            .action-row { flex-direction: column; align-items: stretch; gap: 15px; }
+            .bulk-actions { width: 100%; justify-content: space-between; }
+            .danger-zone { flex-direction: column; gap: 10px; text-align: center; }
+        }
+        /* تنسيق نافذة المراجعة (Modal Style) */
+.upload-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.upload-box {
+    background: #fff; width: 500px; max-width: 90%;
+    border-radius: 12px; padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center; font-family: sans-serif;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+
+.upload-icon { font-size: 50px; margin-bottom: 15px; }
+.upload-title { font-size: 22px; font-weight: bold; margin-bottom: 10px; color: #333; }
+.upload-summary { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left; }
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+.summary-val { font-weight: bold; color: #2563eb; }
+.summary-val.danger { color: #dc3545; }
+.summary-val.success { color: #198754; }
+
+.upload-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-confirm { background: #198754; color: white; border: none; padding: 12px; flex: 1; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
+.btn-confirm:hover { background: #146c43; }
+.btn-cancel { background: #dc3545; color: white; border: none; padding: 12px; flex: 1; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.2s; }
+.btn-cancel:hover { background: #b02a37; }
+
+/* تحذير لو لقى شهر 1 */
+.alert-jan { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; border: 1px solid #ffeeba; }
+/* دعم الاتجاهات */
+body.rtl { direction: rtl; text-align: right; }
+body.rtl .stat-card { text-align: center; }
+body.rtl .date-header { border-left: none; border-right: 6px solid var(--primary); }
+body.rtl .card-tools { left: auto; right: 10px; }
+body.rtl .status-badge { right: auto; left: 10px; }
+header {
+    background: var(--surface);
+    padding: 15px 25px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between; /* دي اللي بتطرد العناصر للأطراف */
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}/* تنسيق قائمة المستخدمين */
+.user-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+.user-chip {
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.2s;
+    font-weight: 600;
+}
+.user-chip.selected {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.explore-header {
+    background: var(--primary-light);
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 2px dashed var(--primary);
+}
+    </style>
+    
+</head>
+<body>
+<div id="toast-box"></div>
+
+<div class="login-overlay" id="loginScreen">
+    <div class="login-card">
+        <div class="login-logo">🔐</div>
+        <h1 style="margin-bottom:10px; color:var(--text-main)">Expiry Check</h1>
+        <p style="color:var(--text-light); margin-bottom:20px">Inventory Management System</p>
+        <input type="number" id="userId" class="login-input" placeholder="Enter User ID">
+        <button class="btn btn-primary" style="width:100%; padding:14px" onclick="app.login()">Access System</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <div class="modal-icon">🗑️</div>
+        <h2>Confirm Action</h2>
+        <p id="deleteMsg" style="color:var(--text-light); margin:10px 0 25px">Are you sure?</p>
+        <div style="display:flex; gap:10px; justify-content:center">
+            <button class="btn btn-ghost" onclick="app.closeModal('deleteModal')">Cancel</button>
+            <button class="btn btn-danger" onclick="app.confirmDelete()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="dateModal">
+    <div class="modal-box">
+        <div class="modal-icon">📅</div>
+        <h2>Update Expiry</h2>
+        <input type="date" id="newDateInput" class="login-input">
+        <div style="display:flex; gap:10px; justify-content:center">
+            <button class="btn btn-ghost" onclick="app.closeModal('dateModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="app.confirmDate()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-container" id="mainApp">
+    <header>
+        <div class="logo-area">
+            <div style="width:40px; height:40px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold">EC</div>
+            <div>
+                <h2 style="font-size:18px">Expiry Check</h2>
+                <div style="font-size:11px; color:var(--text-light)" id="syncStatus">Online • Synced</div>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px">
+            <div id="userBadge" style="font-weight:600; color:var(--text-main)"></div>
+            <button class="btn btn-danger" style="padding:8px 12px" onclick="app.logout()">Logout</button>
+            <button class="btn btn-ghost" onclick="app.toggleLanguage()" id="langBtn">English 🌐</button>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card active" onclick="app.setStatFilter('all', this)">
+            <span class="stat-value" style="color:var(--primary)" id="stTotal">0</span>
+            <span class="stat-label">Total Items</span>
+        </div>
+
+        <div class="stat-card" onclick="app.setStatFilter('found', this)">
+            <span class="stat-value" style="color:var(--success)" id="stFound">0</span>
+            <span class="stat-label">Found</span>
+        </div>
+
+        <div class="stat-card" onclick="app.setStatFilter('not-found', this)">
+            <span class="stat-value" style="color:var(--danger)" id="stMissing">0</span>
+            <span class="stat-label">Missing</span>
+        </div>
+
+        <div class="stat-card" onclick="app.setStatFilter('pending', this)">
+            <span class="stat-value" style="color:var(--primary)" id="stPending">0</span>
+            <span class="stat-label">Pending</span>
+        </div>
+
+        <div class="stat-card" onclick="app.setStatFilter('expired', this)">
+            <span class="stat-value" style="color:var(--danger)" id="stExpired">0</span>
+            <span class="stat-label">Expired</span>
+        </div>
+
+        <div class="stat-card" onclick="app.setStatFilter('explore', this)" style="border: 2px dashed #4F46E5; background: #EEF2FF;">
+            <span class="stat-value" style="color:var(--primary)" id="stExplore">0</span>
+            <span class="stat-label">Explore Global</span>
+        </div>
+    </div>
+
+    <div class="controls-area">
+        <div class="filters-row">
+            <div class="filter-box">
+                <span class="filter-label">Search</span>
+                <input type="text" class="search-main" id="search" placeholder="Code or Name..." oninput="app.render()">
+            </div>
+            <div class="filter-box">
+                <span class="filter-label">Category A</span>
+                <select id="catA" onchange="app.handleCatAChange()"><option value="all">All Categories</option></select>
+            </div>
+            <div class="filter-box">
+                <span class="filter-label">Category B</span>
+                <select id="catB" onchange="app.render()"><option value="all">All Sub-Cats</option></select>
+            </div>
+            <div class="filter-box">
+                <span class="filter-label">Brand</span>
+                <select id="brand" onchange="app.render()"><option value="all">All Brands</option></select>
+            </div>
+            <div class="filter-box">
+                <span class="filter-label">Expiry Month</span>
+                <select id="month" onchange="app.render()"><option value="all">All Months</option></select>
+            </div>
+            <div class="filter-box">
+                <span class="filter-label">Status</span>
+                <select id="status" onchange="app.render()">
+                    <option value="all">All Status</option>
+                    <option value="found">Found</option>
+                    <option value="not-found">Missing</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <div class="bulk-actions">
+                <button class="btn btn-reset" onclick="app.resetFilters()">
+                    🔄 Reset Filters
+                </button>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="file" id="file" hidden accept=".xlsx,.csv" onchange="app.handleUpload(event)">
+                <button class="btn btn-primary" onclick="document.getElementById('file').click()">
+                    📤 Upload Excel
+                </button>
+                <button class="btn btn-ghost" onclick="app.export()">📥 Export</button>
+            </div>
+        </div>
+
+        <div class="danger-zone">
+            <div class="danger-zone-title">⚠️ DANGER ZONE</div>
+            <button class="btn btn-ghost" style="color:var(--danger); border-color:var(--danger);" onclick="app.promptClearAll()">
+                💣 Clear All Database
+            </button>
+        </div>
+    </div>
+
+    <div id="monthNav" class="month-nav-container" style="display:none"></div>
+
+    <div id="inventoryContainer"></div>
+</div>
+
+<div id="uploadModal" class="upload-modal" style="display:none;">
+    <div class="upload-box">
+        <div class="upload-icon">📊</div>
+        <div class="upload-title">Data Review</div>
+        <p style="color:#666; font-size:14px;">We analyzed your file. Please confirm the dates:</p>
+        
+        <div class="upload-summary">
+            <div class="summary-row">
+                <span>Total Items:</span>
+                <span class="summary-val" id="uTotal">0</span>
+            </div>
+            <div class="summary-row">
+                <span>Earliest Date (Start):</span>
+                <span class="summary-val success" id="uMinDate">-</span>
+            </div>
+            <div class="summary-row">
+                <span>Latest Date (End):</span>
+                <span class="summary-val" id="uMaxDate">-</span>
+            </div>
+            <div id="janAlert" class="alert-jan" style="display:none;">
+                ⚠️ Warning: Month 1 (January) detected!
+            </div>
+        </div>
+
+        <div style="font-size:13px; color:#888; margin-bottom:15px; border-top:1px solid #eee; padding-top:10px;">
+            Sample: <span id="uSampleCode">...</span> ➝ <b style="color:#333" id="uSampleDate">...</b>
+        </div>
+
+        <div class="upload-actions">
+            <button class="btn-cancel" onclick="app.cancelUpload()">Cancel ❌</button>
+            <button class="btn-confirm" onclick="app.confirmUpload()">Confirm & Save ✅</button>
+        </div>
+    </div>
+</div>
+<script>
+    // 🛑 REPLACE WITH YOUR WORKER URL
+    const WORKER_URL = "https://tracker-new.meralmohamed121022.workers.dev";
+    let LOCAL_DB = [];
+    let DB_MAP = new Map();
+
+    const app = {
+        data: [], 
+        exploreData: [], 
+        allRegisteredUsers: [], 
+        selectedUsers: new Set(), 
+        userId: null,
+        statFilter: 'all', 
+        exploreMode: false, 
+        language: 'ar',
+        displayLimit: 50, 
+        currentPage: 1,
+        fullFilteredList: [], 
+        pendingUploadRows: [],
+
+        i18n: {
+            ar: {
+                total: "إجمالي الأصناف", found: "تم العثور", missing: "مفقودات", pending: "قيد الانتظار",
+                expired: "منتهي (+1)", nearExp: "قريب الانتهاء", search: "بحث بالاسم أو الكود...",
+                catA: "القسم الرئيسي", catB: "القسم الفرعي", brand: "البراند", month: "شهر الانتهاء",
+                status: "الحالة", reset: "إعادة ضبط", upload: "رفع ملف", export: "تصدير",
+                sync: "متصل • مزامنة", logout: "خروج", deleteGrp: "حذف المجموعة", noData: "لا توجد بيانات مطابقة",
+                langToggleBtn: "English 🌐", explore: "استكشاف المستخدمين", added: "تم النسخ لحسابك",
+                selectUsers: "اختر الصيادلة لعرض بياناتهم:", empty: "(فارغ)"
+            },
+            en: {
+                total: "Total Items", found: "Found", missing: "Missing", pending: "Pending",
+                expired: "Expired (+1M)", nearExp: "Near Expiry", search: "Search name or code...",
+                catA: "Category A", catB: "Category B", brand: "Brand", month: "Expiry Month",
+                status: "Status", reset: "Reset Filters", upload: "Upload Excel", export: "Export",
+                sync: "Online • Synced", logout: "Logout", deleteGrp: "Delete Group", noData: "No matching items found",
+                langToggleBtn: "العربية 🌐", explore: "Explore Users", added: "Copied to your account",
+                selectUsers: "Select pharmacists to view their data:", empty: "(Empty)"
+            }
+        },
+
+        loadExternalDB: async () => {
+            try {
+                const [res1, res2] = await Promise.all([fetch('products1.json'), fetch('products2.json')]);
+                const data1 = await res1.json(); const data2 = await res2.json();
+                LOCAL_DB = [...data1, ...data2];
+                DB_MAP = new Map(LOCAL_DB.map(i => [String(i.Code), i]));
+            } catch (e) { console.error("JSON Load Error", e); }
+        },
+
+        loadAllUsersData: async () => {
+            try {
+                const res = await fetch(`${WORKER_URL}/api/inventory/loadAll`); 
+                const json = await res.json();
+                app.exploreData = json.allProducts || [];
+                app.allRegisteredUsers = json.allUsers || [];
+                if(app.exploreMode) app.render(true);
+            } catch (e) { console.error("Explore Data Error", e); }
+        },
+
+        init: async () => {
+            await app.loadExternalDB();
+            const uid = localStorage.getItem('inv_uid');
+            document.body.classList.toggle('rtl', app.language === 'ar');
+
+            window.addEventListener('scroll', () => {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                    app.loadNextPage();
+                }
+            });
+
+            if (uid) {
+                document.getElementById('userId').value = uid;
+                app.login();
+            }
+            app.observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { app.loadImage(e.target); app.observer.unobserve(e.target); } });
+            }, { rootMargin: "200px" });
+        },
+
+        login: async () => {
+            const id = String(document.getElementById('userId').value || '').trim();
+            if (!id) return app.notify("Enter user ID", "error");
+            try {
+                const res = await fetch(`${WORKER_URL}/api/login`, { 
+                    method: 'POST', 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: id }) 
+                });
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.error || "Login failed");
+                app.userId = id;
+                localStorage.setItem('inv_uid', id);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userBadge').innerText = `👤 User: ${json.displayName || id}`;
+                app.load();
+            } catch (e) { app.notify(e.message || "Login failed", "error"); }
+        },
+
+        load: async () => {
+            try {
+                const res = await fetch(`${WORKER_URL}/api/inventory/load?userId=${app.userId}`);
+                const json = await res.json();
+                app.data = json.products.map(p => {
+                    const local = DB_MAP.get(String(p.code));
+                    return { ...p, 
+                        nameEn: local ? local['Item Description'] : p.name, 
+                        nameAr: local ? local['أسم المنتج'] : '',
+                        brand: local ? local.Brand : (p.brand || "OTHER")
+                    };
+                });
+                await app.loadAllUsersData(); 
+                app.initFilters();
+                app.render(true);
+            } catch (e) { console.error(e); }
+        },
+
+        logout: () => {
+            localStorage.clear();
+            location.reload(); 
+        },
+
+        setStatFilter: (type, el) => {
+            document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            if (type === 'explore') {
+                app.exploreMode = true;
+                app.statFilter = 'all'; 
+            } else {
+                app.exploreMode = false;
+                app.statFilter = type;
+            }
+            app.render(true);
+        },
+
+        toggleUserSelection: (userId) => {
+            if (app.selectedUsers.has(userId)) app.selectedUsers.delete(userId);
+            else app.selectedUsers.add(userId);
+            app.render(false);
+        },
+
+        render: (resetPagination = true) => {
+            if (resetPagination) app.currentPage = 1;
+            const t = app.i18n[app.language];
+            const search = document.getElementById('search').value.toLowerCase().trim();
+
+            // 🔥 التعديل الأهم: فلترة الأصناف في وضع الاستكشاف 🔥
+            let baseData = app.exploreMode ? 
+                app.exploreData
+                .filter(it => app.selectedUsers.has(it.userId))
+                // إخفاء الأصناف اللي متسجلة عندك مسبقاً بنفس التاريخ
+                .filter(it => {
+                    const alreadyHaveIt = app.data.some(myItem => 
+                        String(myItem.code) === String(it.code) && myItem.expiryDate === it.expiryDate
+                    );
+                    return !alreadyHaveIt; 
+                })
+                .map(it => {
+                    const local = DB_MAP.get(String(it.code));
+                    return { ...it, nameEn: local ? local['Item Description'] : 'Unknown', nameAr: local ? local['أسم المنتج'] : '', brand: local ? local.Brand : 'OTHER', isExplore: true, ownerId: it.userId };
+                }) : 
+                app.data;
+
+            let s = { total: 0, found: 0, missing: 0, pending: 0, exp: 0 };
+            baseData.forEach(i => {
+                const alert = app.getAlert(i.expiryDate);
+                s.total++;
+                if (i.status === 'found') s.found++;
+                else if (i.status === 'not-found') s.missing++;
+                else { s.pending++; if (alert === 'expired') s.exp++; }
+            });
+
+            document.getElementById('stTotal').innerText = s.total;
+            document.getElementById('stFound').innerText = s.found;
+            document.getElementById('stMissing').innerText = s.missing;
+            document.getElementById('stPending').innerText = s.pending;
+            document.getElementById('stExpired').innerText = s.exp;
+
+            const container = document.getElementById('inventoryContainer');
+
+            if (app.exploreMode) {
+                const usersHtml = app.allRegisteredUsers.map(id => {
+                    const isSelected = app.selectedUsers.has(id);
+                    const hasData = app.exploreData.some(it => it.userId === id);
+                    return `
+                        <div class="user-chip ${isSelected ? 'selected' : ''}" onclick="app.toggleUserSelection('${id}')">
+                            👤 Pharmacist: ${id} ${!hasData ? t.empty : ''}
+                        </div>`;
+                }).join('');
+
+                const usersHeader = document.getElementById('exploreHeaderSection');
+                if(!usersHeader) {
+                    const div = document.createElement('div');
+                    div.id = 'exploreHeaderSection';
+                    div.className = 'explore-header';
+                    container.parentNode.insertBefore(div, container);
+                }
+                document.getElementById('exploreHeaderSection').innerHTML = `
+                    <h3>${t.selectUsers}</h3>
+                    <div class="user-selector-grid">${usersHtml}</div>
+                `;
+                document.getElementById('exploreHeaderSection').style.display = 'block';
+
+            } else {
+                const header = document.getElementById('exploreHeaderSection');
+                if(header) header.style.display = 'none';
+            }
+
+            app.fullFilteredList = baseData.filter(item => {
+                const alert = app.getAlert(item.expiryDate);
+                if (app.statFilter === 'found' && item.status !== 'found') return false;
+                if (app.statFilter === 'not-found' && item.status !== 'not-found') return false;
+                if (app.statFilter === 'pending' && item.status !== 'pending') return false;
+                if (app.statFilter === 'expired' && (alert !== 'expired' || item.status !== 'pending')) return false;
+
+                const monthFilter = document.getElementById('month')?.value;
+                if (monthFilter && monthFilter !== 'all' && !item.expiryDate.startsWith(monthFilter)) return false;
+
+                return true;
+            });
+
+            if (search) {
+                app.fullFilteredList = app.fullFilteredList.filter(item => 
+                    String(item.nameEn).toLowerCase().includes(search) || String(item.code).includes(search)
+                );
+            }
+
+            const navContainer = document.getElementById('monthNav');
+            navContainer.innerHTML = '';
+            const uniqueMonths = [...new Set(app.fullFilteredList.map(it => it.expiryDate.slice(0, 7)))].sort();
+
+            if (uniqueMonths.length > 0) {
+                navContainer.style.display = 'flex';
+                uniqueMonths.forEach(mKey => {
+                    const monthItems = app.fullFilteredList.filter(it => it.expiryDate.startsWith(mKey));
+                    const alert = app.getAlert(mKey + "-01");
+                    const chip = document.createElement('div');
+                    chip.className = `month-chip ${alert === 'expired' ? 'st-expired' : alert === 'warning' ? 'st-warning' : 'st-safe'}`;
+                    chip.innerHTML = `<div class="m-date">${mKey}</div><div class="m-count">${monthItems.length}</div>`;
+                    chip.onclick = () => document.getElementById(`sec-${mKey}`)?.scrollIntoView({ behavior: 'smooth' });
+                    navContainer.appendChild(chip);
+                });
+            } else { navContainer.style.display = 'none'; }
+
+            app.renderVisiblePart();
+        },
+
+        renderVisiblePart: () => {
+            const t = app.i18n[app.language];
+            const resultContainer = document.getElementById('inventoryContainer');
+            if (!resultContainer) return;
+
+            const limit = app.currentPage * app.displayLimit;
+            const visibleList = app.fullFilteredList.slice(0, limit);
+
+            if (visibleList.length === 0) {
+                if (app.exploreMode && app.selectedUsers.size === 0) {
+                    resultContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ccc;">رجاءً اختر صيدلي واحد على الأقل</div>`;
+                } else {
+                    resultContainer.innerHTML = `<div style="text-align:center; padding:40px; color:#ccc;">${t.noData}</div>`;
+                }
+                return;
+            }
+
+            const grouped = {};
+            visibleList.forEach(it => {
+                const mKey = it.expiryDate.slice(0, 7);
+                if (!grouped[mKey]) grouped[mKey] = [];
+                grouped[mKey].push(it);
+            });
+
+            let finalHtml = "";
+            Object.keys(grouped).sort().forEach(mKey => {
+                const alert = app.getAlert(mKey + "-01");
+                let headerClass = alert === 'expired' ? 'expired-header' : alert === 'warning' ? 'warning-header' : 'safe-header';
+                finalHtml += `<div class="date-section" id="sec-${mKey}"><div class="date-header ${headerClass}">📅 ${mKey}</div><div class="date-grid">`;
+                grouped[mKey].forEach(item => {
+                    finalHtml += `
+                    <div class="card" style="${item.isExplore ? 'border: 2px solid var(--primary); background: #fdfdfd' : ''}">
+                        <div class="card-header">
+                            ${item.isExplore ? `<span class="status-badge" style="background:var(--primary)">BY: ${item.ownerId}</span>` : ''}
+                            <img data-code="${item.code}" class="card-img">
+                        </div>
+                        <div class="card-body">
+                            <div class="brand">${item.brand}</div>
+                            <div class="name-en"><b>${item.nameEn}</b></div>
+                            <div class="name-ar">${item.nameAr}</div>
+                            <div class="status-actions">
+                                <button class="st-btn found ${item.status === 'found' ? 'active' : ''}" onclick="app.update('${item.code}','${item.expiryDate}','found', ${item.isExplore || false}, '${item.ownerId || ''}')">${t.found}</button>
+                                <button class="st-btn missing ${item.status === 'not-found' ? 'active' : ''}" onclick="app.update('${item.code}','${item.expiryDate}','not-found', ${item.isExplore || false}, '${item.ownerId || ''}')">${t.missing}</button>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                finalHtml += `</div></div>`;
+            });
+            resultContainer.innerHTML = finalHtml;
+            document.querySelectorAll('.card-img').forEach(img => app.observer.observe(img));
+        },
+
+        update: async (code, date, actionStatus, isExplore = false, ownerId = null) => {
+            try {
+                if (isExplore) {
+                    const local = DB_MAP.get(String(code)) || {};
+                    // 🔥 منع الإضافة إذا كان مسجل مسبقاً 🔥
+                    const existing = app.data.find(i => String(i.code) === String(code) && i.expiryDate === date);
+
+                    if (existing) {
+                        app.notify("هذا الصنف مسجل لديك بالفعل بنفس التاريخ!", "warning");
+                        return; // وقف العملية عشان مايتكررش
+                    }
+
+                    app.data.push({
+                        code: String(code),
+                        expiryDate: date,
+                        status: actionStatus,
+                        name: local['Item Description'] || '',
+                        nameEn: local['Item Description'] || '',
+                        nameAr: local['أسم المنتج'] || '',
+                        brand: local.Brand || 'OTHER'
+                    });
+
+                    await fetch(`${WORKER_URL}/api/inventory/upsert`, {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            userId: app.userId,
+                            code,
+                            expiryDate: date,
+                            status: actionStatus,
+                            name: local['Item Description'] || '',
+                            brand: local.Brand || 'OTHER',
+                            sourceUserId: ownerId
+                        })
+                    });
+
+                    app.notify("تمت الإضافة لحسابك بنجاح");
+                } else {
+                    const item = app.data.find(i => String(i.code) === String(code) && i.expiryDate === date);
+                    if (!item) return;
+
+                    item.status = (item.status === actionStatus) ? 'pending' : actionStatus;
+
+                    await fetch(`${WORKER_URL}/api/inventory/update`, {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            userId: app.userId,
+                            code,
+                            oldDate: date,
+                            status: item.status
+                        })
+                    });
+                }
+                app.render(false);
+            } catch (e) {
+                console.error(e);
+                app.notify("فشل تحديث الحالة", "error");
+            }
+        },
+
+        loadNextPage: () => {
+            if (app.currentPage * app.displayLimit < app.fullFilteredList.length) {
+                app.currentPage++;
+                app.renderVisiblePart();
+            }
+        },
+
+        getAlert: (dateStr) => {
+            const today = new Date();
+            const exp = new Date(dateStr);
+            const diffMonths = ((exp.getFullYear() * 12) + exp.getMonth()) - ((today.getFullYear() * 12) + today.getMonth());
+            if (diffMonths <= 1) return 'expired';
+            if (diffMonths <= 4) return 'warning';
+            return 'safe';
+        },
+
+        loadImage: async (img) => {
+            const code = img.dataset.code;
+            const local = DB_MAP.get(String(code));
+            img.src = (local && local.itemurl) ? local.itemurl : `https://placehold.co/400x300/f1f5f9/cbd5e1?text=${code}`;
+            img.onload = () => img.classList.add('loaded');
+        },
+
+        notify: (msg, type = 'success') => {
+            const box = document.getElementById('toast-box');
+            const t = document.createElement('div');
+            t.className = `toast show`;
+            t.style.borderLeft = `5px solid ${type === 'success' ? 'var(--success)' : 'var(--danger)'}`;
+            t.innerHTML = `<div>${msg}</div>`;
+            box.appendChild(t);
+            setTimeout(() => { t.remove(); }, 3000);
+        },
+
+        initFilters: () => {
+            const t = app.i18n[app.language];
+            const brands = [...new Set(app.data.map(i => i.brand))].sort();
+            const catAs = [...new Set(app.data.map(i => i.catA))].sort();
+            app.fillSelect('brand', brands, t.brand);
+            app.fillSelect('catA', catAs, t.catA);
+            app.handleCatAChange();
+        },
+
+        fillSelect: (id, arr, label) => {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = `<option value="all">All ${label}</option>` + arr.map(v => `<option value="${v}">${v}</option>`).join('');
+        },
+
+        handleCatAChange: () => {
+            const selectedA = document.getElementById('catA').value;
+            let filtered = app.data;
+            if (selectedA !== 'all') filtered = app.data.filter(i => i.catA === selectedA);
+            const catBs = [...new Set(filtered.map(i => i.catB))].sort();
+            app.fillSelect('catB', catBs, 'Sub-Cats');
+            app.render(true);
+        },
+
+        toggleLanguage: () => {
+            app.language = app.language === 'ar' ? 'en' : 'ar';
+            document.body.classList.toggle('rtl', app.language === 'ar');
+            document.getElementById('langBtn').innerText = app.i18n[app.language].langToggleBtn;
+            app.render(true);
+        },
+
+        // Excel Upload Functions
+        excelDateToISO(value) {
+            if (value == null || value === '') return null;
+            if (typeof value === 'number') {
+                const parsed = XLSX.SSF.parse_date_code(value);
+                if (!parsed) return null;
+                const mm = String(parsed.m).padStart(2, '0');
+                const dd = String(parsed.d).padStart(2, '0');
+                return `${parsed.y}-${mm}-${dd}`;
+            }
+            if (value instanceof Date && !isNaN(value)) {
+                return value.toISOString().slice(0, 10);
+            }
+            const str = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+            const d = new Date(str);
+            if (!isNaN(d)) return d.toISOString().slice(0, 10);
+            return null;
+        },
+
+        findColumn(row, names) {
+            const keys = Object.keys(row || {});
+            const lowered = keys.map(k => ({ raw: k, key: String(k).trim().toLowerCase() }));
+            const found = lowered.find(k => names.includes(k.key));
+            return found ? row[found.raw] : undefined;
+        },
+
+        handleUpload: async (event) => {
+            try {
+                const file = event.target.files?.[0];
+                if (!file) return;
+
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                if (!rows.length) {
+                    app.notify("الملف فارغ", "error");
+                    return;
+                }
+
+                const parsed = rows.map(row => {
+                    const code = app.findColumn(row, ['code', 'item code', 'barcode', 'كود', 'الكود', 'الصنف']);
+                    const expiryRaw = app.findColumn(row, ['expiry', 'expiry date', 'exp', 'date', 'تاريخ الانتهاء', 'انتهاء', 'تاريخ']);
+                    const name = app.findColumn(row, ['name', 'item name', 'description', 'اسم المنتج', 'الاسم']) || '';
+                    const brand = app.findColumn(row, ['brand', 'الشركة', 'البراند']) || '';
+
+                    return {
+                        code: String(code || '').trim(),
+                        name: String(name || '').trim(),
+                        brand: String(brand || '').trim(),
+                        expiryDate: app.excelDateToISO(expiryRaw)
+                    };
+                }).filter(item => item.code && item.expiryDate);
+
+                if (!parsed.length) {
+                    app.notify("لم يتم العثور على أكواد أو تواريخ صالحة داخل الملف", "error");
+                    return;
+                }
+
+                app.pendingUploadRows = parsed;
+
+                const dates = parsed.map(x => x.expiryDate).sort();
+                const minDate = dates[0];
+                const maxDate = dates[dates.length - 1];
+                const sample = parsed[0];
+                const hasJanuary = parsed.some(x => x.expiryDate.slice(5, 7) === '01');
+
+                document.getElementById('uTotal').innerText = parsed.length;
+                document.getElementById('uMinDate').innerText = minDate;
+                document.getElementById('uMaxDate').innerText = maxDate;
+                document.getElementById('uSampleCode').innerText = sample.code;
+                document.getElementById('uSampleDate').innerText = sample.expiryDate;
+                document.getElementById('janAlert').style.display = hasJanuary ? 'flex' : 'none';
+                document.getElementById('uploadModal').style.display = 'flex';
+            } catch (e) {
+                console.error(e);
+                app.notify("فشل قراءة الملف", "error");
+            }
+        },
+
+        confirmUpload: async () => {
+            try {
+                if (!app.pendingUploadRows.length) {
+                    return app.notify("لا توجد بيانات للحفظ", "error");
+                }
+
+                const res = await fetch(`${WORKER_URL}/api/inventory/sync`, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: app.userId,
+                        newProducts: app.pendingUploadRows
+                    })
+                });
+
+                const json = await res.json();
+                if (!res.ok || !json.success) throw new Error(json.error || "Sync failed");
+
+                app.pendingUploadRows = [];
+                document.getElementById('uploadModal').style.display = 'none';
+                document.getElementById('file').value = '';
+                app.notify(`تمت إضافة ${json.addedCount || 0} صنف`);
+                await app.load();
+            } catch (e) {
+                app.notify(e.message || "Upload failed", "error");
+            }
+        },
+
+        cancelUpload: () => {
+            app.pendingUploadRows = [];
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('file').value = '';
+        },
+
+        resetFilters: () => {
+            document.getElementById('search').value = '';
+            document.getElementById('catA').value = 'all';
+            document.getElementById('brand').value = 'all';
+            document.getElementById('month').value = 'all';
+            document.getElementById('status').value = 'all';
+            app.handleCatAChange();
+        },
+
+        promptClearAll: () => {
+            document.getElementById('deleteMsg').innerText = "هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع.";
+            app.currentDeleteAction = 'clearAll';
+            document.getElementById('deleteModal').style.display = 'flex';
+        },
+
+        closeModal: (id) => {
+            document.getElementById(id).style.display = 'none';
+        },
+
+        confirmDelete: async () => {
+            app.closeModal('deleteModal');
+            if (app.currentDeleteAction === 'clearAll') {
+                try {
+                    const res = await fetch(`${WORKER_URL}/api/inventory/clear-all`, {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId: app.userId })
+                    });
+                    const json = await res.json();
+                    if (!res.ok || !json.success) throw new Error(json.error);
+                    app.data = [];
+                    app.notify("تم مسح جميع البيانات");
+                    app.render();
+                } catch(e) {
+                    app.notify("فشل المسح", "error");
+                }
+            }
+        },
+
+        export: () => {
+            if (!app.data.length) return app.notify("لا توجد بيانات لتصديرها", "error");
+            const ws = XLSX.utils.json_to_sheet(app.data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+            XLSX.writeFile(wb, `inventory_${app.userId}.xlsx`);
+        }
+    };
+
+    window.onload = () => app.init();
+</script>
+</body>
+</html>
