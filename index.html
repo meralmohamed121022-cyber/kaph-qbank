@@ -1278,7 +1278,9 @@ async function assignQuizToSelectedUsers() {
 
 // ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT) ====================
 // متغير لتخزين الأقسام المحددة في الفلتر
-let adminSelectedCategories = new Set(); 
+// ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT/FILTER) ====================
+let adminSelectedCategories = new Set(); // لتخزين الأقسام المحددة في الفلتر
+let adminAllAvailableCats = []; // لتخزين كل الأقسام المتاحة علشان أزرار التحديد
 
 async function loadAdminGlobalQBank() {
   const container = document.getElementById("adminGlobalQBankContainer");
@@ -1300,10 +1302,10 @@ async function loadAdminGlobalQBank() {
     }
 
     // 1. استخراج الأقسام الموجودة في الداتابيز بدون تكرار
-    const uniqueCats = [...new Set(rows.map(q => q.category || 'General'))];
-    adminSelectedCategories = new Set(uniqueCats); // تحديد كل الأقسام كافتراضي
+    adminAllAvailableCats = [...new Set(rows.map(q => q.category || 'General'))];
+    adminSelectedCategories = new Set(adminAllAvailableCats); // تحديد كل الأقسام كافتراضي
     
-    // 2. رسم واجهة الفلترة وهيكل الجدول الأساسي
+    // 2. رسم واجهة الفلترة وهيكل الجدول الأساسي مع زراير التحديد
     let html = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
          <h3>📚 سجل بنك الأسئلة المحفوظ (<span id="adminDbQCount">${rows.length}</span> سؤال)</h3>
@@ -1314,9 +1316,16 @@ async function loadAdminGlobalQBank() {
       </div>
 
       <div style="margin-bottom: 20px; background: var(--surface-2); padding: 15px; border-radius: 16px; border: 1px dashed var(--border);">
-         <label style="font-weight: 800; font-size: 0.95rem; color: var(--muted); margin-bottom: 10px; display: block;">🔍 فلترة حسب القسم (اختر قسماً أو أكثر):</label>
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; flex-wrap:wrap; gap:10px;">
+             <label style="font-weight: 800; font-size: 0.95rem; color: var(--muted); margin:0;">🔍 فلترة حسب القسم:</label>
+             <div style="display:flex; gap:8px;">
+                 <button class="btn btn-secondary" style="padding: 4px 12px; font-size:0.85rem; min-height:30px;" onclick="selectAllAdminCats()">✅ تحديد الكل</button>
+                 <button class="btn btn-secondary" style="padding: 4px 12px; font-size:0.85rem; min-height:30px;" onclick="deselectAllAdminCats()">❌ إلغاء التحديد</button>
+             </div>
+         </div>
+         
          <div class="qbank-cat-grid" style="margin-top: 8px;">
-           ${uniqueCats.map(cat => `
+           ${adminAllAvailableCats.map(cat => `
               <div class="qbank-cat-box selected" style="padding: 10px; font-size: 0.85rem;" onclick="toggleAdminCatFilter('${cat}', this)">${cat}</div>
            `).join('')}
          </div>
@@ -1348,6 +1357,20 @@ async function loadAdminGlobalQBank() {
   }
 }
 
+// ==================== دوال التحديد السريع للأقسام ====================
+function selectAllAdminCats() {
+  adminSelectedCategories = new Set(adminAllAvailableCats);
+  document.querySelectorAll('#adminGlobalQBankContainer .qbank-cat-box').forEach(el => el.classList.add('selected'));
+  renderAdminGlobalQBankTable();
+}
+
+function deselectAllAdminCats() {
+  adminSelectedCategories.clear();
+  document.querySelectorAll('#adminGlobalQBankContainer .qbank-cat-box').forEach(el => el.classList.remove('selected'));
+  renderAdminGlobalQBankTable();
+}
+
+// ==================== دوال الفلترة ورسم الجدول ====================
 // دالة التحكم في الفلتر (تحديد وإلغاء الأقسام عند الضغط على البوكس)
 function toggleAdminCatFilter(cat, el) {
   if (adminSelectedCategories.has(cat)) {
@@ -1392,13 +1415,18 @@ function renderAdminGlobalQBankTable() {
   });
   tbody.innerHTML = trs;
 }
+
 function toggleAllDbQuestions(checked) {
   document.querySelectorAll(".db-q-chk").forEach(chk => chk.checked = checked);
 }
 
 function addSelectedDbQuestionsToStaged() {
   const checkboxes = document.querySelectorAll(".db-q-chk:checked");
-  if(checkboxes.length === 0) return alert("يرجى تحديد سؤال واحد على الأقل.");
+  if(checkboxes.length === 0) {
+      if (typeof showToast === "function") showToast("يرجى تحديد سؤال واحد على الأقل.", "warning");
+      else alert("يرجى تحديد سؤال واحد على الأقل.");
+      return;
+  }
   
   const selectedIds = Array.from(checkboxes).map(c => parseInt(c.value));
   const selectedQs = adminLoadedDbQuestions.filter(q => selectedIds.includes(q.id)).map(q => ({
@@ -1407,10 +1435,15 @@ function addSelectedDbQuestionsToStaged() {
   
   adminStagedQuestions = [...adminStagedQuestions, ...selectedQs];
   document.getElementById("stagedQuizInfo").innerHTML = `✅ تم إضافة ${selectedQs.length} سؤال بنجاح. الإجمالي المجهز للإرسال: <strong>${adminStagedQuestions.length}</strong> سؤال.`;
-  alert(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`);
+  
+  if (typeof showToast === "function") {
+      showToast(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`, "success");
+  } else {
+      alert(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`);
+  }
+  
   checkboxes.forEach(c => c.checked = false);
 }
-
 // Modal Add/Edit
 function openAddQuestionModal() {
   document.getElementById("qModalTitle").textContent = "إضافة سؤال جديد";
