@@ -23,7 +23,7 @@
   --shadow:0 18px 45px rgba(4,19,43,0.18);--shadow-soft:0 10px 24px rgba(8,25,52,0.1);
   --radius:24px;--radius-sm:18px;
 }
-body.{
+body.dark-mode{
   --bg-1:#03101f;--bg-2:#08203b;--bg-3:#11355e;
   --surface:rgba(11,28,49,0.95);--surface-2:rgba(16,38,64,0.92);--surface-3:rgba(20,48,80,0.88);
   --border:rgba(255,255,255,0.08);--text:#f4f8ff;--muted:#a9b9cf;
@@ -256,8 +256,7 @@ button,input,select,textarea{font-family:inherit}
 }
 </style>
 </head>
-<body class="dark-mode">
-
+<body>
 <section id="authScreen" class="auth-wrap">
   <div class="auth-card glass">
     <div class="auth-head">
@@ -325,8 +324,7 @@ button,input,select,textarea{font-family:inherit}
       </div>
       <div class="top-actions-container">
         <div class="top-actions">
-          <button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn">☀️ الثيم الفاتح</button>
-          <button class="icon-btn" onclick="goDashboard()">🏠 الرئيسية</button>
+<button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn">🌙 الثيم الغامق</button>          <button class="icon-btn" onclick="goDashboard()">🏠 الرئيسية</button>
           <button class="icon-btn" onclick="logout()">خروج</button>
         </div>
         <div class="user-profile-badge">
@@ -337,8 +335,8 @@ button,input,select,textarea{font-family:inherit}
 
     <div id="pendingQuizAlert" class="hidden soft-card" style="background: rgba(15,169,104,0.15); color: var(--success); padding: 15px; margin-bottom: 15px; border: 1px solid var(--success); font-weight: bold; text-align: center; border-radius: 12px; cursor: pointer;" onclick="startQuiz()">
     </div>
-    <div class="hero-card glass">
-      
+   
+
     <div class="mode-switcher">
       <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
       <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
