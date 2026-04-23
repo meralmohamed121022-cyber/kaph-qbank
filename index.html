@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg-1:#06162b;--bg-2:#0d2747;--bg-3:#133763;
@@ -22,7 +23,7 @@
   --shadow:0 18px 45px rgba(4,19,43,0.18);--shadow-soft:0 10px 24px rgba(8,25,52,0.1);
   --radius:24px;--radius-sm:18px;
 }
-body.dark-mode{
+body.{
   --bg-1:#03101f;--bg-2:#08203b;--bg-3:#11355e;
   --surface:rgba(11,28,49,0.95);--surface-2:rgba(16,38,64,0.92);--surface-3:rgba(20,48,80,0.88);
   --border:rgba(255,255,255,0.08);--text:#f4f8ff;--muted:#a9b9cf;
@@ -71,7 +72,6 @@ button,input,select,textarea{font-family:inherit}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
 .brand{display:flex;align-items:center;gap:14px}
 .brand-badge{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:26px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--orange));box-shadow:var(--shadow)}
-/* KAPH Header */
 .kaph-header-container{display:flex;flex-direction:column;justify-content:center}
 .kaph-animated-header{background-color:#0d1b33;padding:10px 20px;border-radius:12px;display:inline-block;box-shadow:var(--shadow-soft);border:1px solid var(--border);margin-bottom:5px}
 .kaph-word{display:flex;justify-content:center;gap:4px;direction:ltr}
@@ -85,7 +85,6 @@ button,input,select,textarea{font-family:inherit}
   50%{transform:translateY(-8px) scale(1.05);text-shadow:0 10px 15px rgba(26,115,232,0.4);color:#34a853}
 }
 .kaph-subtitle{color:#a9b9cf;font-size:.75rem;font-weight:700;margin-top:4px;direction:ltr;text-align:center;letter-spacing:.5px}
-/* User Profile Badge */
 .top-actions-container{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .top-actions{display:flex;gap:10px;flex-wrap:wrap}
 .icon-btn{min-height:38px;padding:6px 14px;border-radius:999px;background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow-soft);font-weight:800;font-size:.85rem}
@@ -181,7 +180,7 @@ button,input,select,textarea{font-family:inherit}
 .history-empty{text-align:center;padding:44px;color:var(--muted);font-size:1rem;font-weight:700}
 .history-chart-wrap{position:relative;height:260px;margin-bottom:18px}
 .admin-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px}
-.admin-users-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.admin-users-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px; max-height:300px; overflow-y:auto; padding:5px;}
 .admin-user-card{padding:14px;border-radius:18px;background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow-soft);cursor:pointer}
 .admin-user-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .admin-user-card strong{display:block;font-size:1rem;font-weight:900}
@@ -195,34 +194,19 @@ button,input,select,textarea{font-family:inherit}
 .admin-history-table th,.admin-history-table td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:center}
 .admin-history-table th{color:var(--muted);font-weight:800}
 
-/* QBank Categories Selection Grid */
-.qbank-cat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
-}
-.qbank-cat-box {
-  background: var(--surface-3);
-  border: 2px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 10px;
-  text-align: center;
-  cursor: pointer;
-  font-weight: 800;
-  transition: 0.2s ease;
-  user-select: none;
-}
-.qbank-cat-box:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-soft);
-}
-.qbank-cat-box.selected {
-  background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
-  border-color: transparent;
-  box-shadow: var(--shadow-soft);
-}
+.qbank-cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 10px; }
+.qbank-cat-box { background: var(--surface-3); border: 2px solid var(--border); border-radius: 16px; padding: 16px 10px; text-align: center; cursor: pointer; font-weight: 800; transition: 0.2s ease; user-select: none; }
+.qbank-cat-box:hover { transform: translateY(-3px); box-shadow: var(--shadow-soft); }
+.qbank-cat-box.selected { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; border-color: transparent; box-shadow: var(--shadow-soft); }
+.admin-section-block { margin-top: 20px; padding: 20px; border: 2px dashed var(--primary); border-radius: 16px; background: var(--surface-2); }
+
+/* Review System Styles */
+.review-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 10px; }
+.review-q-text { font-weight: 900; margin-bottom: 8px; font-size: 1.05rem; }
+.review-opt { display: block; padding: 8px 12px; background: var(--surface-3); border-radius: 8px; margin-bottom: 5px; font-size: 0.95rem; }
+.review-opt.correct { background: rgba(15,169,104,0.15); border: 1px solid var(--success); color: var(--success); font-weight: bold; }
+.db-action-btn { background: var(--surface-3); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+.db-action-btn:hover { background: var(--primary); color: white; }
 
 @media(max-width:1100px){.dashboard-grid,.hero-grid,.charts-grid,.history-card{grid-template-columns:1fr}.stats-grid,.quiz-meta,.result-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:992px){.admin-users-grid{grid-template-columns:1fr 1fr}.admin-result-card .meta{grid-template-columns:1fr 1fr}}
@@ -235,11 +219,45 @@ button,input,select,textarea{font-family:inherit}
   .flip-card{min-height:350px}
   .admin-users-grid,.admin-result-card .meta{grid-template-columns:1fr}
 }
+/* CSS Art Toasts (إشعارات احترافية) */
+#toastContainer {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.toast {
+  min-width: 280px;
+  padding: 16px 22px;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.toast.success { background: linear-gradient(135deg, #109f62, #15c278); }
+.toast.error { background: linear-gradient(135deg, #e65252, #ff7c7c); }
+.toast.warning { background: linear-gradient(135deg, var(--orange), var(--orange-2)); }
+
+@keyframes slideInRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeOutDown {
+  to { opacity: 0; transform: translateY(20px); }
+}
 </style>
 </head>
 <body class="dark-mode">
 
-<!-- ========== AUTH ========== -->
 <section id="authScreen" class="auth-wrap">
   <div class="auth-card glass">
     <div class="auth-head">
@@ -292,7 +310,6 @@ button,input,select,textarea{font-family:inherit}
   </div>
 </section>
 
-<!-- ========== APP ========== -->
 <section id="appScreen" class="hidden">
   <div class="app-shell">
 
@@ -318,32 +335,14 @@ button,input,select,textarea{font-family:inherit}
       </div>
     </div>
 
-    <div class="hero-card glass">
-      <div class="hero-grid">
-        <div>
-          <h2>منصة مراجعة واختبار احترافية للصيادلة</h2>
-          <p>Quiz، QBank داخلي، Flashcards، إحصائيات Charts، وسجل كامل لكل الاختبارات.</p>
-          <div class="mini-kpis">
-            <div class="mini-kpi"><span>واجهة احترافية</span><strong>Pro UI</strong></div>
-            <div class="mini-kpi"><span>اختبار مباشر</span><strong>QBank</strong></div>
-            <div class="mini-kpi"><span>سجل الأداء</span><strong>History</strong></div>
-          </div>
-        </div>
-        <div class="soft-card panel">
-          <h3>إجراءات سريعة</h3>
-          <div class="quick-actions">
-            <button class="btn btn-primary" onclick="startQuiz()">▶ ابدأ Quiz</button>
-            <button class="btn btn-warning" onclick="startQbank()">▶ ابدأ QBank</button>
-            <button class="btn btn-secondary" onclick="showSection('flashcards')">📖 Flashcards</button>
-          </div>
-        </div>
-      </div>
+    <div id="pendingQuizAlert" class="hidden soft-card" style="background: rgba(15,169,104,0.15); color: var(--success); padding: 15px; margin-bottom: 15px; border: 1px solid var(--success); font-weight: bold; text-align: center; border-radius: 12px; cursor: pointer;" onclick="startQuiz()">
     </div>
-
+    <div class="hero-card glass">
+      
     <div class="mode-switcher">
       <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
       <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
-      <button id="quizBtn" class="mode-btn" onclick="showSection('quiz')">📝 Quiz</button>
+      <button id="quizBtn" class="mode-btn" onclick="showSection('quiz')">📝 Quiz (مخصص)</button>
       <button id="qbankBtn" class="mode-btn" onclick="showSection('qbank')">🧪 QBank</button>
       <button id="historyBtn" class="mode-btn" onclick="showSection('history')">📋 السجل</button>
       <button id="resultBtn" class="mode-btn hidden" onclick="showSection('result')">🏆 النتيجة</button>
@@ -351,7 +350,6 @@ button,input,select,textarea{font-family:inherit}
       <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
     </div>
 
-    <!-- DASHBOARD -->
     <section id="dashboardSection">
       <div class="stats-grid">
         <div class="stat-card"><span>الاسم</span><strong id="dashName">-</strong></div>
@@ -374,7 +372,7 @@ button,input,select,textarea{font-family:inherit}
         <div class="panel glass">
           <h3>⚡ إجراءات سريعة</h3>
           <div class="quick-actions">
-            <button class="btn btn-primary" onclick="startQuiz()">ابدأ Quiz</button>
+            <button class="btn btn-primary" onclick="startQuiz()">ابدأ الكويز المخصص لك</button>
             <button class="btn btn-warning" onclick="startQbank()">ابدأ QBank</button>
             <button class="btn btn-secondary" onclick="showSection('flashcards')">راجع Flashcards</button>
             <button class="btn btn-success" onclick="showSection('result')">آخر نتيجة</button>
@@ -388,7 +386,6 @@ button,input,select,textarea{font-family:inherit}
       </div>
     </section>
 
-    <!-- FLASHCARDS -->
     <section id="flashcardsSection" class="section-box glass hidden">
       <h2 class="section-title">📖 Flashcards</h2>
       <p class="section-subtitle">اضغط على أي كارت ليقلب ويظهر الإجابة.</p>
@@ -396,16 +393,15 @@ button,input,select,textarea{font-family:inherit}
       <div class="cards-grid" id="cardsContainer"></div>
     </section>
 
-    <!-- QUIZ -->
     <section id="quizSection" class="section-box glass hidden">
-      <h2 class="section-title">📝 Quiz</h2>
-      <p class="section-subtitle">اختر الإجابة الصحيحة والتنقل مفتوح بين الأسئلة.</p>
+      <h2 class="section-title">📝 الكويز المخصص لك</h2>
+      <p class="section-subtitle">هذا الاختبار تم تحضيره خصيصاً لك من قبل الأدمن.</p>
       <div class="quiz-shell">
         <div class="quiz-meta">
           <div class="meta-pill"><span>عدد الأسئلة</span><strong id="totalQuestionsLabel">0</strong></div>
           <div class="meta-pill"><span>المفتوح</span><strong id="openedQuestionsLabel">0</strong></div>
           <div class="meta-pill"><span>المجاب</span><strong id="answeredQuestionsLabel">0</strong></div>
-          <div class="meta-pill"><span>النوع</span><strong>Quiz</strong></div>
+          <div class="meta-pill"><span>النوع</span><strong>Custom Quiz</strong></div>
         </div>
         <div class="progress-wrap"><div id="quizProgressBar" class="progress-bar">0%</div></div>
         <div class="question-box">
@@ -416,21 +412,19 @@ button,input,select,textarea{font-family:inherit}
         <div class="controls">
           <button class="nav-btn prev-btn" onclick="prevQuestion()">السابق</button>
           <button class="nav-btn next-btn" onclick="nextQuestion()">التالي</button>
-          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء الاختبار</button>
+          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء وإرسال للأدمن</button>
         </div>
       </div>
     </section>
 
-    <!-- QBANK -->
     <section id="qbankSection" class="section-box glass hidden">
       <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
-      <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها، يمكنك اختيار قسم واحد أو عدة أقسام.</p>
+      <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها واسحب أسئلة عشوائية للتمرين.</p>
       
-      <!-- إعداد الاختبار -->
       <div id="qbankSetup" class="soft-card" style="padding:22px; margin-bottom:18px;">
         <h3 style="margin-bottom:8px;">⚙️ اختر الأقسام (Categories)</h3>
         <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">اضغط على الصندوق لتحديده أو إلغاء تحديده. سيتم سحب الأسئلة عشوائياً من الأقسام المحددة.</p>
-        
+
         <div class="qbank-cat-grid" id="qbankCatSelector">
           <div class="qbank-cat-box selected" data-cat="CVS">CVS</div>
           <div class="qbank-cat-box selected" data-cat="CNS">CNS</div>
@@ -441,20 +435,25 @@ button,input,select,textarea{font-family:inherit}
           <div class="qbank-cat-box selected" data-cat="OTC">OTC</div>
         </div>
         
-        <div class="form-group" style="margin-top:20px; max-width:300px;">
-          <label>مستوى الصعوبة (Difficulty)</label>
-          <select id="qbankDifficultyFilter" class="form-control">
-            <option value="All">منوع (الكل)</option>
-            <option value="Easy">🟢 سهل</option>
-            <option value="Medium">🟡 متوسط</option>
-            <option value="Hard">🔴 صعب</option>
-          </select>
+        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:20px;">
+            <div class="form-group" style="flex:1; min-width:200px;">
+              <label>مستوى الصعوبة</label>
+              <select id="qbankDifficultyFilter" class="form-control">
+                <option value="All">منوع (الكل)</option>
+                <option value="Easy">🟢 سهل</option>
+                <option value="Medium">🟡 متوسط</option>
+                <option value="Hard">🔴 صعب</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1; min-width:200px;">
+              <label>🔢 عدد الأسئلة للتمرين</label>
+              <input type="number" id="qbankQuestionCount" class="form-control" value="10" min="1" max="100">
+            </div>
         </div>
         
-        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ الاختبار</button>
+        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ التمرين</button>
       </div>
 
-      <!-- منطقة الاختبار -->
       <div id="qbankQuizArea" class="quiz-shell hidden">
         <div class="quiz-meta">
           <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
@@ -475,12 +474,11 @@ button,input,select,textarea{font-family:inherit}
         <div class="controls">
           <button class="nav-btn prev-btn" onclick="prevQbankQuestion()">السابق</button>
           <button class="nav-btn next-btn" onclick="nextQbankQuestion()">التالي</button>
-          <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء وإرسال</button>
+          <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء الاختبار</button>
         </div>
       </div>
     </section>
 
-    <!-- HISTORY -->
     <section id="historySection" class="section-box glass hidden">
       <h2 class="section-title">📋 سجل الاختبارات</h2>
       <p class="section-subtitle">استعرض نتائجك السابقة واختر شهراً أو يوماً محدداً.</p>
@@ -491,7 +489,7 @@ button,input,select,textarea{font-family:inherit}
           <label>🏷 النوع</label>
           <select id="historyType" class="form-control" onchange="filterHistory()">
             <option value="">الكل</option>
-            <option value="Quiz">Quiz</option>
+            <option value="Custom Quiz">Quiz (مخصص)</option>
             <option value="QBank">QBank</option>
           </select>
         </div>
@@ -505,7 +503,6 @@ button,input,select,textarea{font-family:inherit}
       <div id="historyContainer"><p class="history-empty">جاري التحميل...</p></div>
     </section>
 
-    <!-- RESULT -->
     <section id="resultSection" class="section-box glass hidden">
       <h2 class="section-title">🏆 نتيجة الاختبار</h2>
       <p class="section-subtitle">تقدر تحمل النتيجة كصورة أو ترسلها للأدمن، وتراجع إجاباتك.</p>
@@ -534,7 +531,6 @@ button,input,select,textarea{font-family:inherit}
       </div>
     </section>
 
-    <!-- REVIEW -->
     <section id="reviewSection" class="section-box glass hidden">
       <h2 class="section-title">👁️ مراجعة الإجابات</h2>
       <p class="section-subtitle">اللون الأخضر هو الإجابة الصحيحة، والأحمر هو إجابتك الخاطئة.</p>
@@ -552,22 +548,71 @@ button,input,select,textarea{font-family:inherit}
       </div>
     </section>
 
-    <!-- ADMIN -->
     <section id="adminSection" class="section-box glass hidden">
-      <h2 class="section-title">👑 Admin Dashboard</h2>
-      <p class="section-subtitle">اختر مستخدمًا أو عدة مستخدمين لعرض آخر نتيجة أو الهيستوري الكامل، أو اعرض النتائج المرسلة للأدمن.</p>
-      <div class="admin-toolbar">
+      <h2 class="section-title">👑 لوحة تحكم الأدمن (Dashboard)</h2>
+      <p class="section-subtitle">إدارة الكويزات، سحب الأسئلة، ومتابعة اليوزرز وتعيين الاختبارات لهم.</p>
+      
+      <div class="admin-section-block">
+        <h3 style="color:var(--primary-3); margin-bottom:15px;">📝 تجهيز كويز مخصص وإرساله</h3>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">بإمكانك رفع أسئلة من جهازك (JSON/Excel) أو سحب عدد من بنك الأسئلة الأساسي وإرسالهم للمستخدمين المحددين في القائمة بالأسفل.</p>
+        
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="document.getElementById('importJson').click()">📥 رفع JSON</button>
+          <button class="icon-btn" onclick="showTemplateGuide('json')" title="دليل ملف JSON" style="padding: 5px 10px;">❔</button>
+
+          <button class="btn btn-secondary" onclick="document.getElementById('importExcel').click()">📊 رفع Excel</button>
+          <button class="icon-btn" onclick="showTemplateGuide('excel')" title="دليل ملف Excel" style="padding: 5px 10px;">❔</button>
+
+          <input type="file" id="importJson" class="hidden" accept=".json" onchange="importAdminQuestions(this, 'json')">
+          <input type="file" id="importExcel" class="hidden" accept=".xlsx, .xls" onchange="importAdminQuestions(this, 'excel')">
+          
+          <div style="display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); padding:5px 15px; border-radius:10px; margin-right: auto;">
+            <label style="font-size:0.9rem; font-weight:800; margin:0;">أو اسحب من QBank:</label>
+            <input type="number" id="adminQBankCount" placeholder="العدد" style="width:70px; padding:5px; border-radius:8px; border:1px solid #ccc; text-align:center;" value="10">
+            <button class="btn btn-secondary" style="min-height:35px; padding:5px 10px; font-size:0.85rem;" onclick="pullFromQBankForAdmin()">سحب للتحضير</button>
+          </div>
+        </div>
+
+        <div id="adminReviewSection" class="hidden" style="margin-top: 20px; padding: 15px; background: var(--surface-3); border-radius: 12px; border: 1px solid var(--primary-3);">
+           <h4 style="margin-bottom: 10px;">👀 مراجعة الأسئلة قبل الاعتماد:</h4>
+           <div id="adminReviewList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
+           <div style="margin-bottom: 15px;">
+               <label style="font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                   <input type="checkbox" id="saveToDbCheckbox" checked style="width: 18px; height: 18px;">
+                   حفظ هذه الأسئلة في بنك الأسئلة الدائم (الداتابيز)
+               </label>
+           </div>
+           <div style="display: flex; gap: 10px;">
+               <button class="btn btn-success" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة للكويز</button>
+               <button class="btn btn-danger" onclick="cancelStagedQuestions()">❌ إلغاء</button>
+           </div>
+        </div>
+
+        <div id="stagedQuizInfo" style="margin-top: 15px; padding:10px; background:rgba(245,138,31,0.1); border-radius:10px; color:var(--orange); font-weight:800;">
+          💡 لا توجد أسئلة مجهزة حالياً للإرسال.
+        </div>
+
+        <button class="btn btn-warning" style="margin-top: 15px; width:100%;" onclick="assignQuizToSelectedUsers()">🚀 إرسال الكويز المجهز للمستخدمين المحددين بالأسفل</button>
+      </div>
+
+      <div class="admin-toolbar" style="margin-top:25px;">
         <div class="form-group" style="margin:0;flex:1;min-width:220px">
-          <label>بحث عن يوزر</label>
+          <label>🔍 بحث عن مستخدم</label>
           <input id="adminUserSearch" class="form-control" type="text" placeholder="اكتب الاسم أو الرقم الوظيفي" oninput="renderAdminUsers()"/>
         </div>
         <button class="btn btn-secondary" onclick="selectAllAdminUsers()">تحديد الكل</button>
         <button class="btn btn-secondary" onclick="clearAdminSelection()">إلغاء التحديد</button>
         <button class="btn btn-primary" onclick="loadAdminLatestForSelected()">آخر نتيجة للمحدد</button>
         <button class="btn btn-success" onclick="loadAdminHistoryForSelected()">هيستوري المحدد</button>
-        <button class="btn btn-warning" onclick="loadAdminSharedResults()">النتائج المرسلة للأدمن</button>
+        <button class="btn btn-warning" onclick="loadAdminSharedResults()">النتائج المرسلة</button>
+        <button class="btn btn-secondary" style="border-color: var(--primary);" onclick="loadAdminGlobalQBank()">📚 عرض بنك الأسئلة المحفوظ</button>
       </div>
+      
       <div id="adminUsersGrid" class="admin-users-grid"></div>
+      
+      <div id="adminGlobalQBankContainer" class="admin-results-list hidden" style="margin-top:20px; padding: 15px; background: var(--surface-2); border-radius: 16px; border: 1px solid var(--border);">
+         </div>
+
       <div class="charts-grid" style="margin-top:18px">
         <div class="chart-card glass">
           <h3>أحدث النتائج للمحدد</h3>
@@ -578,6 +623,7 @@ button,input,select,textarea{font-family:inherit}
           <div id="adminSharedContainer" class="admin-results-list"></div>
         </div>
       </div>
+      
       <div class="section-box soft-card" style="margin-top:18px">
         <h3 style="margin-bottom:12px">هيستوري المستخدمين المحددين</h3>
         <div id="adminHistoryContainer"></div>
@@ -587,10 +633,76 @@ button,input,select,textarea{font-family:inherit}
   </div>
 </section>
 
+<div id="templateGuideModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+  <div class="glass" style="width: min(600px, 90%); padding: 24px; position: relative;">
+    <button onclick="closeTemplateGuide()" style="position:absolute; top:15px; left:15px; background:var(--surface-3); border:1px solid var(--border); border-radius:50%; width:35px; height:35px; color:var(--danger); font-size:1.2rem; cursor:pointer; font-weight:bold;">✖</button>
+    <h3 id="guideTitle" style="margin-bottom: 10px; color: var(--orange); font-weight: 900;">دليل رفع الملف</h3>
+    <p id="guideDesc" style="color: var(--muted); margin-bottom: 15px; font-size: 0.95rem; line-height: 1.8;"></p>
+    <div style="position: relative;">
+      <textarea id="guideContent" readonly style="width: 100%; height: 260px; background: #06162b; border: 1px solid var(--border); border-radius: 12px; padding: 45px 15px 15px 15px; color: #4ade80; font-family: monospace; font-size: 0.9rem; direction: ltr; resize: none;"></textarea>
+      <button onclick="copyGuideContent()" class="btn btn-primary" style="position: absolute; top: 10px; right: 10px; padding: 5px 15px; font-size: 0.85rem; min-height: 30px;">📋 نسخ التنسيق</button>
+    </div>
+  </div>
+</div>
+
+<div id="questionEditModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+  <div class="glass" style="width: min(500px, 90%); padding: 24px; position: relative; max-height: 90vh; overflow-y: auto;">
+    <h3 style="margin-bottom: 15px; color: var(--orange);" id="qModalTitle">إضافة سؤال جديد</h3>
+    <input type="hidden" id="sqId" value="">
+    
+    <div class="form-group">
+      <label>نص السؤال</label>
+      <textarea id="sqQuestion" class="form-control" style="min-height: 80px; resize:vertical;"></textarea>
+    </div>
+    
+    <div class="form-group" style="display:flex; gap:10px;">
+       <div style="flex:1"><label>القسم</label><input type="text" id="sqCategory" class="form-control" placeholder="CVS, GIT..."></div>
+       <div style="flex:1">
+          <label>الصعوبة</label>
+          <select id="sqDifficulty" class="form-control">
+             <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+          </select>
+       </div>
+    </div>
+    
+    <div class="form-group"><label>الاختيار الأول</label><input type="text" id="sqOpt0" class="form-control"></div>
+    <div class="form-group"><label>الاختيار الثاني</label><input type="text" id="sqOpt1" class="form-control"></div>
+    <div class="form-group"><label>الاختيار الثالث (اختياري)</label><input type="text" id="sqOpt2" class="form-control"></div>
+    <div class="form-group"><label>الاختيار الرابع (اختياري)</label><input type="text" id="sqOpt3" class="form-control"></div>
+    
+    <div class="form-group">
+      <label>الإجابة الصحيحة</label>
+      <select id="sqCorrect" class="form-control">
+         <option value="0">الاختيار الأول</option>
+         <option value="1">الاختيار الثاني</option>
+         <option value="2">الاختيار الثالث</option>
+         <option value="3">الاختيار الرابع</option>
+      </select>
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+       <button class="btn btn-success" style="flex:1;" onclick="saveSingleQuestion()">💾 حفظ السؤال</button>
+       <button class="btn btn-danger" style="flex:1;" onclick="document.getElementById('questionEditModal').classList.add('hidden')">إلغاء</button>
+    </div>
+  </div>
+</div>
+<div id="toastContainer"></div>
+
+<div id="newQuizModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(8px);">
+    <div class="glass" style="width: min(420px, 90%); padding: 35px; text-align: center; border: 2px solid var(--success); border-radius: 24px; box-shadow: 0 0 40px rgba(15,169,104,0.3);">
+        <div style="font-size: 3.5rem; margin-bottom: 10px; animation: kaph-wave 2s infinite;">🎁</div>
+        <h2 style="color: var(--success); margin-bottom: 15px; font-weight: 900;">كويز جديد بانتظارك!</h2>
+        <p id="newQuizModalText" style="color: var(--muted); margin-bottom: 25px; line-height: 1.8; font-size: 1.05rem;"></p>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-success" style="flex: 1; font-size: 1.1rem;" onclick="closeNewQuizModalAndStart()">البدء الآن 🚀</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('newQuizModal').classList.add('hidden')">لاحقاً</button>
+        </div>
+    </div>
+</div>
 <script>
 // ==================== CONFIG ====================
 const SUPABASE_URL = "https://ukowgpoiidcqfvtnxfwe.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrb3dncG9paWRjcWZ2dG54ZndlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDQ2NTMsImV4cCI6MjA5MjI4MDY1M30.8ulwLJ5i-Dw3djhotGDrFmxsp_V365lKSeUVZEh04KQ";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrb3dncG9paWRjcWZ2dG54ZndlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MDQ2NTMsImV4cCI6MjA5MjI4MDY1M30.8ulwLJ5i-Dw3djhotGDrFmxsp_V365lKSeUVZEh04KQ";
 const WHATSAPP_NUMBER = "966541932559";
 const headers = {
   apikey: SUPABASE_KEY,
@@ -609,21 +721,32 @@ let allHistoryData         = [];
 let allHistoryRaw          = [];
 let adminUsersData         = [];
 let adminSelectedLicenses  = new Set();
-let currentQuestionIndex   = 0;
-let userAnswers            = [];
-let openedQuestions        = new Set();
 let doughnutChart          = null;
 let barChart               = null;
 let historyLineChart       = null;
 
+// User Custom Quiz State
+let quizQuestions = [];
+let currentQuestionIndex   = 0;
+let userAnswers            = [];
+let openedQuestions        = new Set();
+let currentAssignedQuizId  = null;
+
+// QBank State
 let qbankCurrentQuestionIndex = 0;
 let qbankUserAnswers       = [];
 let qbankOpenedQuestions   = new Set();
 let activeQbankQuestions   = [];
 
+// Review State
 let reviewQuestions = [];
 let reviewUserAnswers = [];
 let reviewCurrentIndex = 0;
+
+// Admin Staged Questions State
+let adminStagedQuestions = [];
+let tempParsedQuestions = []; 
+let adminLoadedDbQuestions = []; // لتخزين الأسئلة المعروضة في السجل
 
 // ==================== FLASHCARDS DATA ====================
 const flashcardsDB = [
@@ -637,39 +760,34 @@ const flashcardsDB = [
   { icon:"⚕️", category:"Toxicology", question:"Antidote for paracetamol overdose?", answerType:"text", answer:"N-acetylcysteine (NAC).", drug:"NAC" }
 ];
 
-// ==================== QUIZ QUESTIONS ====================
-const quizQuestions = [
-  { question:"أي مضاد حيوي يسبب Gray Baby Syndrome في حديثي الولادة؟", options:["Doxycycline","Chloramphenicol","Warfarin","Omeprazole"], correct:1 },
-  { question:"أي Tetracycline هو الأكثر أماناً في مرضى القصور الكلوي؟", options:["Tetracycline","Minocycline","Doxycycline","Tigecycline"], correct:2 },
-  { question:"ما الدواء الذي يحتاج متابعة INR بانتظام؟", options:["Warfarin","Aspirin","Clopidogrel","Enoxaparin"], correct:0 },
-  { question:"ما الترياق المحدد في overdose الباراسيتامول؟", options:["Atropine","Naloxone","N-acetylcysteine","Vitamin K"], correct:2 },
-  { question:"أي oral antidiabetic قد يسبب lactic acidosis مع القصور الكلوي؟", options:["Metformin","Glimepiride","Sitagliptin","Pioglitazone"], correct:0 },
-  { question:"ما آلية عمل Omeprazole؟", options:["حاصر H1","حاصر H2","يثبط H+/K+-ATPase","يزيد حركة المعدة"], correct:2 },
-  { question:"أي الفئات ممنوعة في الحمل (فئة D/X)؟", options:["PPIs","ACEIs/ARBs","Penicillins","Cephalosporins"], correct:1 },
-  { question:"ما دواء إنهاء SVT الحاد؟", options:["Adenosine","Furosemide","Metformin","NAC"], correct:0 },
-  { question:"أي اللقاحات يُفضّل في الحمل؟", options:["Live attenuated","Inactivated","Toxoid only","Oral only"], correct:1 },
-  { question:"أي class من المدرات أكثر فعالية في acute pulmonary edema؟", options:["Thiazides","Loop diuretics","Potassium sparing","Carbonic anhydrase inhibitors"], correct:1 }
+// ==================== QBANK DATABASE ====================
+const localQbankQuestions = [
+  { "category": "Endocrine", "difficulty": "Medium", "question": "Patients taking Metformin should consider supplementation with:", "options": ["Vitamin C", "Vitamin B12", "Vitamin D", "Vitamin E"], "correct": 1 },
+  { "category": "OTC", "difficulty": "Medium", "question": "What is the maximum safe daily dose of Paracetamol for healthy adults?", "options": ["2 grams", "3 grams", "4 grams (4000 mg)", "6 grams"], "correct": 2 },
+  { "category": "General", "difficulty": "Easy", "question": "Is paracetamol an NSAID?", "options": ["Yes", "No"], "correct": 1 }
 ];
 
-// ==================== QBANK DATABASE ====================
-const qbankQuestionsDB = [
-  { category: "CVS", difficulty: "Easy", question: "مريض يستخدم Lisinopril ويشتكي من سعال جاف مزعج جداً، ما هو البديل الأنسب من نفس العائلة العلاجية لتجنب هذا العرض؟", options: ["Amlodipine (CCB)", "Valsartan (ARB)", "Atenolol (Beta Blocker)", "Furosemide (Diuretic)"], correct: 1 },
-  { category: "CVS", difficulty: "Medium", question: "متى يُفضل تناول دواء Rosuvastatin (Crestor)؟", options: ["قبل الإفطار مباشرة", "في المساء فقط", "في أي وقت من اليوم", "مع وجبة دهنية"], correct: 2 },
-  { category: "CVS", difficulty: "Hard", question: "مريض ضغط يستخدم Amlodipine، طلب منك مسكن لاحتقان الأنف، أي من الأدوية التالية Contraindicated؟", options: ["Chlorpheniramine", "Pseudoephedrine (Clarinase)", "Cetirizine (Zyrtec)", "Normal Saline Drops"], correct: 1 },
-  { category: "CNS", difficulty: "Easy", question: "مريض يطلب دواء Panadol Night ليساعده على النوم، ما هي المادة الفعالة المضافة للباراسيتامول التي تسبب النعاس؟", options: ["Caffeine", "Chlorpheniramine", "Diphenhydramine", "Codeine"], correct: 2 },
-  { category: "CNS", difficulty: "Medium", question: "دواء Sumatriptan (Imigran) المستخدم للشقيقة، متى يجب أن يتناوله المريض؟", options: ["يومياً للوقاية", "عند بداية ظهور نوبة الصداع مباشرة", "بعد الوصول لأقصى ألم", "فقط قبل النوم"], correct: 1 },
-  { category: "CNS", difficulty: "Hard", question: "مريض يستخدم Escitalopram لعلاج الاكتئاب، صرف له مسكن يحتوي على Tramadol. ما هو التداخل الدوائي الخطير المحتمل؟", options: ["Hypertensive Crisis", "Serotonin Syndrome", "Lactic Acidosis", "Hepatotoxicity"], correct: 1 },
-  { category: "GIT", difficulty: "Easy", question: "امرأة حامل تشتكي من حموضة وحرقة في المعدة، ما هو الخيار الأول الآمن (First-line) كـ OTC؟", options: ["Omeprazole", "Sodium Alginate/Antacids (Gaviscon)", "Famotidine", "Misoprostol"], correct: 1 },
-  { category: "GIT", difficulty: "Medium", question: "مريض يصرف دواء Mebeverine (Duspatalin). ما هي دواعي الاستعمال الأساسية؟", options: ["قرحة المعدة", "الإمساك المزمن", "القولون العصبي (Antispasmodic)", "الإسهال الحاد"], correct: 2 },
-  { category: "GIT", difficulty: "Hard", question: "لماذا يُنصح بعدم تناول Bisacodyl مع مضادات الحموضة أو الحليب في نفس الوقت؟", options: ["يسبب تشكل حصوات", "يذيب الغلاف المعوي للدواء مبكراً ويسبب مغص شديد", "يبطل مفعول الدواء تماماً", "يقلل من امتصاص الكالسيوم"], correct: 1 },
-  { category: "URT", difficulty: "Easy", question: "أي من مضادات الهيستامين التالية يُعتبر الجيل الأول ويسبب النعاس؟", options: ["Loratadine", "Desloratadine", "Chlorpheniramine", "Cetirizine"], correct: 2 },
-  { category: "URT", difficulty: "Medium", question: "أم تطلب شراب للسعال الجاف لطفلها عمره سنتين. ما هو الإجراء الصحيح؟", options: ["شراب يحتوي على Dextromethorphan", "شراب يحتوي على Codeine", "شراب عشبي (Prospan) وتجنب مثبطات السعال المركزية", "شراب مقشع (Guaifenesin)"], correct: 2 },
-  { category: "UTI", difficulty: "Medium", question: "مريضة وصفت لها كبسولات Nitrofurantoin لالتهاب المسالك، ما هي أهم نصيحة؟", options: ["على معدة فارغة تماماً", "مع الطعام وتوقع تغير لون البول", "إيقاف الدواء بمجرد زوال الأعراض", "الامتناع عن شرب الماء"], correct: 1 },
-  { category: "Endocrine", difficulty: "Easy", question: "مريض سكري يستخدم Metformin، متى يُفضل تناوله؟", options: ["قبل الأكل بنصف ساعة", "وسط أو بعد الأكل مباشرة لتجنب اضطرابات المعدة", "قبل النوم فقط", "عند الاستيقاظ مباشرة"], correct: 1 },
-  { category: "Endocrine", difficulty: "Hard", question: "أي من أدوية السكري يعمل عن طريق طرح الجلوكوز عبر البول (SGLT2) ويستوجب نصح المريض بالنظافة لتجنب UTI؟", options: ["Sitagliptin", "Empagliflozin", "Gliclazide", "Pioglitazone"], correct: 1 },
-  { category: "OTC", difficulty: "Easy", question: "مريض يطلب مرهم لعلاج التسلخات لرضيع، ما هو الخيار الأفضل كطبقة عازلة؟", options: ["Fucidin", "Sudocrem (Zinc Oxide)", "Mebo", "Betnovate"], correct: 1 },
-  { category: "OTC", difficulty: "Medium", question: "ما هي الجرعة القصوى الآمنة من Paracetamol للبالغين الأصحاء في اليوم الواحد؟", options: ["2 جرام", "3 جرام", "4 جرام (4000 mg)", "6 جرام"], correct: 2 }
-];
+let qbankQuestionsDB = [...localQbankQuestions];
+
+async function syncQuestionsFromDB() {
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*`);
+    if (rows && rows.length > 0) {
+      const dbQuestions = rows.map(r => ({
+        category: r.category || "General",
+        difficulty: r.difficulty || "Medium",
+        question: r.question,
+        options: typeof r.options === 'string' ? JSON.parse(r.options) : r.options,
+        correct: r.correct,
+        type: r.type,
+        id: r.id 
+      }));
+      qbankQuestionsDB = [...localQbankQuestions, ...dbQuestions];
+    }
+  } catch(e) {
+    console.warn("⚠️ لم يتم جلب الأسئلة من السيرفر.", e);
+  }
+}
 
 // ==================== UTILS ====================
 function setStatus(msg, type="success") {
@@ -756,6 +874,8 @@ async function handleLogin() {
   const license  = document.getElementById("loginLicense").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
   if (!license||!password) return setStatus("أدخل الرقم الوظيفي وكلمة المرور.", "error");
+  
+  setStatus("⏳ جاري تسجيل الدخول...", "success");
   try {
     const users = await supabaseRequest(
       `${SUPABASE_URL}/rest/v1/users?select=*&license_number=eq.${sanitizeValue(license)}&password=eq.${sanitizeValue(password)}&limit=1`
@@ -764,11 +884,14 @@ async function handleLogin() {
     currentUser = users[0];
     latestResultData    = null;
     latestSavedResultId = null;
+    
+    await syncQuestionsFromDB();
+
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("appScreen").classList.remove("hidden");
     document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
     document.getElementById("adminBtn").classList.add("hidden");
-    initFlashcards(); initQuiz();
+    initFlashcards();
     await loadDashboard();
     showSection("dashboard");
   } catch(e) { setStatus(`خطأ في تسجيل الدخول: ${e.message}`, "error"); }
@@ -778,22 +901,29 @@ async function handleAdminLogin() {
   const username = document.getElementById("adminUsername").value.trim();
   const password = document.getElementById("adminPassword").value.trim();
   if (!username||!password) return setStatus("أدخل اسم مستخدم الأدمن وكلمة المرور.", "error");
+  
+  setStatus("⏳ جاري تسجيل الدخول كأدمن...", "success");
   try {
     const rows = await supabaseRequest(
       `${SUPABASE_URL}/rest/v1/admin_users?select=*&username=eq.${sanitizeValue(username)}&password=eq.${sanitizeValue(password)}&limit=1`
     );
     if (!rows.length) return setStatus("بيانات الأدمن غير صحيحة.", "error");
     isAdminSession = true;
-    currentUser = { name: rows[0].display_name || "Admin", license_number: "ADMIN" };
+    currentUser = { name: rows[0].display_name || "Admin", license_number: "ADMIN", username: rows[0].username };
+    
+    await syncQuestionsFromDB();
+
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("appScreen").classList.remove("hidden");
     document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
+    
     document.getElementById("adminBtn").classList.remove("hidden");
     document.getElementById("dashboardBtn").classList.add("hidden");
     document.getElementById("flashcardsBtn").classList.add("hidden");
     document.getElementById("quizBtn").classList.add("hidden");
     document.getElementById("qbankBtn").classList.add("hidden");
     document.getElementById("historyBtn").classList.add("hidden");
+    
     await loadAdminUsers();
     await loadAdminSharedResults();
     showSection("admin");
@@ -806,7 +936,10 @@ function openForgotWhatsApp() {
 function logout() {
   currentUser = null; isAdminSession = false;
   latestResultData = null; latestSavedResultId = null;
-  adminUsersData = []; adminSelectedLicenses = new Set();
+  adminUsersData = []; adminSelectedLicenses = new Set(); adminStagedQuestions = []; tempParsedQuestions = [];
+  document.getElementById("stagedQuizInfo").innerHTML = "💡 لا توجد أسئلة مجهزة حالياً للإرسال.";
+  document.getElementById('adminReviewSection').classList.add('hidden');
+  document.getElementById("pendingQuizAlert").classList.add("hidden");
   document.getElementById("appScreen").classList.add("hidden");
   document.getElementById("authScreen").classList.remove("hidden");
   document.getElementById("resultBtn").classList.add("hidden");
@@ -838,8 +971,6 @@ function showSection(name) {
                 qbank:"qbankBtn", history:"historyBtn", result:"resultBtn", review:"reviewBtn", admin:"adminBtn" };
   document.getElementById(ids[name])?.classList.add("active");
   
-  // هنا التعديل: لما يختار qbank نعمل Reset للشاشة
-  if (name==="quiz")      renderQuestion();
   if (name==="qbank") {
       document.getElementById("qbankSetup").classList.remove("hidden");
       document.getElementById("qbankQuizArea").classList.add("hidden");
@@ -849,7 +980,6 @@ function showSection(name) {
   if (name==="admin")   { loadAdminUsers(); loadAdminSharedResults(); }
   if (name==="review")    renderReviewQuestion();
 }
-
 function goDashboard() { showSection("dashboard"); }
 
 // ==================== DASHBOARD ====================
@@ -857,16 +987,11 @@ async function loadDashboard() {
   if (!currentUser || isAdminSession) return;
   document.getElementById("dashName").textContent    = currentUser.name || "-";
   document.getElementById("dashLicense").textContent = currentUser.license_number || "-";
-  
-  // تحديث بيانات النتيجة عشان تظهر بالاسم الحالي
-  if (latestResultData) {
-      fillResultCard(latestResultData);
-  }
+  if (latestResultData) { fillResultCard(latestResultData); }
 
   try {
-    const rows = await supabaseRequest(
-      `${SUPABASE_URL}/rest/v1/results?select=*&license_number=eq.${sanitizeValue(currentUser.license_number)}&order=created_at.desc&limit=1`
-    );
+    // 1. Fetch Latest Result
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*&license_number=eq.${sanitizeValue(currentUser.license_number)}&order=created_at.desc&limit=1`);
     if (!rows.length) {
       latestResultData = { exam_type:"—", total_questions:0, opened_questions:0, answered_questions:0, correct_answers:0, completion_percentage:0, score_percentage:0, exam_date:null };
     } else {
@@ -876,8 +1001,28 @@ async function loadDashboard() {
     fillDashboard(latestResultData);
     fillResultCard(latestResultData);
     updateDashboardCharts(latestResultData);
+
+    // 2. Fetch Pending Assigned Quiz (To show Badge/Notification)
+    const pending = await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?select=admin_username&license_number=eq.${sanitizeValue(currentUser.license_number)}&is_completed=eq.false&limit=1`);
+    const alertDiv = document.getElementById("pendingQuizAlert");
+    
+    if (pending && pending.length > 0) {
+        let adName = pending[0].admin_username || "الأدمن";
+        
+        // التأكد إن لقب Dr مش موجود أصلاً في اسم الأدمن علشان ميتكررش
+        const nameLower = adName.toLowerCase().trim();
+        if (!nameLower.startsWith("dr.") && !nameLower.startsWith("dr ") && !nameLower.startsWith("د.")) {
+            adName = `Dr. ${adName}`;
+        }
+        
+        alertDiv.innerHTML = `🔔 لديك كويز مخصص بانتظارك من <strong>${adName}</strong>! اضغط هنا للبدء.`;
+        alertDiv.classList.remove("hidden");
+    } else {
+        alertDiv.classList.add("hidden");
+    }
   } catch(e) { console.error("loadDashboard error:", e.message); }
 }
+
 function fillDashboard(data) {
   document.getElementById("dashAnswered").textContent   = data.answered_questions  ?? 0;
   document.getElementById("dashCorrect").textContent    = data.correct_answers      ?? 0;
@@ -950,34 +1095,424 @@ function renderFlashcards() {
   });
 }
 
-// ==================== QUIZ ====================
-function initQuiz() {
-  currentQuestionIndex = 0;
-  userAnswers = new Array(quizQuestions.length).fill(null);
-  openedQuestions = new Set([0]);
-  document.getElementById("totalQuestionsLabel").textContent = quizQuestions.length;
+// ==================== TEMPLATE GUIDES ====================
+const templateGuides = {
+  json: {
+    title: "دليل ملف JSON 📝",
+    desc: "يجب أن يكون الملف عبارة عن مصفوفة (Array) تحتوي على الأسئلة. كل سؤال يحتوي على التصنيف، الصعوبة، السؤال، الاختيارات، ورقم الإجابة الصحيحة (يبدأ من 0).",
+    content: `[
+  {
+    "category": "CVS",
+    "difficulty": "Easy",
+    "question": "What is the capital of France?",
+    "options": ["Paris", "London", "Berlin", "Madrid"],
+    "correct": 0
+  },
+  {
+    "category": "General",
+    "difficulty": "Hard",
+    "question": "Is paracetamol an NSAID?",
+    "options": ["Yes", "No"],
+    "correct": 1
+  }
+]`
+  },
+  excel: {
+    title: "دليل ملف Excel 📊",
+    desc: "يجب أن يحتوي الصف الأول (Row 1) على العناوين (سيتم تجاهله تلقائياً). يجب ترتيب الأعمدة من اليسار لليمين كالتالي:",
+    content: `العمود A: نص السؤال (Question)
+العمود B: الاختيار الأول
+العمود C: الاختيار الثاني
+العمود D: الاختيار الثالث (اتركه فارغاً لأسئلة صح/خطأ)
+العمود E: الاختيار الرابع (اتركه فارغاً لأسئلة صح/خطأ)
+العمود F: رقم الإجابة الصحيحة (0 للأول، 1 للثاني، إلخ)
+العمود G: القسم (Category - مثلاً CVS)
+العمود H: مستوى الصعوبة (Easy, Medium, Hard)`
+  }
+};
+
+function showTemplateGuide(type) {
+  const data = templateGuides[type];
+  document.getElementById('guideTitle').textContent = data.title;
+  document.getElementById('guideDesc').textContent = data.desc;
+  document.getElementById('guideContent').value = data.content;
+  document.getElementById('templateGuideModal').classList.remove('hidden');
+}
+function closeTemplateGuide() { document.getElementById('templateGuideModal').classList.add('hidden'); }
+function copyGuideContent() {
+  const content = document.getElementById('guideContent').value;
+  navigator.clipboard.writeText(content).then(() => alert('✅ تم نسخ التنسيق بنجاح!')).catch(err => alert('❌ فشل النسخ، يرجى النسخ يدوياً.'));
+}
+
+// ==================== ADMIN: STAGE, REVIEW & ASSIGN ====================
+async function importAdminQuestions(input, type) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+
+  reader.onload = async function(e) {
+    try {
+      let parsed = [];
+      if (type === 'json') {
+        parsed = JSON.parse(e.target.result);
+      } else if (type === 'excel') {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+        
+        parsed = rows.slice(1).filter(r => r[0]).map(r => {
+           let opts = [r[1], r[2], r[3], r[4]].filter(Boolean);
+           return {
+              question: String(r[0]||''),
+              options: opts,
+              correct: parseInt(r[5]) || 0,
+              category: r[6] || "General",
+              difficulty: r[7] || "Medium",
+              type: opts.length === 2 ? 'T/F' : 'MCQ'
+           };
+        });
+      }
+      
+      if(parsed.length === 0) throw new Error("الملف لا يحتوي على أسئلة قابلة للقراءة.");
+      
+      tempParsedQuestions = parsed;
+      renderAdminReviewList();
+      document.getElementById('adminReviewSection').classList.remove('hidden');
+
+    } catch (err) {
+      alert("خطأ في قراءة الملف: " + err.message);
+    }
+  };
+  
+  if(type === 'json') reader.readAsText(file);
+  else reader.readAsArrayBuffer(file);
+  input.value = ""; 
+}
+
+function renderAdminReviewList() {
+  const list = document.getElementById("adminReviewList");
+  list.innerHTML = "";
+  tempParsedQuestions.forEach((q, idx) => {
+    let optsHtml = q.options.map((opt, i) => {
+      const isCorrect = i === q.correct;
+      return `<span class="review-opt ${isCorrect ? 'correct' : ''}">${opt} ${isCorrect ? '✅' : ''}</span>`;
+    }).join("");
+    
+    list.innerHTML += `
+      <div class="review-item">
+        <div class="review-q-text">${idx+1}. ${q.question}</div>
+        <div style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">
+           [القسم: ${q.category||'General'}] [الصعوبة: ${q.difficulty||'Medium'}]
+        </div>
+        <div>${optsHtml}</div>
+      </div>
+    `;
+  });
+}
+
+async function approveStagedQuestions() {
+  adminStagedQuestions = [...adminStagedQuestions, ...tempParsedQuestions];
+  
+  const saveToDb = document.getElementById("saveToDbCheckbox").checked;
+  if(saveToDb) {
+      const dbPayload = tempParsedQuestions.map(p => ({
+         category: p.category || 'General',
+         difficulty: p.difficulty || 'Medium',
+         question: p.question,
+         options: p.options,
+         correct: p.correct,
+         type: p.options.length === 2 ? 'T/F' : 'MCQ',
+         admin_username: currentUser.username
+      }));
+      try {
+        await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions`, { method:"POST", body:JSON.stringify(dbPayload) });
+        await syncQuestionsFromDB();
+      } catch(e) { console.warn("Failed to save to global questions", e); }
+  }
+
+  document.getElementById("stagedQuizInfo").innerHTML = `✅ تم اعتماد وتجهيز <strong>${adminStagedQuestions.length}</strong> سؤال للإرسال.`;
+  document.getElementById("adminReviewSection").classList.add('hidden');
+  tempParsedQuestions = [];
+}
+
+function cancelStagedQuestions() {
+  tempParsedQuestions = [];
+  document.getElementById("adminReviewSection").classList.add('hidden');
+}
+
+async function pullFromQBankForAdmin() {
+  const count = parseInt(document.getElementById("adminQBankCount").value) || 10;
+  tempParsedQuestions = shuffleArray([...qbankQuestionsDB]).slice(0, count);
+  renderAdminReviewList();
+  document.getElementById("saveToDbCheckbox").checked = false; 
+  document.getElementById('adminReviewSection').classList.remove('hidden');
+}
+
+async function assignQuizToSelectedUsers() {
+  if (!adminStagedQuestions || adminStagedQuestions.length === 0) {
+    return alert("⚠️ يرجى تجهيز واعتماد أسئلة أولاً.");
+  }
+  if (adminSelectedLicenses.size === 0) {
+    return alert("⚠️ يرجى تحديد مستخدم واحد على الأقل من القائمة بالأسفل.");
+  }
+
+  try {
+    const payload = Array.from(adminSelectedLicenses).map(lic => ({
+      admin_username: currentUser.name || 'Admin', 
+      license_number: lic,
+      questions_data: adminStagedQuestions,
+      is_completed: false
+    }));
+
+    await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes`, { 
+      method: "POST", 
+      body: JSON.stringify(payload) 
+    });
+
+    alert("🎉 تم إرسال الكويز المخصص للمستخدمين المحددين بنجاح!");
+    adminStagedQuestions = [];
+    document.getElementById("stagedQuizInfo").innerHTML = `💡 تم الإرسال. لا توجد أسئلة مجهزة حالياً.`;
+  } catch (err) {
+    alert("❌ حصلت مشكلة أثناء الإرسال: " + err.message);
+  }
+}
+
+// ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT) ====================
+async function loadAdminGlobalQBank() {
+  const container = document.getElementById("adminGlobalQBankContainer");
+  container.classList.remove("hidden");
+  container.innerHTML = `<div class="history-empty">⏳ جاري تحميل بنك الأسئلة من الداتابيز...</div>`;
+  
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*&order=created_at.desc`);
+    adminLoadedDbQuestions = rows;
+    
+    if (!rows.length) {
+      container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+           <h3>📚 سجل بنك الأسئلة المحفوظ</h3>
+           <button class="btn btn-success" onclick="openAddQuestionModal()">➕ إضافة سؤال جديد</button>
+        </div>
+        <div class="history-empty">لا توجد أسئلة محفوظة حالياً في الداتابيز.</div>`;
+      return;
+    }
+    
+    let tableHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+         <h3>📚 سجل بنك الأسئلة المحفوظ (${rows.length} سؤال)</h3>
+         <div style="display:flex; gap:10px;">
+           <button class="btn btn-success" onclick="openAddQuestionModal()" style="padding: 6px 12px; font-size:0.9rem;">➕ إضافة سؤال</button>
+           <button class="btn btn-warning" onclick="addSelectedDbQuestionsToStaged()" style="padding: 6px 12px; font-size:0.9rem;">اضافة المحدد للكويز المُجهز</button>
+         </div>
+      </div>
+      <div style="max-height: 400px; overflow-y: auto;">
+      <table class="admin-history-table" style="width:100%; text-align:right;">
+      <thead>
+        <tr>
+          <th><input type="checkbox" onclick="toggleAllDbQuestions(this.checked)"></th>
+          <th>السؤال</th>
+          <th>القسم</th>
+          <th>الصعوبة</th>
+          <th>تعديل</th>
+        </tr>
+      </thead>
+      <tbody>`;
+      
+    rows.forEach(r => {
+       tableHTML += `
+         <tr>
+           <td><input type="checkbox" class="db-q-chk" value="${r.id}"></td>
+           <td style="max-width:250px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${r.question}">${r.question}</td>
+           <td><span class="badge" style="background:var(--surface-3);color:var(--primary);">${r.category||'-'}</span></td>
+           <td>${r.difficulty||'-'}</td>
+           <td><button class="db-action-btn" onclick="openEditQuestionModal(${r.id})">✏️</button></td>
+         </tr>`;
+    });
+    tableHTML += `</tbody></table></div>`;
+    container.innerHTML = tableHTML;
+    
+  } catch (e) {
+    container.innerHTML = `<div class="history-empty">خطأ في جلب الأسئلة: ${e.message}</div>`;
+  }
+}
+
+function toggleAllDbQuestions(checked) {
+  document.querySelectorAll(".db-q-chk").forEach(chk => chk.checked = checked);
+}
+
+function addSelectedDbQuestionsToStaged() {
+  const checkboxes = document.querySelectorAll(".db-q-chk:checked");
+  if(checkboxes.length === 0) return alert("يرجى تحديد سؤال واحد على الأقل.");
+  
+  const selectedIds = Array.from(checkboxes).map(c => parseInt(c.value));
+  const selectedQs = adminLoadedDbQuestions.filter(q => selectedIds.includes(q.id)).map(q => ({
+     category: q.category, difficulty: q.difficulty, question: q.question, options: typeof q.options === 'string'?JSON.parse(q.options):q.options, correct: q.correct, type: q.type
+  }));
+  
+  adminStagedQuestions = [...adminStagedQuestions, ...selectedQs];
+  document.getElementById("stagedQuizInfo").innerHTML = `✅ تم إضافة ${selectedQs.length} سؤال بنجاح. الإجمالي المجهز للإرسال: <strong>${adminStagedQuestions.length}</strong> سؤال.`;
+  alert(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`);
+  checkboxes.forEach(c => c.checked = false);
+}
+
+// Modal Add/Edit
+function openAddQuestionModal() {
+  document.getElementById("qModalTitle").textContent = "إضافة سؤال جديد";
+  document.getElementById("sqId").value = "";
+  document.getElementById("sqQuestion").value = "";
+  document.getElementById("sqCategory").value = "";
+  document.getElementById("sqDifficulty").value = "Medium";
+  document.getElementById("sqOpt0").value = ""; document.getElementById("sqOpt1").value = "";
+  document.getElementById("sqOpt2").value = ""; document.getElementById("sqOpt3").value = "";
+  document.getElementById("sqCorrect").value = "0";
+  document.getElementById("questionEditModal").classList.remove("hidden");
+}
+
+function openEditQuestionModal(id) {
+  const q = adminLoadedDbQuestions.find(x => x.id === id);
+  if(!q) return;
+  document.getElementById("qModalTitle").textContent = "تعديل السؤال";
+  document.getElementById("sqId").value = q.id;
+  document.getElementById("sqQuestion").value = q.question;
+  document.getElementById("sqCategory").value = q.category;
+  document.getElementById("sqDifficulty").value = q.difficulty;
+  
+  const opts = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+  document.getElementById("sqOpt0").value = opts[0] || "";
+  document.getElementById("sqOpt1").value = opts[1] || "";
+  document.getElementById("sqOpt2").value = opts[2] || "";
+  document.getElementById("sqOpt3").value = opts[3] || "";
+  document.getElementById("sqCorrect").value = q.correct;
+  
+  document.getElementById("questionEditModal").classList.remove("hidden");
+}
+
+async function saveSingleQuestion() {
+  const id = document.getElementById("sqId").value;
+  const question = document.getElementById("sqQuestion").value.trim();
+  const category = document.getElementById("sqCategory").value.trim() || "General";
+  const difficulty = document.getElementById("sqDifficulty").value;
+  
+  const rawOpts = [
+    document.getElementById("sqOpt0").value.trim(),
+    document.getElementById("sqOpt1").value.trim(),
+    document.getElementById("sqOpt2").value.trim(),
+    document.getElementById("sqOpt3").value.trim()
+  ];
+  const options = rawOpts.filter(Boolean); // Remove empty options
+  const correct = parseInt(document.getElementById("sqCorrect").value);
+  
+  if(!question || options.length < 2) return alert("يرجى إدخال السؤال واختيارين على الأقل.");
+  if(correct >= options.length) return alert("الإجابة الصحيحة غير متطابقة مع عدد الاختيارات المتاحة.");
+  
+  const type = options.length === 2 ? 'T/F' : 'MCQ';
+  const payload = { question, category, difficulty, options, correct, type, admin_username: currentUser.username };
+  
+  try {
+    if (id) {
+       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?id=eq.${id}`, { method:"PATCH", body:JSON.stringify(payload) });
+    } else {
+       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions`, { method:"POST", body:JSON.stringify([payload]) });
+    }
+    document.getElementById("questionEditModal").classList.add("hidden");
+    alert("تم حفظ السؤال بنجاح!");
+    await syncQuestionsFromDB();
+    loadAdminGlobalQBank(); // Refresh table
+  } catch(e) {
+    alert("فشل حفظ السؤال: " + e.message);
+  }
+}
+
+// ==================== USER: CUSTOM ASSIGNED QUIZ ====================
+async function startQuiz() {
+  if (!currentUser) return;
+  
+  // لو الكويز مفتوح ومتحمل مسبقاً، كمل من مكان ما وقفت
+  if (quizQuestions.length > 0 && currentAssignedQuizId) {
+     showSection("quiz");
+     renderQuestion();
+     return;
+  }
+
+  try {
+    // سحب الكويز من الداتابيز
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?select=*&license_number=eq.${currentUser.license_number}&is_completed=eq.false&order=created_at.asc&limit=1`);
+    
+    if(rows && rows.length > 0) {
+        let fetchedData = rows[0].questions_data;
+        
+        // تحويل الداتا لـ Object لو راجعة String
+        if (typeof fetchedData === 'string') {
+            fetchedData = JSON.parse(fetchedData);
+        }
+        
+        quizQuestions = fetchedData;
+        currentAssignedQuizId = rows[0].id;
+        
+        currentQuestionIndex = 0;
+        userAnswers = new Array(quizQuestions.length).fill(null);
+        openedQuestions = new Set([0]);
+        
+        document.getElementById("totalQuestionsLabel").textContent = quizQuestions.length;
+        document.getElementById("pendingQuizAlert").classList.add("hidden");
+        
+        showSection("quiz");
+        renderQuestion();
+    } else {
+        alert("🎉 مفيش كويزات مخصصة جديدة ليك حالياً من الأدمن. تقدر تتدرب في الـ QBank براحتك!");
+    }
+  } catch (e) {
+    alert("مشكلة في الاتصال بالسيرفر. تأكد من الإنترنت.");
+  }
 }
 function renderQuestion() {
+  if (!quizQuestions.length) return;
   const q = quizQuestions[currentQuestionIndex];
   openedQuestions.add(currentQuestionIndex);
+  
   document.getElementById("questionNumber").textContent = `السؤال ${currentQuestionIndex+1} من ${quizQuestions.length}`;
   document.getElementById("questionText").textContent   = q.question;
+  
   const c = document.getElementById("optionsContainer");
   c.innerHTML = "";
+  
+  if (q.options.length === 2) {
+    c.style.display = "grid"; c.style.gridTemplateColumns = "1fr 1fr"; c.style.gap = "15px";
+  } else {
+    c.style.display = "flex"; c.style.flexDirection = "column"; c.style.gap = "12px";
+  }
+
   q.options.forEach((opt,i) => {
     const btn = document.createElement("button");
+    const cleanOpt = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
     btn.className = `option-btn ${userAnswers[currentQuestionIndex]===i?"selected":""}`;
-    btn.textContent = opt;
+    btn.textContent = cleanOpt;
     btn.onclick = () => { userAnswers[currentQuestionIndex]=i; renderQuestion(); };
     c.appendChild(btn);
   });
+  
   updateQuizMeta("totalQuestionsLabel","openedQuestionsLabel","answeredQuestionsLabel","quizProgressBar", quizQuestions, userAnswers, openedQuestions);
 }
 function prevQuestion() { if (currentQuestionIndex>0){ currentQuestionIndex--; renderQuestion(); } }
 function nextQuestion() { if (currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; renderQuestion(); } }
-function startQuiz()    { initQuiz(); showSection("quiz"); }
-async function submitQuiz() { await saveExamResult("Quiz", quizQuestions, userAnswers, openedQuestions); }
 
+async function submitQuiz() { 
+  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
+  
+  if (currentAssignedQuizId) {
+     try {
+         await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, {
+             method: "PATCH",
+             body: JSON.stringify({ is_completed: true })
+         });
+     } catch (e) { console.warn("Failed to mark assigned quiz as complete", e); }
+  }
+  
+  // تفريغ بيانات الكويز بعد التسليم
+  quizQuestions = [];
+  currentAssignedQuizId = null;
+}
 function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers, opened) {
   const answered = answers.filter(v=>v!==null).length;
   const progress  = questions.length ? Math.round((answered/questions.length)*100) : 0;
@@ -988,8 +1523,7 @@ function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers
   bar.textContent = `${progress}%`;
 }
 
-// ==================== QBANK LOGIC ====================
-// التحكم في اختيار الأقسام (Boxes)
+// ==================== QBANK LOGIC (Practice Area) ====================
 document.querySelectorAll(".qbank-cat-box").forEach(box => {
   box.addEventListener("click", function() {
     this.classList.toggle("selected");
@@ -997,27 +1531,22 @@ document.querySelectorAll(".qbank-cat-box").forEach(box => {
 });
 
 function startQbank() {
-  // إعادة عرض بوكسات الاختيار (إعداد الاختبار)
   document.getElementById("qbankSetup").classList.remove("hidden");
-  
-  // إخفاء شاشة الأسئلة السابقة
   document.getElementById("qbankQuizArea").classList.add("hidden");
-  
-  // الانتقال لقسم بنك الأسئلة
   showSection("qbank");
 }
+
 function generateAndStartQbank() {
-  // تجميع الأقسام المحددة
   const selectedBoxes = document.querySelectorAll(".qbank-cat-box.selected");
   const selectedCats = Array.from(selectedBoxes).map(b => b.getAttribute("data-cat"));
   const diffFilter = document.getElementById("qbankDifficultyFilter").value;
+  const qCountInput = document.getElementById("qbankQuestionCount");
+  const requestedCount = qCountInput ? parseInt(qCountInput.value) : 10;
 
   if (selectedCats.length === 0) {
-    alert("الرجاء تحديد قسم واحد على الأقل للبدء.");
-    return;
+    return alert("الرجاء تحديد قسم واحد على الأقل للبدء.");
   }
 
-  // فلترة الأسئلة
   let filtered = qbankQuestionsDB.filter(q => selectedCats.includes(q.category));
 
   if (diffFilter !== "All") {
@@ -1025,13 +1554,13 @@ function generateAndStartQbank() {
   }
 
   if (filtered.length === 0) {
-    alert("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.");
-    return;
+    return alert("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.");
   }
 
-  activeQbankQuestions = shuffleArray(filtered).slice(0, 20); // حد أقصى 20 سؤال
+  activeQbankQuestions = shuffleArray([...filtered]).slice(0, Math.min(requestedCount, filtered.length));
+  
   qbankCurrentQuestionIndex = 0;
-  qbankUserAnswers  = new Array(activeQbankQuestions.length).fill(null);
+  qbankUserAnswers = new Array(activeQbankQuestions.length).fill(null);
   qbankOpenedQuestions = new Set([0]);
 
   document.getElementById("qbankTotalQuestionsLabel").textContent = activeQbankQuestions.length;
@@ -1040,6 +1569,7 @@ function generateAndStartQbank() {
 
   document.getElementById("qbankSetup").classList.add("hidden");
   document.getElementById("qbankQuizArea").classList.remove("hidden");
+  
   renderQbankQuestion();
 }
 
@@ -1049,7 +1579,7 @@ function renderQbankQuestion() {
   qbankOpenedQuestions.add(qbankCurrentQuestionIndex);
 
   document.getElementById("qbankQuestionNumber").textContent = `السؤال ${qbankCurrentQuestionIndex+1} من ${activeQbankQuestions.length}`;
-  document.getElementById("qbankQuestionText").textContent   = q.question;
+  document.getElementById("qbankQuestionText").textContent = q.question;
   
   document.getElementById("qbankQuestionBadgeCategory").textContent = `🏷️ ${q.category}`;
   const diffColors = { "Easy":"🟢 سهل", "Medium":"🟡 متوسط", "Hard":"🔴 صعب" };
@@ -1057,11 +1587,28 @@ function renderQbankQuestion() {
 
   const c = document.getElementById("qbankOptionsContainer");
   c.innerHTML = "";
-  q.options.forEach((opt,i) => {
+
+  if (q.options.length === 2) {
+    c.style.display = "grid";
+    c.style.gridTemplateColumns = "1fr 1fr";
+    c.style.gap = "15px";
+  } else {
+    c.style.display = "flex";
+    c.style.flexDirection = "column";
+    c.style.gap = "12px";
+  }
+
+  q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
-    btn.className = `option-btn ${qbankUserAnswers[qbankCurrentQuestionIndex]===i ? "selected" : ""}`;
-    btn.textContent = opt;
-    btn.onclick = () => { qbankUserAnswers[qbankCurrentQuestionIndex] = i; renderQbankQuestion(); };
+    const cleanOpt = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
+    
+    btn.className = `option-btn ${qbankUserAnswers[qbankCurrentQuestionIndex] === i ? "selected" : ""}`;
+    btn.textContent = cleanOpt;
+    
+    btn.onclick = () => { 
+      qbankUserAnswers[qbankCurrentQuestionIndex] = i; 
+      renderQbankQuestion(); 
+    };
     c.appendChild(btn);
   });
 
@@ -1070,10 +1617,10 @@ function renderQbankQuestion() {
 
 function prevQbankQuestion() { if (qbankCurrentQuestionIndex>0){ qbankCurrentQuestionIndex--; renderQbankQuestion(); } }
 function nextQbankQuestion() { if (qbankCurrentQuestionIndex<activeQbankQuestions.length-1){ qbankCurrentQuestionIndex++; renderQbankQuestion(); } }
-async function submitQbankQuiz() { await saveExamResult("QBank", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions); }
+async function submitQbankQuiz() { await saveExamResult("QBank", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions, false); }
 
 // ==================== SAVE RESULT ====================
-async function saveExamResult(examType, questions, answers, openedSet) {
+async function saveExamResult(examType, questions, answers, openedSet, autoShare = false) {
   if (!currentUser || isAdminSession) return;
   const totalQuestions    = questions.length;
   const answeredQuestions = answers.filter(v=>v!==null).length;
@@ -1083,6 +1630,7 @@ async function saveExamResult(examType, questions, answers, openedSet) {
   const completionPercentage = totalQuestions ? Number(((answeredQuestions/totalQuestions)*100).toFixed(2)) : 0;
   const scorePercentage      = totalQuestions ? Number(((correctAnswers/totalQuestions)*100).toFixed(2)) : 0;
   const examDate = new Date().toISOString();
+  
   const payload  = [{
     license_number:        currentUser.license_number,
     exam_type:             examType,
@@ -1092,8 +1640,11 @@ async function saveExamResult(examType, questions, answers, openedSet) {
     correct_answers:       correctAnswers,
     completion_percentage: completionPercentage,
     score_percentage:      scorePercentage,
-    exam_date:             examDate
+    exam_date:             examDate,
+    shared_with_admin:     autoShare,
+    shared_at:             autoShare ? examDate : null
   }];
+  
   try {
     const saved     = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results`, { method:"POST", body:JSON.stringify(payload) });
     latestResultData    = saved?.[0] || payload[0];
@@ -1106,7 +1657,6 @@ async function saveExamResult(examType, questions, answers, openedSet) {
   fillResultCard(latestResultData);
   updateDashboardCharts(latestResultData);
   
-  // إظهار أزرار النتيجة والمراجعة في mode-switcher
   document.getElementById("resultBtn").classList.remove("hidden");
   document.getElementById("reviewBtn").classList.remove("hidden");
   showSection("result");
@@ -1143,11 +1693,17 @@ function renderReviewQuestion() {
 
   const c = document.getElementById("reviewOptionsContainer");
   c.innerHTML = "";
+  
+  if (q.options.length === 2) {
+    c.style.display = "grid"; c.style.gridTemplateColumns = "1fr 1fr"; c.style.gap = "15px";
+  } else {
+    c.style.display = "flex"; c.style.flexDirection = "column"; c.style.gap = "12px";
+  }
 
   q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
-    btn.textContent = opt;
+    btn.textContent = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
     btn.style.cursor = "default";
     
     if (i === correctAns) {
@@ -1196,7 +1752,7 @@ function updateDashboardCharts(data=latestResultData) {
   });
 }
 
-// HISTORY AND ADMIN LOGIC REMAINS THE SAME
+// ==================== USER HISTORY ====================
 async function loadHistory() {
   if (!currentUser || isAdminSession) return;
   const container = document.getElementById("historyContainer");
@@ -1240,7 +1796,7 @@ function renderHistory(data) {
   if (!data.length) { container.innerHTML=`<p class="history-empty">لا توجد نتائج للفترة المحددة.</p>`; return; }
   container.innerHTML = data.map(r => {
     const score = Number(r.score_percentage||0); const completion = Number(r.completion_percentage||0); const scoreColor = getScoreColor(score);
-    const typeBadge = r.exam_type==="QBank" ? `<span class="history-badge badge-qbank">🧪 QBank</span>` : `<span class="history-badge badge-quiz">📝 Quiz</span>`;
+    const typeBadge = r.exam_type==="QBank" ? `<span class="history-badge badge-qbank">🧪 QBank</span>` : `<span class="history-badge badge-quiz">📝 Custom Quiz</span>`;
     return `
       <div class="soft-card history-card">
         <div>${typeBadge}<div style="font-weight:900;font-size:.95rem;margin-top:4px">${formatDate(r.exam_date||r.created_at)}</div></div>
@@ -1257,6 +1813,8 @@ function renderHistory(data) {
       </div>`;
   }).join("");
 }
+
+// ==================== MANUAL SHARING ====================
 async function shareLatestResultToAdmin() {
   if (!latestSavedResultId) { alert("لا يمكن إرسال النتيجة قبل حفظها."); return; }
   try {
@@ -1274,6 +1832,7 @@ async function openEmailWithResult() {
   window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
+// ==================== ADMIN DASHBOARD USERS & HISTORY ====================
 async function loadAdminUsers() {
   if (!isAdminSession) return;
   try {
@@ -1294,16 +1853,18 @@ function selectAllAdminUsers() {
   renderAdminUsers();
 }
 function clearAdminSelection() { adminSelectedLicenses = new Set(); renderAdminUsers(); document.getElementById("adminLatestContainer").innerHTML=""; document.getElementById("adminHistoryContainer").innerHTML=""; }
+
 function renderAdminResultCard(r, includeShared=false) {
   const scoreColor = getScoreColor(r.score_percentage||0);
-  return `<div class="admin-result-card"><div class="top"><div><strong style="font-size:1rem">${r.name||"-"}</strong><div style="color:var(--muted);font-size:.9rem">${r.license_number||"-"}</div></div><div style="text-align:left"><div style="font-weight:900">${r.exam_type||"-"}</div><div style="color:var(--muted);font-size:.85rem">${formatDate(r.exam_date||r.created_at)}</div></div></div><div class="meta"><div><div style="color:var(--muted);font-size:.8rem">إجمالي</div><strong>${r.total_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">مجاب</div><strong>${r.answered_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">صح</div><strong>${r.correct_answers??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">الإنجاز</div><strong>${Number(r.completion_percentage||0).toFixed(2)}%</strong></div><div><div style="color:var(--muted);font-size:.8rem">نسبة الصح</div><strong style="color:${scoreColor}">${Number(r.score_percentage||0).toFixed(2)}%</strong></div></div>${includeShared ? `<div style="margin-top:10px;color:var(--muted);font-size:.85rem">تم الإرسال للأدمن: ${r.shared_at?formatDate(r.shared_at):"نعم"}</div>` : ""}</div>`;
+  return `<div class="admin-result-card"><div class="top"><div><strong style="font-size:1rem">${r.name||r.users?.name||"-"}</strong><div style="color:var(--muted);font-size:.9rem">${r.license_number||"-"}</div></div><div style="text-align:left"><div style="font-weight:900">${r.exam_type||"-"}</div><div style="color:var(--muted);font-size:.85rem">${formatDate(r.exam_date||r.created_at)}</div></div></div><div class="meta"><div><div style="color:var(--muted);font-size:.8rem">إجمالي</div><strong>${r.total_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">مجاب</div><strong>${r.answered_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">صح</div><strong>${r.correct_answers??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">الإنجاز</div><strong>${Number(r.completion_percentage||0).toFixed(2)}%</strong></div><div><div style="color:var(--muted);font-size:.8rem">نسبة الصح</div><strong style="color:${scoreColor}">${Number(r.score_percentage||0).toFixed(2)}%</strong></div></div>${includeShared ? `<div style="margin-top:10px;color:var(--muted);font-size:.85rem">تم الإرسال للأدمن: ${r.shared_at?formatDate(r.shared_at):"نعم"}</div>` : ""}</div>`;
 }
+
 async function loadAdminLatestForSelected() {
   if (!isAdminSession) return;
   const container = document.getElementById("adminLatestContainer"); const sel = [...adminSelectedLicenses];
   if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
   try {
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/latest_results_per_user?select=*&license_number=${buildInFilter(sel)}`);
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=${sel.length}`);
     if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج.</div>`; return; }
     container.innerHTML = rows.map(r=>renderAdminResultCard(r)).join("");
   } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
@@ -1323,11 +1884,120 @@ async function loadAdminSharedResults() {
   const container = document.getElementById("adminSharedContainer");
   container.innerHTML = `<div class="history-empty">⏳ جاري تحميل النتائج...</div>`;
   try {
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/admin_shared_results?select=*&order=shared_at.desc&limit=100`);
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&shared_with_admin=eq.true&order=shared_at.desc&limit=50`);
     if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج مرسلة.</div>`; return; }
     container.innerHTML = rows.map(r=>renderAdminResultCard(r, true)).join("");
   } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
 }
+// =========================================================================
+// ==================== THE MAGIC OVERRIDE BLOCK 🚀 ====================
+// =========================================================================
+
+// 1. حقن الـ CSS والـ HTML أوتوماتيك بدون لمس الكود القديم
+const extraStyles = `
+#toastContainer { position: fixed; bottom: 25px; right: 25px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; }
+.toast { min-width: 280px; padding: 16px 22px; border-radius: 16px; color: #fff; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border: 1px solid rgba(255,255,255,0.2); }
+.toast.success { background: linear-gradient(135deg, #109f62, #15c278); }
+.toast.error { background: linear-gradient(135deg, #e65252, #ff7c7c); }
+.toast.warning { background: linear-gradient(135deg, var(--orange), var(--orange-2)); }
+@keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOutDown { to { opacity: 0; transform: translateY(20px); } }
+`;
+document.head.insertAdjacentHTML("beforeend", `<style>${extraStyles}</style>`);
+document.body.insertAdjacentHTML("beforeend", `<div id="toastContainer"></div>`);
+document.body.insertAdjacentHTML("beforeend", `
+<div id="newQuizModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(8px);">
+    <div class="glass" style="width: min(420px, 90%); padding: 35px; text-align: center; border: 2px solid var(--success); border-radius: 24px; box-shadow: 0 0 40px rgba(15,169,104,0.3);">
+        <div style="font-size: 3.5rem; margin-bottom: 10px; animation: kaph-wave 2s infinite;">🎁</div>
+        <h2 style="color: var(--success); margin-bottom: 15px; font-weight: 900;">كويز جديد بانتظارك!</h2>
+        <p id="newQuizModalText" style="color: var(--muted); margin-bottom: 25px; line-height: 1.8; font-size: 1.05rem;"></p>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-success" style="flex: 1; font-size: 1.1rem;" onclick="closeNewQuizModalAndStart()">البدء الآن 🚀</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('newQuizModal').classList.add('hidden')">لاحقاً</button>
+        </div>
+    </div>
+</div>`);
+
+// 2. دالة الـ Toast والسيطرة الكاملة على window.alert
+function showToast(message, type = "success") {
+    const container = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    const icon = type === "success" ? "✅" : type === "error" ? "❌" : "⚠️";
+    toast.innerHTML = `<span style="font-size:1.3rem;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.animation = "fadeOutDown 0.4s forwards"; setTimeout(() => toast.remove(), 400); }, 4000);
+}
+
+// هنا بنحول أي Alert في الأكواد القديمة لـ Toast بذكاء
+window.alert = function(message) {
+    let type = "success";
+    if (message.includes("خطأ") || message.includes("فشل") || message.includes("❌")) type = "error";
+    else if (message.includes("يرجى") || message.includes("تحديد") || message.includes("⚠️")) type = "warning";
+    showToast(message, type);
+};
+
+function closeNewQuizModalAndStart() {
+    document.getElementById('newQuizModal').classList.add('hidden');
+    startQuiz(); // هتشغل دالة الكويز
+}
+
+// 3. استبدال دالة الـ Dashboard عشان تعرض البوب أب واسم الأدمن بـ .Dr
+let hasShownQuizPopup = false;
+async function loadDashboard() {
+  if (!currentUser || isAdminSession) return;
+  document.getElementById("dashName").textContent    = currentUser.name || "-";
+  document.getElementById("dashLicense").textContent = currentUser.license_number || "-";
+  if (latestResultData) { fillResultCard(latestResultData); }
+
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*&license_number=eq.${sanitizeValue(currentUser.license_number)}&order=created_at.desc&limit=1`);
+    if (!rows.length) { latestResultData = { exam_type:"—", total_questions:0, opened_questions:0, answered_questions:0, correct_answers:0, completion_percentage:0, score_percentage:0, exam_date:null }; } 
+    else { latestResultData = rows[0]; latestSavedResultId = rows[0].id || null; }
+    fillDashboard(latestResultData); fillResultCard(latestResultData); updateDashboardCharts(latestResultData);
+
+    const pending = await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?select=admin_username&license_number=eq.${sanitizeValue(currentUser.license_number)}&is_completed=eq.false&limit=1`);
+    const alertDiv = document.getElementById("pendingQuizAlert");
+    if (pending && pending.length > 0) {
+        let adName = pending[0].admin_username || "الأدمن";
+        if (!adName.toLowerCase().startsWith("dr.") && !adName.toLowerCase().startsWith("د.")) { adName = `Dr. ${adName}`; }
+        
+        if(alertDiv) {
+            alertDiv.innerHTML = `🔔 لديك كويز مخصص بانتظارك من <strong>${adName}</strong>! اضغط هنا للبدء.`;
+            alertDiv.classList.remove("hidden");
+        }
+        if (!hasShownQuizPopup) {
+            document.getElementById("newQuizModalText").innerHTML = `لقد أرسل لك <strong>${adName}</strong> اختباراً مخصصاً.<br>هل أنت مستعد للبدء وإثبات مهاراتك؟`;
+            document.getElementById("newQuizModal").classList.remove("hidden");
+            hasShownQuizPopup = true;
+        }
+    } else {
+        if(alertDiv) alertDiv.classList.add("hidden");
+    }
+  } catch(e) { console.error("loadDashboard error:", e.message); }
+}
+
+// 4. إصلاح مشكلة المراجعة (منع مسح الأسئلة بعد التسليم)
+async function submitQuiz() { 
+  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
+  if (currentAssignedQuizId) {
+     try { await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { method: "PATCH", body: JSON.stringify({ is_completed: true }) }); } 
+     catch (e) { console.warn("Failed to mark complete", e); }
+  }
+  showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
+  // متشيلش مصفوفة quizQuestions علشان المراجعة تلاقيها
+}
+
+// علشان زرار المراجعة يفتح الصح دايما
+const originalShowSection = showSection;
+showSection = function(name) {
+    if (name === "quiz" && (!quizQuestions || quizQuestions.length === 0)) {
+        startQuiz(); // لو داس على زرار القائمة والكويز فاضي، هيسحب من السيرفر
+        return;
+    }
+    originalShowSection(name);
+};
+// =========================================================================
 </script>
 </body>
 </html>
