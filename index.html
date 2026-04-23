@@ -1278,9 +1278,10 @@ async function assignQuizToSelectedUsers() {
 
 // ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT) ====================
 // متغير لتخزين الأقسام المحددة في الفلتر
-// ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT/FILTER) ====================
-let adminSelectedCategories = new Set(); // لتخزين الأقسام المحددة في الفلتر
-let adminAllAvailableCats = []; // لتخزين كل الأقسام المتاحة علشان أزرار التحديد
+// ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT/FILTER/SEARCH) ====================
+let adminSelectedCategories = new Set(); 
+let adminAllAvailableCats = []; 
+let adminSearchQuery = ""; // متغير لتخزين نص البحث
 
 async function loadAdminGlobalQBank() {
   const container = document.getElementById("adminGlobalQBankContainer");
@@ -1301,11 +1302,10 @@ async function loadAdminGlobalQBank() {
       return;
     }
 
-    // 1. استخراج الأقسام الموجودة في الداتابيز بدون تكرار
     adminAllAvailableCats = [...new Set(rows.map(q => q.category || 'General'))];
-    adminSelectedCategories = new Set(adminAllAvailableCats); // تحديد كل الأقسام كافتراضي
+    adminSelectedCategories = new Set(adminAllAvailableCats); 
+    adminSearchQuery = ""; // تصفير البحث عند فتح الشاشة
     
-    // 2. رسم واجهة الفلترة وهيكل الجدول الأساسي مع زراير التحديد
     let html = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
          <h3>📚 سجل بنك الأسئلة المحفوظ (<span id="adminDbQCount">${rows.length}</span> سؤال)</h3>
@@ -1315,7 +1315,11 @@ async function loadAdminGlobalQBank() {
          </div>
       </div>
 
-      <div style="margin-bottom: 20px; background: var(--surface-2); padding: 15px; border-radius: 16px; border: 1px dashed var(--border);">
+      <div style="margin-bottom: 15px;">
+         <input type="text" id="adminQBankSearch" class="form-control" placeholder="🔍 ابحث في الأسئلة (اكتب أي كلمة من السؤال أو القسم...)" oninput="handleAdminQBankSearch(this.value)" style="width: 100%; border: 2px solid var(--border); border-radius: 12px; padding: 12px 15px; font-weight: 800; background: var(--surface-3); color: var(--text);">
+      </div>
+
+      <div id="adminCategoryFilterBox" style="margin-bottom: 20px; background: var(--surface-2); padding: 15px; border-radius: 16px; border: 1px dashed var(--border); transition: 0.3s ease;">
          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; flex-wrap:wrap; gap:10px;">
              <label style="font-weight: 800; font-size: 0.95rem; color: var(--muted); margin:0;">🔍 فلترة حسب القسم:</label>
              <div style="display:flex; gap:8px;">
@@ -1349,7 +1353,6 @@ async function loadAdminGlobalQBank() {
       
     container.innerHTML = html;
     
-    // 3. ملء الجدول بالأسئلة لأول مرة
     renderAdminGlobalQBankTable();
     
   } catch (e) {
@@ -1357,7 +1360,26 @@ async function loadAdminGlobalQBank() {
   }
 }
 
-// ==================== دوال التحديد السريع للأقسام ====================
+// ========================================================
+// دي الدالة اللي بتخفي البوكس وتظهره (مهمة جداً تحطها مع الكود)
+function handleAdminQBankSearch(query) {
+  adminSearchQuery = query.trim().toLowerCase();
+  
+  // إخفاء بوكسات الأقسام لو فيه نص في البحث، وإظهارها لو البحث فاضي لراحة العين وتوسيع المساحة
+  const filterBox = document.getElementById("adminCategoryFilterBox");
+  if (filterBox) {
+      if (adminSearchQuery.length > 0) {
+          filterBox.style.display = "none"; // اختفي يا بوكس علشان أشوف الجدول
+      } else {
+          filterBox.style.display = "block"; // ارجع تاني لما البحث يفضى
+      }
+  }
+
+  renderAdminGlobalQBankTable();
+}
+// ==================== دوال البحث والتحديد السريع ====================
+
+
 function selectAllAdminCats() {
   adminSelectedCategories = new Set(adminAllAvailableCats);
   document.querySelectorAll('#adminGlobalQBankContainer .qbank-cat-box').forEach(el => el.classList.add('selected'));
@@ -1371,7 +1393,6 @@ function deselectAllAdminCats() {
 }
 
 // ==================== دوال الفلترة ورسم الجدول ====================
-// دالة التحكم في الفلتر (تحديد وإلغاء الأقسام عند الضغط على البوكس)
 function toggleAdminCatFilter(cat, el) {
   if (adminSelectedCategories.has(cat)) {
      adminSelectedCategories.delete(cat);
@@ -1380,34 +1401,48 @@ function toggleAdminCatFilter(cat, el) {
      adminSelectedCategories.add(cat);
      el.classList.add('selected');
   }
-  renderAdminGlobalQBankTable(); // تحديث الجدول فوراً
+  renderAdminGlobalQBankTable(); 
 }
 
-// دالة رسم الجدول بناءً على الأقسام المحددة في الفلتر
 function renderAdminGlobalQBankTable() {
   const tbody = document.getElementById("adminGlobalQBankTbody");
   if(!tbody) return;
 
-  // تصفية الأسئلة بناءً على الأقسام المحددة
-  const filteredQuestions = adminLoadedDbQuestions.filter(q => adminSelectedCategories.has(q.category || 'General'));
+  // 1. فلترة بناءً على الأقسام المحددة
+  let filteredQuestions = adminLoadedDbQuestions.filter(q => adminSelectedCategories.has(q.category || 'General'));
   
-  // تحديث عداد الأسئلة الظاهر فوق الجدول
+  // 2. فلترة بناءً على شريط البحث (Fuzzy Search)
+  if (adminSearchQuery) {
+      filteredQuestions = filteredQuestions.filter(q => {
+          const qText = String(q.question).toLowerCase();
+          const qCat = String(q.category).toLowerCase();
+          return qText.includes(adminSearchQuery) || qCat.includes(adminSearchQuery);
+      });
+  }
+
   const countEl = document.getElementById("adminDbQCount");
   if (countEl) countEl.textContent = filteredQuestions.length;
 
   if(filteredQuestions.length === 0) {
-     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">لا توجد أسئلة في الأقسام المحددة حالياً.</td></tr>`;
+     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--muted);">لا توجد أسئلة تطابق بحثك حالياً.</td></tr>`;
      return;
   }
 
   let trs = '';
   filteredQuestions.forEach(r => {
-    // حماية النص من كسر الـ HTML لو فيه علامات تنصيص
     const safeQuestion = String(r.question).replace(/"/g, '&quot;');
+    
+    // تمييز الكلمة المبحوث عنها (Highlight)
+    let highlightedQuestion = safeQuestion;
+    if (adminSearchQuery) {
+        const regex = new RegExp(`(${adminSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        highlightedQuestion = safeQuestion.replace(regex, '<span style="background: var(--orange); color: #fff; padding: 0 3px; border-radius: 4px;">$1</span>');
+    }
+
     trs += `
      <tr>
        <td><input type="checkbox" class="db-q-chk" value="${r.id}"></td>
-       <td style="max-width:250px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${safeQuestion}">${r.question}</td>
+       <td style="max-width:350px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="${safeQuestion}">${highlightedQuestion}</td>
        <td><span class="badge" style="background:var(--surface-3);color:var(--primary);">${r.category||'-'}</span></td>
        <td>${r.difficulty||'-'}</td>
        <td><button class="db-action-btn" onclick="openEditQuestionModal(${r.id})">✏️</button></td>
