@@ -581,7 +581,7 @@ button,input,select,textarea{font-family:inherit}
                </label>
            </div>
            <div style="display: flex; gap: 10px;">
-               <button class="btn btn-success" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة للكويز</button>
+               <button class="btn btn-success" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة </button>
                <button class="btn btn-danger" onclick="cancelStagedQuestions()">❌ إلغاء</button>
            </div>
         </div>
@@ -1229,7 +1229,7 @@ async function approveStagedQuestions() {
       } catch(e) { console.warn("Failed to save to global questions", e); }
   }
 
-  document.getElementById("stagedQuizInfo").innerHTML = `✅ تم اعتماد وتجهيز <strong>${adminStagedQuestions.length}</strong> سؤال للإرسال.`;
+  document.getElementById("stagedQuizInfo").innerHTML = `✅ تم اعتماد وتجهيز <strong>${adminStagedQuestions.length}</strong> سؤال .`;
   document.getElementById("adminReviewSection").classList.add('hidden');
   tempParsedQuestions = [];
 }
