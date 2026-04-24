@@ -646,7 +646,7 @@ button,input,select,textarea{font-family:inherit}
       </div>
     </section>
 
-    <section id="adminSection" class="section-box glass hidden">
+   <section id="adminSection" class="section-box glass hidden">
       <h2 class="section-title">👑 لوحة تحكم المشرف (Dashboard)</h2>
       <p class="section-subtitle">إدارة الكويزات، سحب الأسئلة، ومتابعة اليوزرز وتعيين الاختبارات لهم.</p>
       
@@ -690,7 +690,11 @@ button,input,select,textarea{font-family:inherit}
           💡 لا توجد أسئلة مجهزة حالياً للإرسال.
         </div>
 
-        <button class="btn btn-warning" style="margin-top: 15px; width:100%;" onclick="assignQuizToSelectedUsers()">🚀 إرسال الكويز المجهز للمستخدمين المحددين بالأسفل</button>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" style="flex: 1; background: var(--bg-3);" onclick="reviewStagedQuiz()">👁️ مراجعة الأسئلة المجهزة</button>
+            <button class="btn btn-warning" style="flex: 1;" onclick="assignQuizToSelectedUsers()">🚀 إرسال الكويز للمحددين</button>
+        </div>
+        
       </div>
 
       <div class="admin-toolbar" style="margin-top:25px;">
@@ -730,7 +734,6 @@ button,input,select,textarea{font-family:inherit}
 
   </div>
 </section>
-
 <div id="templateGuideModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
   <div class="glass" style="width: min(600px, 90%); padding: 24px; position: relative;">
     <button onclick="closeTemplateGuide()" style="position:absolute; top:15px; left:15px; background:var(--surface-3); border:1px solid var(--border); border-radius:50%; width:35px; height:35px; color:var(--danger); font-size:1.2rem; cursor:pointer; font-weight:bold;">✖</button>
@@ -752,6 +755,19 @@ button,input,select,textarea{font-family:inherit}
       <label>نص السؤال</label>
       <textarea id="sqQuestion" class="form-control" style="min-height: 80px; resize:vertical;"></textarea>
     </div>
+
+    <div class="form-group">
+      <label style="display: flex; align-items: center; justify-content: space-between;">
+        <span>رابط الصورة (اختياري)</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a href="https://postimages.org/" target="_blank" style="text-decoration: none;">
+            <button class="icon-btn" style="min-height: 25px; padding: 2px 10px; font-size: 0.75rem; background: var(--surface-3); border: 1px solid var(--primary);" title="ارفع الصورة هنا">🌐 ارفع صورة</button>
+          </a>
+          <span onclick="showToast('ادخل الموقع، ارفع صورتك، وانسخ الـ Direct Link اللي آخره .jpg أو .png وحطه هنا.', 'warning')" style="cursor: help; color: var(--primary); font-weight: 900; font-size: 1.1rem;">❓</span>
+        </div>
+      </label>
+      <input type="text" id="sqImageUrl" class="form-control" placeholder="https://i.postimg.cc/xxx/image.jpg">
+    </div>
     
     <div class="form-group" style="display:flex; gap:10px;">
        <div style="flex:1"><label>القسم</label><input type="text" id="sqCategory" class="form-control" placeholder="CVS, GIT..."></div>
@@ -762,7 +778,6 @@ button,input,select,textarea{font-family:inherit}
           </select>
        </div>
     </div>
-    
     <div class="form-group"><label>الاختيار الأول</label><input type="text" id="sqOpt0" class="form-control"></div>
     <div class="form-group"><label>الاختيار الثاني</label><input type="text" id="sqOpt1" class="form-control"></div>
     <div class="form-group"><label>الاختيار الثالث (اختياري)</label><input type="text" id="sqOpt2" class="form-control"></div>
@@ -869,18 +884,24 @@ let qbankQuestionsDB = [...localQbankQuestions];
 
 async function syncQuestionsFromDB() {
   try {
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*`);
+    // ضفنا التاريخ في الآخر عشان نضمن إن المتصفح ميجبش داتا قديمة متخزنة (Anti-Cache)
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*&t=${Date.now()}`);
+    
     if (rows && rows.length > 0) {
       const dbQuestions = rows.map(r => ({
         category: r.category || "General",
         difficulty: r.difficulty || "Medium",
         question: r.question,
+        // السطر المهم جداً اللي كان ناقص:
+        image_url: r.image_url || "", 
         options: typeof r.options === 'string' ? JSON.parse(r.options) : r.options,
         correct: r.correct,
         type: r.type,
         id: r.id 
       }));
+      
       qbankQuestionsDB = [...localQbankQuestions, ...dbQuestions];
+      console.log("✅ تم مزامنة الأسئلة بنجاح مع الصور.");
     }
   } catch(e) {
     console.warn("⚠️ لم يتم جلب الأسئلة من السيرفر.", e);
@@ -1348,24 +1369,37 @@ async function importAdminQuestions(input, type) {
 function renderAdminReviewList() {
   const list = document.getElementById("adminReviewList");
   list.innerHTML = "";
+  
   tempParsedQuestions.forEach((q, idx) => {
+    // تجهيز الاختيارات
     let optsHtml = q.options.map((opt, i) => {
       const isCorrect = i === q.correct;
       return `<span class="review-opt ${isCorrect ? 'correct' : ''}">${opt} ${isCorrect ? '✅' : ''}</span>`;
     }).join("");
+
+    // تجهيز كود الصورة لو موجودة في الملف المرفوع
+    let imgHtml = "";
+    if (q.image_url && q.image_url.trim() !== "") {
+      imgHtml = `
+        <div style="margin: 10px 0; text-align: right;">
+          <img src="${q.image_url}" 
+               style="max-width: 150px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer;" 
+               onclick="window.open(this.src, '_blank')"
+               title="اضغط للتكبير">
+        </div>`;
+    }
     
     list.innerHTML += `
-      <div class="review-item">
-        <div class="review-q-text">${idx+1}. ${q.question}</div>
-        <div style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">
-           [القسم: ${q.category||'General'}] [الصعوبة: ${q.difficulty||'Medium'}]
+      <div class="review-item" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
+        <div class="review-q-text">${idx + 1}. ${q.question}</div>
+        ${imgHtml} <div style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">
+           [القسم: ${q.category || 'General'}] [الصعوبة: ${q.difficulty || 'Medium'}]
         </div>
-        <div>${optsHtml}</div>
+        <div style="display: flex; flex-direction: column; gap: 5px;">${optsHtml}</div>
       </div>
     `;
   });
 }
-
 async function approveStagedQuestions() {
   adminStagedQuestions = [...adminStagedQuestions, ...tempParsedQuestions];
   
@@ -1413,11 +1447,14 @@ async function assignQuizToSelectedUsers() {
   }
 
   try {
+    // تجهيز البيانات المرسلة لكل صيدلي محدد
     const payload = Array.from(adminSelectedLicenses).map(lic => ({
       admin_username: currentUser.name || 'Admin', 
       license_number: lic,
+      // هنا بنبعت المصفوفة اللي فيها الأسئلة والصور (image_url) اللي اتراجعت
       questions_data: adminStagedQuestions,
-      is_completed: false
+      is_completed: false,
+      created_at: new Date().toISOString()
     }));
 
     await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes`, { 
@@ -1425,14 +1462,23 @@ async function assignQuizToSelectedUsers() {
       body: JSON.stringify(payload) 
     });
 
-    alert("🎉 تم إرسال الكويز المخصص للمستخدمين المحددين بنجاح!");
+    // إشعار نجاح
+    showToast("🎉 تم إرسال الكويز المخصص بنجاح!", "success");
+    
+    // تصفير المصفوفة المجهزة وشاشة التنبيه بعد الإرسال بنجاح
     adminStagedQuestions = [];
-    document.getElementById("stagedQuizInfo").innerHTML = `💡 تم الإرسال. لا توجد أسئلة مجهزة حالياً.`;
+    document.getElementById("stagedQuizInfo").innerHTML = `💡 تم الإرسال بنجاح. لا توجد أسئلة مجهزة حالياً.`;
+    
+    // إخفاء بوكس المراجعة لو كان مفتوح
+    document.getElementById('adminReviewSection').classList.add('hidden');
+    
+    // تحديث السجل للأدمن (اختياري لو حابب تشوف النتائج الجديدة)
+    // await loadAdminSharedResults();
+
   } catch (err) {
     alert("❌ حصلت مشكلة أثناء الإرسال: " + err.message);
   }
 }
-
 // ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT) ====================
 // متغير لتخزين الأقسام المحددة في الفلتر
 // ==================== ADMIN GLOBAL QBANK (ADD/EDIT/SELECT/FILTER/SEARCH) ====================
@@ -1614,28 +1660,39 @@ function toggleAllDbQuestions(checked) {
 
 function addSelectedDbQuestionsToStaged() {
   const checkboxes = document.querySelectorAll(".db-q-chk:checked");
-  if(checkboxes.length === 0) {
-      if (typeof showToast === "function") showToast("يرجى تحديد سؤال واحد على الأقل.", "warning");
-      else alert("يرجى تحديد سؤال واحد على الأقل.");
-      return;
+  
+  if (checkboxes.length === 0) {
+    if (typeof showToast === "function") showToast("يرجى تحديد سؤال واحد على الأقل.", "warning");
+    else alert("يرجى تحديد سؤال واحد على الأقل.");
+    return;
   }
   
   const selectedIds = Array.from(checkboxes).map(c => parseInt(c.value));
+  
   const selectedQs = adminLoadedDbQuestions.filter(q => selectedIds.includes(q.id)).map(q => ({
-     category: q.category, difficulty: q.difficulty, question: q.question, options: typeof q.options === 'string'?JSON.parse(q.options):q.options, correct: q.correct, type: q.type
+    category: q.category,
+    difficulty: q.difficulty,
+    question: q.question,
+    // السطر السحري اللي كان ناقص عشان الصورة تتنقل للكويز المجهز
+    image_url: q.image_url || "", 
+    options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+    correct: q.correct,
+    type: q.type
   }));
   
   adminStagedQuestions = [...adminStagedQuestions, ...selectedQs];
+  
   document.getElementById("stagedQuizInfo").innerHTML = `✅ تم إضافة ${selectedQs.length} سؤال بنجاح. الإجمالي المجهز للإرسال: <strong>${adminStagedQuestions.length}</strong> سؤال.`;
   
   if (typeof showToast === "function") {
-      showToast(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`, "success");
+    showToast(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`, "success");
   } else {
-      alert(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`);
+    alert(`تم إضافة ${selectedQs.length} سؤال للكويز المجهز.`);
   }
   
   checkboxes.forEach(c => c.checked = false);
 }
+
 // Modal Add/Edit
 function openAddQuestionModal() {
   document.getElementById("qModalTitle").textContent = "إضافة سؤال جديد";
@@ -1652,9 +1709,15 @@ function openAddQuestionModal() {
 function openEditQuestionModal(id) {
   const q = adminLoadedDbQuestions.find(x => x.id === id);
   if(!q) return;
+  
   document.getElementById("qModalTitle").textContent = "تعديل السؤال";
   document.getElementById("sqId").value = q.id;
   document.getElementById("sqQuestion").value = q.question;
+  
+  // --- السطر الجديد لجلب رابط الصورة ---
+  document.getElementById("sqImageUrl").value = q.image_url || "";
+  // ------------------------------------
+  
   document.getElementById("sqCategory").value = q.category;
   document.getElementById("sqDifficulty").value = q.difficulty;
   
@@ -1667,8 +1730,10 @@ function openEditQuestionModal(id) {
   
   document.getElementById("questionEditModal").classList.remove("hidden");
 }
-
 async function saveSingleQuestion() {
+  // 1. استخراج رابط الصورة من الحقل الجديد
+  const image_url = document.getElementById("sqImageUrl").value.trim();
+  
   const id = document.getElementById("sqId").value;
   const question = document.getElementById("sqQuestion").value.trim();
   const category = document.getElementById("sqCategory").value.trim() || "General";
@@ -1680,30 +1745,50 @@ async function saveSingleQuestion() {
     document.getElementById("sqOpt2").value.trim(),
     document.getElementById("sqOpt3").value.trim()
   ];
-  const options = rawOpts.filter(Boolean); // Remove empty options
+  const options = rawOpts.filter(Boolean); // إزالة الاختيارات الفارغة
   const correct = parseInt(document.getElementById("sqCorrect").value);
   
   if(!question || options.length < 2) return alert("يرجى إدخال السؤال واختيارين على الأقل.");
   if(correct >= options.length) return alert("الإجابة الصحيحة غير متطابقة مع عدد الاختيارات المتاحة.");
   
   const type = options.length === 2 ? 'T/F' : 'MCQ';
-  const payload = { question, category, difficulty, options, correct, type, admin_username: currentUser.username };
+
+  // 2. إضافة image_url لبيانات السؤال (Payload)
+  const payload = { 
+    question, 
+    category, 
+    difficulty, 
+    options, 
+    correct, 
+    type, 
+    admin_username: currentUser.username,
+    image_url: image_url // تم إضافة الرابط هنا
+  };
   
   try {
     if (id) {
-       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?id=eq.${id}`, { method:"PATCH", body:JSON.stringify(payload) });
+       // تحديث سؤال موجود
+       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?id=eq.${id}`, { 
+         method: "PATCH", 
+         body: JSON.stringify(payload) 
+       });
     } else {
-       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions`, { method:"POST", body:JSON.stringify([payload]) });
+       // إضافة سؤال جديد
+       await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions`, { 
+         method: "POST", 
+         body: JSON.stringify([payload]) 
+       });
     }
+    
     document.getElementById("questionEditModal").classList.add("hidden");
     alert("تم حفظ السؤال بنجاح!");
+    
     await syncQuestionsFromDB();
-    loadAdminGlobalQBank(); // Refresh table
+    loadAdminGlobalQBank(); // تحديث الجدول في لوحة الأدمن
   } catch(e) {
     alert("فشل حفظ السؤال: " + e.message);
   }
 }
-
 // ==================== USER: CUSTOM ASSIGNED QUIZ ====================
 async function startQuiz() {
   if (!currentUser) return;
@@ -1753,46 +1838,78 @@ function renderQuestion() {
   const q = quizQuestions[currentQuestionIndex];
   openedQuestions.add(currentQuestionIndex);
   
-  document.getElementById("questionNumber").textContent = `السؤال ${currentQuestionIndex+1} من ${quizQuestions.length}`;
-  document.getElementById("questionText").textContent   = q.question;
+  document.getElementById("questionNumber").textContent = `السؤال ${currentQuestionIndex + 1} من ${quizQuestions.length}`;
   
+  // --- عرض نص السؤال مع الصورة (التعديل الجديد) ---
+  let questionHTML = `<div>${q.question}</div>`;
+  
+  // التشيك على وجود رابط صورة في بيانات الكويز المخصص
+  if (q.image_url && q.image_url.trim() !== "") {
+    questionHTML += `
+      <div style="margin-top: 15px; text-align: center;">
+        <img src="${q.image_url}" 
+             style="max-width: 100%; max-height: 350px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-soft); cursor: zoom-in;" 
+             onclick="window.open(this.src, '_blank')"
+             alt="Quiz Image">
+      </div>`;
+  }
+  
+  // بنستخدم innerHTML بدل textContent عشان الصورة تظهر
+  document.getElementById("questionText").innerHTML = questionHTML;
+  // -------------------------------------------
+
   const c = document.getElementById("optionsContainer");
   c.innerHTML = "";
   
   if (q.options.length === 2) {
-    c.style.display = "grid"; c.style.gridTemplateColumns = "1fr 1fr"; c.style.gap = "15px";
+    c.style.display = "grid"; 
+    c.style.gridTemplateColumns = "1fr 1fr"; 
+    c.style.gap = "15px";
   } else {
-    c.style.display = "flex"; c.style.flexDirection = "column"; c.style.gap = "12px";
+    c.style.display = "flex"; 
+    c.style.flexDirection = "column"; 
+    c.style.gap = "12px";
   }
 
-  q.options.forEach((opt,i) => {
+  q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     const cleanOpt = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
-    btn.className = `option-btn ${userAnswers[currentQuestionIndex]===i?"selected":""}`;
+    btn.className = `option-btn ${userAnswers[currentQuestionIndex] === i ? "selected" : ""}`;
     btn.textContent = cleanOpt;
-    btn.onclick = () => { userAnswers[currentQuestionIndex]=i; renderQuestion(); };
+    btn.onclick = () => { 
+      userAnswers[currentQuestionIndex] = i; 
+      renderQuestion(); 
+    };
     c.appendChild(btn);
   });
   
-  updateQuizMeta("totalQuestionsLabel","openedQuestionsLabel","answeredQuestionsLabel","quizProgressBar", quizQuestions, userAnswers, openedQuestions);
+  updateQuizMeta("totalQuestionsLabel", "openedQuestionsLabel", "answeredQuestionsLabel", "quizProgressBar", quizQuestions, userAnswers, openedQuestions);
 }
+
 function prevQuestion() { if (currentQuestionIndex>0){ currentQuestionIndex--; renderQuestion(); } }
 function nextQuestion() { if (currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; renderQuestion(); } }
 
 async function submitQuiz() { 
+  // 1. تحديث حالة الكويز في الداتابيز أولاً لمنع التكرار
+  if (currentAssignedQuizId) {
+     try { 
+         await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { 
+             method: "PATCH", 
+             body: JSON.stringify({ is_completed: true }) 
+         }); 
+     } catch (e) { console.warn("Failed to mark complete", e); }
+  }
+
+  // 2. إخفاء التنبيه من الشاشة فوراً عشان ميظهرش تاني
+  document.getElementById("pendingQuizAlert").classList.add("hidden");
+  hasShownQuizPopup = false; 
+
+  // 3. حفظ النتيجة (ودي بتحدث الداشبورد)
   await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
   
-  if (currentAssignedQuizId) {
-     try {
-         await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, {
-             method: "PATCH",
-             body: JSON.stringify({ is_completed: true })
-         });
-     } catch (e) { console.warn("Failed to mark assigned quiz as complete", e); }
-  }
+  showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
   
-  // تفريغ بيانات الكويز بعد التسليم
-  quizQuestions = [];
+  // تصفير الـ ID عشان ميشتغلش تاني
   currentAssignedQuizId = null;
 }
 function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers, opened) {
@@ -1880,17 +1997,37 @@ function generateAndStartQbank() {
 }
 
 function renderQbankQuestion() {
-  if(!activeQbankQuestions.length) return;
+  if (!activeQbankQuestions.length) return;
   const q = activeQbankQuestions[qbankCurrentQuestionIndex];
   qbankOpenedQuestions.add(qbankCurrentQuestionIndex);
 
-  document.getElementById("qbankQuestionNumber").textContent = `السؤال ${qbankCurrentQuestionIndex+1} من ${activeQbankQuestions.length}`;
-  document.getElementById("qbankQuestionText").textContent = q.question;
+  document.getElementById("qbankQuestionNumber").textContent = `السؤال ${qbankCurrentQuestionIndex + 1} من ${activeQbankQuestions.length}`;
   
+  // تجهيز محتوى السؤال
+  let questionHTML = `<div style="margin-bottom: 10px;">${q.question}</div>`;
+  
+  // التأكد من وجود رابط الصورة وعرضه
+  if (q.image_url && q.image_url.trim() !== "") {
+    questionHTML += `
+      <div style="margin: 15px 0; text-align: center; width: 100%;">
+        <img src="${q.image_url.trim()}" 
+             style="max-width: 100%; max-height: 350px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow-soft); cursor: zoom-in; object-fit: contain; background: #f9f9f9;" 
+             onclick="window.open(this.src, '_blank')"
+             onerror="this.style.display='none'"
+             alt="Question Image">
+      </div>`;
+  }
+  
+  // حقن المحتوى في العنصر
+  const qTextElement = document.getElementById("qbankQuestionText");
+  qTextElement.innerHTML = questionHTML;
+
+  // تحديث بيانات القسم والصعوبة
   document.getElementById("qbankQuestionBadgeCategory").textContent = `🏷️ ${q.category}`;
-  const diffColors = { "Easy":"🟢 سهل", "Medium":"🟡 متوسط", "Hard":"🔴 صعب" };
+  const diffColors = { "Easy": "🟢 سهل", "Medium": "🟡 متوسط", "Hard": "🔴 صعب" };
   document.getElementById("qbankQuestionBadgeDiff").textContent = diffColors[q.difficulty] || q.difficulty;
 
+  // تجهيز الحاوية للاختيارات
   const c = document.getElementById("qbankOptionsContainer");
   c.innerHTML = "";
 
@@ -1907,18 +2044,18 @@ function renderQbankQuestion() {
   q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     const cleanOpt = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
-    
+
     btn.className = `option-btn ${qbankUserAnswers[qbankCurrentQuestionIndex] === i ? "selected" : ""}`;
     btn.textContent = cleanOpt;
-    
-    btn.onclick = () => { 
-      qbankUserAnswers[qbankCurrentQuestionIndex] = i; 
-      renderQbankQuestion(); 
+
+    btn.onclick = () => {
+      qbankUserAnswers[qbankCurrentQuestionIndex] = i;
+      renderQbankQuestion();
     };
     c.appendChild(btn);
   });
 
-  updateQuizMeta("qbankTotalQuestionsLabel","qbankOpenedQuestionsLabel","qbankAnsweredQuestionsLabel","qbankProgressBar", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions);
+  updateQuizMeta("qbankTotalQuestionsLabel", "qbankOpenedQuestionsLabel", "qbankAnsweredQuestionsLabel", "qbankProgressBar", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions);
 }
 
 function prevQbankQuestion() { if (qbankCurrentQuestionIndex>0){ qbankCurrentQuestionIndex--; renderQbankQuestion(); } }
@@ -1991,11 +2128,22 @@ function startReview() {
 
 function renderReviewQuestion() {
   const q = reviewQuestions[reviewCurrentIndex];
-  const userAns = reviewUserAnswers[reviewCurrentIndex];
-  const correctAns = q.correct;
+  
+  // استخدام parseInt للتأكد إن المقارنة بين أرقام مش نصوص
+  const userAns = parseInt(reviewUserAnswers[reviewCurrentIndex]);
+  const correctAns = parseInt(q.correct);
 
   document.getElementById("reviewQuestionNumber").textContent = `السؤال ${reviewCurrentIndex + 1} من ${reviewQuestions.length}`;
-  document.getElementById("reviewQuestionText").textContent = q.question;
+  
+  // إضافة دعم الصورة في المراجعة
+  let questionHTML = `<div>${q.question}</div>`;
+  if (q.image_url && q.image_url.trim() !== "") {
+    questionHTML += `
+      <div style="margin-top: 15px; text-align: center;">
+        <img src="${q.image_url}" style="max-width: 100%; max-height: 250px; border-radius: 12px; border: 1px solid var(--border);">
+      </div>`;
+  }
+  document.getElementById("reviewQuestionText").innerHTML = questionHTML;
 
   const c = document.getElementById("reviewOptionsContainer");
   c.innerHTML = "";
@@ -2009,18 +2157,24 @@ function renderReviewQuestion() {
   q.options.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
-    btn.textContent = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
     btn.style.cursor = "default";
     
+    let optText = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
+    
+    // منطق الألوان والأيقونات
     if (i === correctAns) {
       btn.classList.add("correct-answer");
-    } else if (i === userAns && userAns !== correctAns) {
+      optText += " ✅ (الصحيحة)";
+    } 
+    if (i === userAns && userAns !== correctAns) {
       btn.classList.add("wrong-answer");
+      optText += " ❌ (إجابتك)";
     }
+
+    btn.textContent = optText;
     c.appendChild(btn);
   });
 }
-
 function prevReviewQuestion() { if (reviewCurrentIndex > 0) { reviewCurrentIndex--; renderReviewQuestion(); } }
 function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } }
 
@@ -2367,6 +2521,17 @@ window.addEventListener("DOMContentLoaded", async () => {
     // في حالة مفيش نت، ممكن تختار تدخله بالبيانات المحفوظة أو تسيبه في صفحة اللوج إن
   }
 });
+// 2. دالة جديدة للأدمن لمراجعة الكويز المجهز قبل إرساله
+function reviewStagedQuiz() {
+    if (adminStagedQuestions.length === 0) return showToast("لا توجد أسئلة مجهزة لمراجعتها.", "warning");
+    
+    // هنستخدم نفس مصفوفة المراجعة بس هنملاها بالأسئلة المجهزة
+    tempParsedQuestions = [...adminStagedQuestions];
+    renderAdminReviewList();
+    document.getElementById('adminReviewSection').classList.remove('hidden');
+    // نطلع لفوق علشان يشوف المراجعة
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 // =========================================================================
 </script>
 </body>
