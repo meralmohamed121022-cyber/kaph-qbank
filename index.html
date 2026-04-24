@@ -437,16 +437,20 @@ button,input,select,textarea{font-family:inherit}
     </div>
    
 
-    <div class="mode-switcher">
-      <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
-      <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
-      <button id="quizBtn" class="mode-btn" onclick="showSection('quiz')">📝 Quiz (مخصص)</button>
-      <button id="qbankBtn" class="mode-btn" onclick="showSection('qbank')">🧪 QBank</button>
-      <button id="historyBtn" class="mode-btn" onclick="showSection('history')">📋 السجل</button>
-      <button id="resultBtn" class="mode-btn hidden" onclick="showSection('result')">🏆 النتيجة</button>
-      <button id="reviewBtn" class="mode-btn hidden" onclick="showSection('review')">👁️ المراجعة</button>
-      <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
-    </div>
+   <div class="mode-switcher">
+  <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
+  <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
+
+  <button id="quizBtn" class="mode-btn" onclick="startQuiz()">📝 Quiz (مخصص)</button>
+
+  <button id="qbankBtn" class="mode-btn" onclick="showSection('qbank')">🧪 QBank</button>
+  <button id="historyBtn" class="mode-btn" onclick="showSection('history')">📋 السجل</button>
+  <button id="resultBtn" class="mode-btn hidden" onclick="showSection('result')">🏆 النتيجة</button>
+
+  <button id="reviewBtn" class="mode-btn hidden" onclick="startReview()">👁️ المراجعة</button>
+
+  <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
+</div>
 
     <section id="dashboardSection">
       <div class="stats-grid">
@@ -825,6 +829,7 @@ const headers = {
 };
 
 // ==================== STATE ====================
+
 let currentUser            = null;
 let isAdminSession         = false;
 let currentCategory        = "All";
@@ -837,6 +842,8 @@ let adminSelectedLicenses  = new Set();
 let doughnutChart          = null;
 let barChart               = null;
 let historyLineChart       = null;
+let latestReviewPayload = null;
+
 
 // User Custom Quiz State
 let quizQuestions = [];
@@ -874,38 +881,66 @@ const flashcardsDB = [
 ];
 
 // ==================== QBANK DATABASE ====================
-const localQbankQuestions = [
-  { "category": "Endocrine", "difficulty": "Medium", "question": "Patients taking Metformin should consider supplementation with:", "options": ["Vitamin C", "Vitamin B12", "Vitamin D", "Vitamin E"], "correct": 1 },
-  { "category": "OTC", "difficulty": "Medium", "question": "What is the maximum safe daily dose of Paracetamol for healthy adults?", "options": ["2 grams", "3 grams", "4 grams (4000 mg)", "6 grams"], "correct": 2 },
-  { "category": "General", "difficulty": "Easy", "question": "Is paracetamol an NSAID?", "options": ["Yes", "No"], "correct": 1 }
-];
-
-let qbankQuestionsDB = [...localQbankQuestions];
+let qbankQuestionsDB = [];
 
 async function syncQuestionsFromDB() {
-  try {
-    // ضفنا التاريخ في الآخر عشان نضمن إن المتصفح ميجبش داتا قديمة متخزنة (Anti-Cache)
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*&t=${Date.now()}`);
-    
-    if (rows && rows.length > 0) {
-      const dbQuestions = rows.map(r => ({
-        category: r.category || "General",
-        difficulty: r.difficulty || "Medium",
-        question: r.question,
-        // السطر المهم جداً اللي كان ناقص:
-        image_url: r.image_url || "", 
-        options: typeof r.options === 'string' ? JSON.parse(r.options) : r.options,
-        correct: r.correct,
-        type: r.type,
-        id: r.id 
-      }));
-      
-      qbankQuestionsDB = [...localQbankQuestions, ...dbQuestions];
-      console.log("✅ تم مزامنة الأسئلة بنجاح مع الصور.");
+    try {
+        const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=*`);
+        
+        if (rows && rows.length > 0) {
+            const dbQuestions = rows.map(r => {
+                let opts = [];
+                try {
+                    opts = typeof r.options === "string" ? JSON.parse(r.options) : (r.options || []);
+                } catch(e) { 
+                    opts = [];
+                }
+
+                return {
+                    category: r.category ? r.category.trim() : "General",
+                    difficulty: r.difficulty || "Medium",
+                    question: r.question || "",
+                    image_url: r.image_url && r.image_url.trim() !== "" ? r.image_url : "",
+                    options: Array.isArray(opts) ? opts : [],
+                    correct: parseInt(r.correct || 0),
+                    type: r.type || "MCQ",
+                    id: r.id
+                };
+            });
+            
+            qbankQuestionsDB = [...dbQuestions];
+            console.log("تم سحب الأسئلة من سوبابيز بنجاح العدد: ", qbankQuestionsDB.length);
+        } else {
+            qbankQuestionsDB = [];
+        }
+
+        if (typeof buildUserQbankCategories === "function") {
+            buildUserQbankCategories();
+        }
+    } catch (e) {
+        console.warn("خطأ في سحب الأسئلة: ", e);
     }
-  } catch(e) {
-    console.warn("⚠️ لم يتم جلب الأسئلة من السيرفر.", e);
-  }
+}
+
+function buildUserQbankCategories() {
+    const catSelector = document.getElementById("qbankCatSelector");
+    if (!catSelector) return;
+
+    // استخراج الأقسام وتوحيد حالة الأحرف (Trim) وإزالة الفارغ
+    const uniqueCats = [...new Set(qbankQuestionsDB.map(q => {
+        let cat = q.category ? q.category.trim() : 'General';
+        return cat === "" ? 'General' : cat;
+    }))];
+
+    // الترتيب الأبجدي للأقسام
+    uniqueCats.sort();
+
+    // البناء الصحيح للـ HTML (مع إضافة أقواس () للـ toLowerCase)
+    catSelector.innerHTML = uniqueCats.map(cat => `
+        <div class="qbank-cat-box" data-cat="${cat.toLowerCase()}" onclick="this.classList.toggle('selected')">
+            ${cat}
+        </div>
+    `).join('');
 }
 
 // ==================== UTILS ====================
@@ -1790,48 +1825,71 @@ async function saveSingleQuestion() {
 }
 // ==================== USER: CUSTOM ASSIGNED QUIZ ====================
 async function startQuiz() {
-  if (!currentUser) return;
+  // 1. التأكد من وجود بيانات المستخدم ورقم الرخصة قبل أي إجراء
+  if (!currentUser || !currentUser.license_number) {
+    alert("يجب تسجيل الدخول أولاً!");
+    return;
+  }
   
-  // لو الكويز مفتوح ومتحمل مسبقاً، كمل من مكان ما وقفت
-  if (quizQuestions.length > 0 && currentAssignedQuizId) {
+  // 2. لو الكويز مفتوح ومتحمل مسبقاً (مصفوفة الأسئلة موجودة)، كمل من مكان ما وقفت
+  if (quizQuestions && quizQuestions.length > 0 && currentAssignedQuizId) {
      showSection("quiz");
      renderQuestion();
      return;
   }
 
   try {
-    // سحب الكويز من الداتابيز
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?select=*&license_number=eq.${currentUser.license_number}&is_completed=eq.false&order=created_at.asc&limit=1`);
+    // 3. تأمين رقم الرخصة (Sanitization) لتجنب أخطاء تكوين الرابط (URL)
+    const safeLicense = sanitizeValue(currentUser.license_number);
+    const url = `${SUPABASE_URL}/rest/v1/assigned_quizzes?select=*&license_number=eq.${safeLicense}&is_completed=eq.false&order=created_at.asc&limit=1`;
     
-    if(rows && rows.length > 0) {
-        let fetchedData = rows[0].questions_data;
+    // سحب الكويز من الداتابيز
+    const rows = await supabaseRequest(url);
+    
+    if (rows && rows.length > 0) {
+        const quizRecord = rows[0];
+        let fetchedData = quizRecord.questions_data;
         
-        // تحويل الداتا لـ Object لو راجعة String
+        // تحويل الداتا لـ Object في حال رجوعها كـ String من الداتابيز
         if (typeof fetchedData === 'string') {
             fetchedData = JSON.parse(fetchedData);
         }
         
-        quizQuestions = fetchedData;
-        currentAssignedQuizId = rows[0].id;
+        // 4. التحقق من أن البيانات عبارة عن مصفوفة أسئلة صحيحة وليست فارغة لمنع تحطم الواجهة
+        if (!Array.isArray(fetchedData) || fetchedData.length === 0) {
+            alert("⚠️ الكويز المخصص لك لا يحتوي على أسئلة أو أن صيغته غير صحيحة.");
+            return;
+        }
         
+        // تحديث المتغيرات العامة (State) الخاصة ببيانات الاختبار
+        quizQuestions = fetchedData;
+        currentAssignedQuizId = quizRecord.id;
         currentQuestionIndex = 0;
         userAnswers = new Array(quizQuestions.length).fill(null);
-        openedQuestions = new Set([0]);
+        openedQuestions = new Set([0]); // تسجيل أول سؤال كمقروء/مفتوح
         
-        document.getElementById("totalQuestionsLabel").textContent = quizQuestions.length;
-        document.getElementById("pendingQuizAlert").classList.add("hidden");
+        // تحديث إحصائيات الواجهة
+        const totalLabel = document.getElementById("totalQuestionsLabel");
+        if (totalLabel) totalLabel.textContent = quizQuestions.length;
         
+        // إخفاء إشعار "يوجد كويز جديد"
+        const pendingAlert = document.getElementById("pendingQuizAlert");
+        if (pendingAlert) pendingAlert.classList.add("hidden");
+        
+        // الانتقال للقسم الخاص وعرض أول سؤال
         showSection("quiz");
-        renderQuestion();
+        renderQuestion(); // دالة renderQuestion ستقوم بتحديث الـ ProgressBar والأسئلة المفتوحة
+        
     } else {
-
         alert("🎉 مفيش كويزات مخصصة جديدة ليك حالياً من المشرف. تقدر تتدرب في الـ QBank براحتك!");
-
     }
-  } catch (e) {
-    alert("مشكلة في الاتصال بالسيرفر. تأكد من الإنترنت.");
+  } catch (error) {
+    // 5. طباعة الخطأ في الكونسول لتسهيل تتبع المشاكل المستقبلية
+    console.error("Error fetching assigned quiz:", error);
+    alert("⚠️ مشكلة في الاتصال بالسيرفر. تأكد من الإنترنت وحاول مرة أخرى.");
   }
 }
+
 function renderQuestion() {
   if (!quizQuestions.length) return;
   const q = quizQuestions[currentQuestionIndex];
@@ -1889,7 +1947,6 @@ function prevQuestion() { if (currentQuestionIndex>0){ currentQuestionIndex--; r
 function nextQuestion() { if (currentQuestionIndex<quizQuestions.length-1){ currentQuestionIndex++; renderQuestion(); } }
 
 async function submitQuiz() { 
-  // 1. تحديث حالة الكويز في الداتابيز أولاً لمنع التكرار
   if (currentAssignedQuizId) {
      try { 
          await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { 
@@ -1899,17 +1956,21 @@ async function submitQuiz() {
      } catch (e) { console.warn("Failed to mark complete", e); }
   }
 
-  // 2. إخفاء التنبيه من الشاشة فوراً عشان ميظهرش تاني
-  document.getElementById("pendingQuizAlert").classList.add("hidden");
-  hasShownQuizPopup = false; 
+  const pendingAlert = document.getElementById("pendingQuizAlert");
+  if (pendingAlert) pendingAlert.classList.add("hidden");
+  if (typeof hasShownQuizPopup !== 'undefined') hasShownQuizPopup = false; 
 
-  // 3. حفظ النتيجة (ودي بتحدث الداشبورد)
   await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
   
-  showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
+  if (typeof showToast === "function") {
+      showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
+  } else {
+      alert("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!");
+  }
   
-  // تصفير الـ ID عشان ميشتغلش تاني
+  // تصفير الـ ID عشان الكويز ميفتحش تاني من الداشبورد
   currentAssignedQuizId = null;
+  // ⚠️ ملحوظة: شيلنا سطر quizQuestions = [] عشان المراجعة تشتغل
 }
 function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers, opened) {
   const answered = answers.filter(v=>v!==null).length;
@@ -1936,63 +1997,84 @@ async function startQbank() {
   document.getElementById("qbankSetup").classList.remove("hidden");
   document.getElementById("qbankQuizArea").classList.add("hidden");
 
-  catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 15px;">⏳ جاري سحب الأقسام من قاعدة البيانات...</p>`;
+  catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 15px;">⏳ جاري تحديث بنك الأسئلة...</p>`;
 
-  try {
-    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=category`);
+  // السطر ده هو قلب التعديل: بنحدث الأسئلة كلها ونتأكد إنها سليمة الأول
+  await syncQuestionsFromDB();
+
+  // دلوقتي بنبني الأقسام من الأسئلة اللي رجعت ونجحت في الفحص
+  if (qbankQuestionsDB && qbankQuestionsDB.length > 0) {
+    // استخراج الأقسام الفريدة وترتيبها أبجدياً
+    const dbCats = [...new Set(qbankQuestionsDB.map(r => r.category))].sort();
     
-    if (rows && rows.length > 0) {
-      const dbCats = [...new Set(rows.map(r => r.category || 'General'))];
-      
-      // مسح كلمة "جاري فحص" ورسم الصناديق
-      catGrid.innerHTML = dbCats.map(cat => `
-        <div class="qbank-cat-box selected" data-cat="${cat}" onclick="this.classList.toggle('selected')">
-          ${cat}
-        </div>
-      `).join('');
-    } else {
-      catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">⚠️ البنك فارغ حالياً.</p>`;
-    }
-  } catch (e) {
-    catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">❌ فشل الاتصال بالسيرفر.</p>`;
+    // رسم الصناديق وتحديدها بشكل افتراضي
+    catGrid.innerHTML = dbCats.map(cat => `
+      <div class="qbank-cat-box selected" data-cat="${cat.toLowerCase()}" onclick="this.classList.toggle('selected')">
+        ${cat}
+      </div>
+    `).join('');
+  } else {
+    catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">⚠️ بنك الأسئلة فارغ أو لا يمكن الاتصال بالسيرفر.</p>`;
   }
 }
-
 function generateAndStartQbank() {
-  const selectedBoxes = document.querySelectorAll(".qbank-cat-box.selected");
-  const selectedCats = Array.from(selectedBoxes).map(b => b.getAttribute("data-cat"));
-  const diffFilter = document.getElementById("qbankDifficultyFilter").value;
-  const qCountInput = document.getElementById("qbankQuestionCount");
-  const requestedCount = qCountInput ? parseInt(qCountInput.value) : 10;
+    // 1. نجيب كل الأقسام اللي اليوزر اختارها
+    const selectedBoxes = document.querySelectorAll("#qbankCatSelector .qbank-cat-box.selected");
+    
+    // 2. نستخرج اسم القسم ونخليه حروف صغيرة عشان يطابق الداتابيز بدون أخطاء
+    const selectedCats = Array.from(selectedBoxes).map(b => 
+        (b.getAttribute("data-cat") || b.textContent).trim().toLowerCase()
+    );
 
-  if (selectedCats.length === 0) {
-    return alert("الرجاء تحديد قسم واحد على الأقل للبدء.");
-  }
+    const diffFilter = document.getElementById("qbankDifficultyFilter").value;
+    const qCountInput = document.getElementById("qbankQuestionCount");
+    const requestedCount = qCountInput ? parseInt(qCountInput.value) || 10 : 10;
 
-  let filtered = qbankQuestionsDB.filter(q => selectedCats.includes(q.category));
+    // 3. لو اليوزر مختارش ولا قسم
+    if (selectedCats.length === 0) {
+        if (typeof showToast === 'function') showToast("يرجى تحديد قسم واحد على الأقل", "warning");
+        else alert("يرجى تحديد قسم واحد على الأقل");
+        return;
+    }
 
-  if (diffFilter !== "All") {
-    filtered = filtered.filter(q => q.difficulty === diffFilter);
-  }
+    // 4. فلترة الأسئلة من qbankQuestionsDB (اللي جاية من سوبابيز)
+    let filtered = qbankQuestionsDB.filter(q => {
+        // تنظيف اسم القسم في الداتابيز عشان يطابق اللي اليوزر اختاره
+        let safeCategory = (q.category || "General").trim().toLowerCase();
+        
+        let matchCat = selectedCats.includes(safeCategory);
+        let matchDiff = (diffFilter === "All" || (q.difficulty || "Medium").trim().toLowerCase() === diffFilter.toLowerCase());
 
-  if (filtered.length === 0) {
-    return alert("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.");
-  }
+        return matchCat && matchDiff;
+    });
 
-  activeQbankQuestions = shuffleArray([...filtered]).slice(0, Math.min(requestedCount, filtered.length));
-  
-  qbankCurrentQuestionIndex = 0;
-  qbankUserAnswers = new Array(activeQbankQuestions.length).fill(null);
-  qbankOpenedQuestions = new Set([0]);
+    // 5. لو مفيش أسئلة مطابقة للفلتر
+    if (filtered.length === 0) {
+        if (typeof showToast === 'function') showToast("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.", "warning");
+        else alert("لا توجد أسئلة متوفرة بهذه المواصفات. جرب تغيير الخيارات.");
+        return;
+    }
 
-  document.getElementById("qbankTotalQuestionsLabel").textContent = activeQbankQuestions.length;
-  const catNames = selectedCats.length > 2 ? `${selectedCats.length} أقسام` : selectedCats.join(" + ");
-  document.getElementById("qbankCurrentBadge").textContent = catNames;
+    // 6. تشغيل الأسئلة
+    activeQbankQuestions = shuffleArray([...filtered]).slice(0, Math.min(requestedCount, filtered.length));
+    
+    qbankCurrentQuestionIndex = 0;
+    qbankUserAnswers = new Array(activeQbankQuestions.length).fill(null);
+    qbankOpenedQuestions = new Set([0]);
 
-  document.getElementById("qbankSetup").classList.add("hidden");
-  document.getElementById("qbankQuizArea").classList.remove("hidden");
-  
-  renderQbankQuestion();
+    // تحديث العدادات فوق
+    const totalLabel = document.getElementById("qbankTotalQuestionsLabel");
+    if(totalLabel) totalLabel.textContent = activeQbankQuestions.length;
+    
+    const catNames = selectedCats.length > 2 ? "أقسام متعددة" : selectedCats.map(c => c.toUpperCase()).join(", ");
+    const badge = document.getElementById("qbankCurrentBadge");
+    if(badge) badge.textContent = catNames;
+
+    // إخفاء صفحة الإعدادات وإظهار منطقة الأسئلة
+    document.getElementById("qbankSetup").classList.add("hidden");
+    document.getElementById("qbankQuizArea").classList.remove("hidden");
+
+    renderQbankQuestion();
 }
 
 function renderQbankQuestion() {
@@ -2064,11 +2146,21 @@ async function submitQbankQuiz() { await saveExamResult("QBank", activeQbankQues
 // ==================== SAVE RESULT ====================
 async function saveExamResult(examType, questions, answers, openedSet, autoShare = false) {
   if (!currentUser || isAdminSession) return;
+  
+  // التعديل هنا: حفظ نسخة من الأسئلة والإجابات لاستخدامها في شاشة المراجعة لاحقاً
+  latestReviewPayload = {
+    examType: examType,
+    questions: JSON.parse(JSON.stringify(questions)), // Deep copy عشان نتجنب فقدان البيانات
+    answers: [...answers] // أخذ نسخة من المصفوفة
+  };
+
   const totalQuestions    = questions.length;
   const answeredQuestions = answers.filter(v=>v!==null).length;
   const openedCount       = openedSet.size;
+  
   let correctAnswers = 0;
   questions.forEach((q,i) => { if (answers[i]===q.correct) correctAnswers++; });
+  
   const completionPercentage = totalQuestions ? Number(((answeredQuestions/totalQuestions)*100).toFixed(2)) : 0;
   const scorePercentage      = totalQuestions ? Number(((correctAnswers/totalQuestions)*100).toFixed(2)) : 0;
   const examDate = new Date().toISOString();
@@ -2095,6 +2187,7 @@ async function saveExamResult(examType, questions, answers, openedSet, autoShare
     latestResultData    = payload[0];
     latestSavedResultId = null;
   }
+  
   fillDashboard(latestResultData);
   fillResultCard(latestResultData);
   updateDashboardCharts(latestResultData);
@@ -2103,61 +2196,88 @@ async function saveExamResult(examType, questions, answers, openedSet, autoShare
   document.getElementById("reviewBtn").classList.remove("hidden");
   showSection("result");
 }
-
 // ==================== REVIEW ANSWERS ====================
 function startReview() {
-  if (!latestResultData) return;
-  
-  if (latestResultData.exam_type === "QBank") {
-    reviewQuestions = activeQbankQuestions;
-    reviewUserAnswers = qbankUserAnswers;
-  } else {
-    reviewQuestions = quizQuestions;
-    reviewUserAnswers = userAnswers;
+  // الاعتماد الأول على النسخة المحفوظة وقت التسليم
+  if (typeof latestReviewPayload !== 'undefined' && latestReviewPayload && latestReviewPayload.questions) {
+    reviewQuestions = latestReviewPayload.questions;
+    reviewUserAnswers = latestReviewPayload.answers;
+  } 
+  // كاحتياطي في حالة استخدام كود قديم
+  else if (latestResultData) {
+    if (latestResultData.exam_type === "QBank") {
+      reviewQuestions = activeQbankQuestions;
+      reviewUserAnswers = qbankUserAnswers;
+    } else {
+      reviewQuestions = quizQuestions;
+      reviewUserAnswers = userAnswers;
+    }
   }
-  
+
+  // فحص إذا كانت الأسئلة غير موجودة
   if (!reviewQuestions || reviewQuestions.length === 0) {
-      alert("عذراً، بيانات الأسئلة غير متوفرة للمراجعة حالياً.");
-      return;
+    alert("عذراً، بيانات الأسئلة غير متوفرة للمراجعة حالياً.");
+    return;
   }
 
   reviewCurrentIndex = 0;
   
-  // السطر اللي كان ناقص عشان الشاشة متبقاش بيضاء
-  renderReviewQuestion(); 
-  
+  // تشغيل دوال العرض
   showSection("review");
+  renderReviewQuestion(); 
 }
-
 function renderReviewQuestion() {
+  // 1. حماية من المصفوفات الفارغة
   if (!reviewQuestions || reviewQuestions.length === 0) return;
+  
   const q = reviewQuestions[reviewCurrentIndex];
   
-  // تأمين قراءة الإجابات
+  // 2. حماية من الأسئلة التالفة
+  if (!q) {
+      console.error("خطأ: السؤال غير موجود.");
+      return;
+  }
+  
+  // 3. تأمين قراءة الإجابات
   const userAnsVal = reviewUserAnswers ? reviewUserAnswers[reviewCurrentIndex] : null;
   const userAns = (userAnsVal !== null && userAnsVal !== undefined) ? parseInt(userAnsVal) : null;
-  const correctAns = parseInt(q.correct);
+  const correctAns = parseInt(q.correct || 0);
 
-  document.getElementById("reviewQuestionNumber").textContent = `السؤال ${reviewCurrentIndex + 1} من ${reviewQuestions.length}`;
+  const numEl = document.getElementById("reviewQuestionNumber");
+  if (numEl) numEl.textContent = `السؤال ${reviewCurrentIndex + 1} من ${reviewQuestions.length}`;
   
-  // عرض الصورة إن وجدت
-  let questionHTML = `<div style="margin-bottom: 10px;">${q.question}</div>`;
-  if (q.image_url && String(q.image_url).trim() !== "") {
+  // 4. تأمين نص السؤال وعرض الصورة إن وجدت
+  const qText = q.question || "نص السؤال غير متوفر";
+  let questionHTML = `<div style="margin-bottom: 10px;">${qText}</div>`;
+  
+  if (q.image_url && typeof q.image_url === 'string' && q.image_url.trim() !== "") {
     questionHTML += `
       <div style="margin: 15px 0; text-align: center; width: 100%;">
-        <img src="${String(q.image_url).trim()}" style="max-width: 100%; max-height: 250px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow-soft); cursor: zoom-in; object-fit: contain; background: #f9f9f9;" onclick="window.open(this.src, '_blank')">
+        <img src="${q.image_url.trim()}" style="max-width: 100%; max-height: 250px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow-soft); cursor: zoom-in; object-fit: contain; background: #f9f9f9;" onclick="window.open(this.src, '_blank')">
       </div>`;
   }
-  document.getElementById("reviewQuestionText").innerHTML = questionHTML;
+  
+  const textEl = document.getElementById("reviewQuestionText");
+  if (textEl) textEl.innerHTML = questionHTML;
 
   const c = document.getElementById("reviewOptionsContainer");
+  if (!c) return;
   c.innerHTML = "";
   
-  // تأمين قراءة الاختيارات
+  // 5. الحماية الأهم: تأمين قراءة الاختيارات عشان الدالة متعملش Crash
   let optionsArr = [];
-  try {
-      optionsArr = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
-  } catch(e) { optionsArr = q.options || []; }
+  if (Array.isArray(q.options)) {
+      optionsArr = q.options;
+  } else if (typeof q.options === 'string') {
+      try { 
+          optionsArr = JSON.parse(q.options); 
+      } catch(e) { 
+          optionsArr = []; 
+      }
+  }
+  
+  // لو بعد كل ده لسه مش مصفوفة، هنحولها لمصفوفة فاضية
+  if (!Array.isArray(optionsArr)) optionsArr = [];
 
   if (optionsArr.length === 2) {
     c.style.display = "grid"; c.style.gridTemplateColumns = "1fr 1fr"; c.style.gap = "15px";
@@ -2170,9 +2290,10 @@ function renderReviewQuestion() {
     btn.className = "option-btn";
     btn.style.cursor = "default";
     
-    let optText = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
+    // تأمين النص جوه الزرار
+    let optText = String(opt || "").replace(/^[A-D][-.]\s*/i, "").trim();
     
-    // الألوان 
+    // الألوان والأيقونات
     if (i === correctAns) {
       btn.classList.add("correct-answer");
       optText += i === userAns ? " ✅ (إجابتك صحيحة)" : " ✅ (الإجابة الصحيحة)";
@@ -2185,7 +2306,6 @@ function renderReviewQuestion() {
     c.appendChild(btn);
   });
 }
-
 function prevReviewQuestion() { if (reviewCurrentIndex > 0) { reviewCurrentIndex--; renderReviewQuestion(); } }
 function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } }
 
@@ -2449,41 +2569,7 @@ async function loadDashboard() {
 }
 
 // 4. إصلاح مشكلة المراجعة (منع مسح الأسئلة بعد التسليم)
-async function submitQuiz() { 
-  if (currentAssignedQuizId) {
-     try { 
-         await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { 
-             method: "PATCH", 
-             body: JSON.stringify({ is_completed: true }) 
-         }); 
-     } catch (e) { console.warn("Failed to mark complete", e); }
-  }
 
-  const pendingAlert = document.getElementById("pendingQuizAlert");
-  if (pendingAlert) pendingAlert.classList.add("hidden");
-  if (typeof hasShownQuizPopup !== 'undefined') hasShownQuizPopup = false; 
-
-  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
-  
-  if (typeof showToast === "function") {
-      showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
-  } else {
-      alert("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!");
-  }
-  
-  // تصفير الـ ID عشان الكويز ميفتحش تاني من الداشبورد
-  currentAssignedQuizId = null;
-  // ⚠️ ملحوظة: شيلنا سطر quizQuestions = [] عشان المراجعة تشتغل
-}
-// علشان زرار المراجعة يفتح الصح دايما
-const originalShowSection = showSection;
-showSection = function(name) {
-    if (name === "quiz" && (!quizQuestions || quizQuestions.length === 0)) {
-        startQuiz(); // لو داس على زرار القائمة والكويز فاضي، هيسحب من السيرفر
-        return;
-    }
-    originalShowSection(name);
-};
 // دالة تحديد الكل لليوزر
 function selectAllUserQBankCats() {
     const boxes = document.querySelectorAll('#qbankCatSelector .qbank-cat-box');
