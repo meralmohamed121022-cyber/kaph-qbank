@@ -1312,24 +1312,33 @@ const templateGuides = {
   json: {
     title: "دليل ملف JSON 📝",
     desc: "يجب أن يكون الملف عبارة عن مصفوفة (Array) تحتوي على الأسئلة. كل سؤال يحتوي على التصنيف، الصعوبة، السؤال، الاختيارات، ورقم الإجابة الصحيحة (يبدأ من 0).",
-    content: `[
-  {
+    content: `[{
     "category": "Endocrine",
     "difficulty": "Medium",
     "question": "Patients taking Metformin should consider supplementation with:",
-    "options": ["Vitamin C", "Vitamin B12", "Vitamin D", "Vitamin E"],
+    "image_url": "https://i.postimg.cc/your-image-link.jpg",
+    "options": [
+      "Vitamin C",
+      "Vitamin B12",
+      "Vitamin D",
+      "Vitamin E"
+    ],
     "correct": 1
   },
   {
     "category": "URT",
     "difficulty": "Easy",
     "question": "First generation antihistamines are more recommended than second generation for treatment of allergic rhinitis.",
-    "options": ["TRUE", "FALSE"],
+    "image_url": "",
+    "options": [
+      "TRUE",
+      "FALSE"
+    ],
     "correct": 1
   }
-]`
+  ]`
   },
-  excel: {
+excel: {
     title: "دليل ملف Excel 📊",
     desc: "يجب أن يحتوي الصف الأول (Row 1) على العناوين (سيتم تجاهله تلقائياً). يجب ترتيب الأعمدة من اليسار لليمين كالتالي:",
     content: `العمود A: نص السؤال (Question)
@@ -1339,8 +1348,10 @@ const templateGuides = {
 العمود E: الاختيار الرابع (اتركه فارغاً لأسئلة صح/خطأ)
 العمود F: رقم الإجابة الصحيحة (0 للأول، 1 للثاني، إلخ)
 العمود G: القسم (Category - مثلاً CVS)
-العمود H: مستوى الصعوبة (Easy, Medium, Hard)`
+العمود H: مستوى الصعوبة (Easy, Medium, Hard)
+العمود I: رابط الصورة (Image URL - اختياري، اتركه فارغاً إذا لم يوجد)`
   }
+    
 };
 function showTemplateGuide(type) {
   const data = templateGuides[type];
