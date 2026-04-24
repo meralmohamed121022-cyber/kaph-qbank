@@ -273,7 +273,7 @@ button,input,select,textarea{font-family:inherit}
       <button class="tab-btn active" onclick="switchAuthTab('login',this)">تسجيل الدخول</button>
       <button class="tab-btn" onclick="switchAuthTab('register',this)">حساب جديد</button>
       <button class="tab-btn" onclick="switchAuthTab('forgot',this)">نسيت كلمة المرور</button>
-      <button class="tab-btn" onclick="switchAuthTab('admin',this)">👑 الأدمن</button>
+      <button class="tab-btn" onclick="switchAuthTab('admin',this)">👑 المشرف</button>
     </div>
     <div id="authStatus" class="status-box"></div>
 
@@ -301,7 +301,7 @@ button,input,select,textarea{font-family:inherit}
     </div>
     <div id="adminTab" class="hidden">
       <div class="form-grid">
-        <div class="form-group"><label>اسم مستخدم الأدمن</label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
+        <div class="form-group"><label>اسم مستخدم </label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
         <div class="form-group"><label>كلمة مرور الأدمن</label><input id="adminPassword" class="form-control" type="password" placeholder="Admin Password"/></div>
         <button class="btn btn-primary" onclick="handleAdminLogin()">دخول الأدمن</button>
       </div>
@@ -416,66 +416,66 @@ button,input,select,textarea{font-family:inherit}
     </section>
 
     <section id="qbankSection" class="section-box glass hidden">
-      <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
-      <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها واسحب أسئلة عشوائية للتمرين.</p>
-      
-      <div id="qbankSetup" class="soft-card" style="padding:22px; margin-bottom:18px;">
-        <h3 style="margin-bottom:8px;">⚙️ اختر الأقسام (Categories)</h3>
+    <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
+    <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها واسحب أسئلة عشوائية للتمرين.</p>
+
+    <div id="qbankSetup" class="soft-card" style="padding:22px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
+            <h3 style="margin:0; font-size:1.1rem; font-weight:800;">⚙️ اختر الأقسام (Categories)</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-secondary" style="padding: 4px 14px; font-size:0.85rem; min-height:35px; border-radius:12px; background:var(--surface-3);" onclick="selectAllUserQBankCats()">✅ تحديد الكل</button>
+                <button class="btn btn-secondary" style="padding: 4px 14px; font-size:0.85rem; min-height:35px; border-radius:12px; background:var(--surface-3);" onclick="deselectAllUserQBankCats()">❌ إلغاء التحديد</button>
+            </div>
+        </div>
+
         <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">اضغط على الصندوق لتحديده أو إلغاء تحديده. سيتم سحب الأسئلة عشوائياً من الأقسام المحددة.</p>
 
         <div class="qbank-cat-grid" id="qbankCatSelector">
-          <div class="qbank-cat-box selected" data-cat="CVS">CVS</div>
-          <div class="qbank-cat-box selected" data-cat="CNS">CNS</div>
-          <div class="qbank-cat-box selected" data-cat="GIT">GIT</div>
-          <div class="qbank-cat-box selected" data-cat="URT">URT</div>
-          <div class="qbank-cat-box selected" data-cat="UTI">UTI</div>
-          <div class="qbank-cat-box selected" data-cat="Endocrine">Endocrine</div>
-          <div class="qbank-cat-box selected" data-cat="OTC">OTC</div>
-        </div>
-        
+            </div>
+
         <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:20px;">
             <div class="form-group" style="flex:1; min-width:200px;">
-              <label>مستوى الصعوبة</label>
-              <select id="qbankDifficultyFilter" class="form-control">
-                <option value="All">منوع (الكل)</option>
-                <option value="Easy">🟢 سهل</option>
-                <option value="Medium">🟡 متوسط</option>
-                <option value="Hard">🔴 صعب</option>
-              </select>
+                <label>مستوى الصعوبة</label>
+                <select id="qbankDifficultyFilter" class="form-control">
+                    <option value="All">منوع (الكل)</option>
+                    <option value="Easy">🟢 سهل</option>
+                    <option value="Medium">🟡 متوسط</option>
+                    <option value="Hard">🔴 صعب</option>
+                </select>
             </div>
             <div class="form-group" style="flex:1; min-width:200px;">
-              <label>🔢 عدد الأسئلة للتمرين</label>
-              <input type="number" id="qbankQuestionCount" class="form-control" value="10" min="1" max="100">
+                <label>🔢 عدد الأسئلة للتمرين</label>
+                <input type="number" id="qbankQuestionCount" class="form-control" value="10" min="1" max="100">
             </div>
         </div>
-        
-        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ التمرين</button>
-      </div>
 
-      <div id="qbankQuizArea" class="quiz-shell hidden">
+        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ التمرين</button>
+    </div>
+
+    <div id="qbankQuizArea" class="quiz-shell hidden">
         <div class="quiz-meta">
-          <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
-          <div class="meta-pill"><span>المفتوح</span><strong id="qbankOpenedQuestionsLabel">0</strong></div>
-          <div class="meta-pill"><span>المجاب</span><strong id="qbankAnsweredQuestionsLabel">0</strong></div>
-          <div class="meta-pill"><span>النوع</span><strong id="qbankCurrentBadge" style="font-size:0.9rem">QBank</strong></div>
+            <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
+            <div class="meta-pill"><span>المفتوح</span><strong id="qbankOpenedQuestionsLabel">0</strong></div>
+            <div class="meta-pill"><span>المجاب</span><strong id="qbankAnsweredQuestionsLabel">0</strong></div>
+            <div class="meta-pill"><span>النوع</span><strong id="qbankCurrentBadge" style="font-size:0.9rem">QBank</strong></div>
         </div>
         <div class="progress-wrap"><div id="qbankProgressBar" class="progress-bar">0%</div></div>
         <div class="question-box">
-          <div class="badge-row" style="margin-bottom:10px;">
-             <span id="qbankQuestionBadgeCategory" class="badge" style="background:var(--primary-2); color:#fff"></span>
-             <span id="qbankQuestionBadgeDiff" class="badge" style="background:var(--orange); color:#fff"></span>
-          </div>
-          <div class="question-number" id="qbankQuestionNumber">السؤال 1</div>
-          <div class="question-main" id="qbankQuestionText">...</div>
+            <div class="badge-row" style="margin-bottom:10px;">
+                <span id="qbankQuestionBadgeCategory" class="badge" style="background:var(--primary-2); color:#fff"></span>
+                <span id="qbankQuestionBadgeDiff" class="badge" style="background:var(--orange); color:#fff"></span>
+            </div>
+            <div class="question-number" id="qbankQuestionNumber">السؤال 1</div>
+            <div class="question-main" id="qbankQuestionText">...</div>
         </div>
         <div class="options-container" id="qbankOptionsContainer"></div>
         <div class="controls">
-          <button class="nav-btn prev-btn" onclick="prevQbankQuestion()">السابق</button>
-          <button class="nav-btn next-btn" onclick="nextQbankQuestion()">التالي</button>
-          <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء الاختبار</button>
+            <button class="nav-btn prev-btn" onclick="prevQbankQuestion()">السابق</button>
+            <button class="nav-btn next-btn" onclick="nextQbankQuestion()">التالي</button>
+            <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء الاختبار</button>
         </div>
-      </div>
-    </section>
+    </div>
+</section>
 
     <section id="historySection" class="section-box glass hidden">
       <h2 class="section-title">📋 سجل الاختبارات</h2>
@@ -788,6 +788,10 @@ async function syncQuestionsFromDB() {
 }
 
 // ==================== UTILS ====================
+function buildInFilter(values) { 
+  if (!values || values.length === 0) return "in.()";
+  return `in.(${values.map(v => `"${String(v).replace(/"/g, '\\"')}"`).join(",")})`; 
+}
 function setStatus(msg, type="success") {
   const box = document.getElementById("authStatus");
   box.className = `status-box ${type}`;
@@ -816,7 +820,7 @@ async function supabaseRequest(url, options={}) {
   const text = await res.text();
   return text ? JSON.parse(text) : [];
 }
-function buildInFilter(values) { return `in.(${values.map(v=>`"${String(v).replace(/"/g,'\\"')}"`).join(",")})`; }
+
 function shuffleArray(array) {
   let currentIndex = array.length, randomIndex;
   while (currentIndex !== 0) {
@@ -957,27 +961,23 @@ function showSection(name) {
     quiz:"quizSection", qbank:"qbankSection",
     history:"historySection", result:"resultSection", admin:"adminSection", review:"reviewSection"
   };
+  
   Object.values(map).forEach(id => { const el=document.getElementById(id); if(el) el.classList.add("hidden"); });
   document.getElementById(map[name])?.classList.remove("hidden");
   
-  ["dashboardBtn","flashcardsBtn","quizBtn","qbankBtn","historyBtn","resultBtn","reviewBtn","adminBtn"].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.classList.remove("active");
-  });
-  
-  const ids = { dashboard:"dashboardBtn", flashcards:"flashcardsBtn", quiz:"quizBtn",
-                qbank:"qbankBtn", history:"historyBtn", result:"resultBtn", review:"reviewBtn", admin:"adminBtn" };
-  document.getElementById(ids[name])?.classList.add("active");
-  
-  if (name==="qbank") {
-      document.getElementById("qbankSetup").classList.remove("hidden");
-      document.getElementById("qbankQuizArea").classList.add("hidden");
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(`${name}Btn`)?.classList.add("active");
+
+  // التعديل المهم هنا:
+  if (name === "qbank") {
+      startQbank(); // دي اللي هتشغل السحب فوراً أول ما تفتح التاب
   }
-  if (name==="dashboard") setTimeout(updateDashboardCharts,80);
-  if (name==="history")   loadHistory();
-  if (name==="admin")   { loadAdminUsers(); loadAdminSharedResults(); }
-  if (name==="review")    renderReviewQuestion();
+  
+  if (name === "dashboard") setTimeout(updateDashboardCharts, 80);
+  if (name === "history") loadHistory();
+  if (name === "admin") { loadAdminUsers(); loadAdminSharedResults(); }
 }
+
 function goDashboard() { showSection("dashboard"); }
 
 // ==================== DASHBOARD ====================
@@ -1653,10 +1653,34 @@ document.querySelectorAll(".qbank-cat-box").forEach(box => {
   });
 });
 
-function startQbank() {
+async function startQbank() {
+  const catGrid = document.getElementById("qbankCatSelector");
+  if (!catGrid) return;
+
+  // إظهار واجهة الاختيار وتصفير منطقة الكويز
   document.getElementById("qbankSetup").classList.remove("hidden");
   document.getElementById("qbankQuizArea").classList.add("hidden");
-  showSection("qbank");
+
+  catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 15px;">⏳ جاري سحب الأقسام من قاعدة البيانات...</p>`;
+
+  try {
+    const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/questions?select=category`);
+    
+    if (rows && rows.length > 0) {
+      const dbCats = [...new Set(rows.map(r => r.category || 'General'))];
+      
+      // مسح كلمة "جاري فحص" ورسم الصناديق
+      catGrid.innerHTML = dbCats.map(cat => `
+        <div class="qbank-cat-box selected" data-cat="${cat}" onclick="this.classList.toggle('selected')">
+          ${cat}
+        </div>
+      `).join('');
+    } else {
+      catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center;">⚠️ البنك فارغ حالياً.</p>`;
+    }
+  } catch (e) {
+    catGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">❌ فشل الاتصال بالسيرفر.</p>`;
+  }
 }
 
 function generateAndStartQbank() {
@@ -2120,6 +2144,27 @@ showSection = function(name) {
     }
     originalShowSection(name);
 };
+// دالة تحديد الكل لليوزر
+function selectAllUserQBankCats() {
+    const boxes = document.querySelectorAll('#qbankCatSelector .qbank-cat-box');
+    boxes.forEach(box => box.classList.add('selected'));
+    
+    // إشعار بسيط لليوزر
+    if (typeof showToast === "function") {
+        showToast("تم تحديد جميع الأقسام بنجاح", "success");
+    }
+}
+
+// دالة إلغاء تحديد الكل لليوزر
+function deselectAllUserQBankCats() {
+    const boxes = document.querySelectorAll('#qbankCatSelector .qbank-cat-box');
+    boxes.forEach(box => box.classList.remove('selected'));
+    
+    // إشعار بسيط لليوزر
+    if (typeof showToast === "function") {
+        showToast("تم إلغاء تحديد الأقسام", "warning");
+    }
+}
 // =========================================================================
 </script>
 </body>
