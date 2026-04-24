@@ -337,37 +337,119 @@ body.admin-active .student-only-tab {
     }
     
 </style>
+<style>
+  /* --- التنسيقات الإضافية لضبط الـ UX والـ UI --- */
+  
+  /* 1. سلايدر الصيادلة (السحب الأفقي) */
+  .users-horizontal-slider {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 15px;
+      padding: 10px 5px 20px 5px;
+      scroll-behavior: smooth;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+  }
+  .users-horizontal-slider::-webkit-scrollbar {
+      height: 8px;
+  }
+  .users-horizontal-slider::-webkit-scrollbar-track {
+      background: var(--surface-2, #f1f5f9);
+      border-radius: 10px;
+  }
+  .users-horizontal-slider::-webkit-scrollbar-thumb {
+      background: var(--primary, #2e7ad4);
+      border-radius: 10px;
+  }
+  .users-horizontal-slider > div {
+      flex: 0 0 auto;
+      width: 260px;
+      scroll-snap-align: start;
+  }
 
-<div id="profile-header-bar">
-    <img src="https://raw.githubusercontent.com/meralmohamed121022-cyber/Drug-Monograph/858ba78ce2719a0e7069fd4807b725e0002a17d8/6_20251129_184528_0005.png" 
-         id="sys_blob_img" 
-         class="header-personal-img" 
-         alt="Mo Kholeif">
+  /* 2. تنسيق الهيدر المدمج */
+  .integrated-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 20px;
+      margin-bottom: 25px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+  }
+  
+  .profile-center-block {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+  }
 
-    <div class="social-bar">
-        <div class="s-icon" onclick="openEmail()" title="Email">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#e65252"/>
-            </svg>
-        </div>
-        <div class="s-icon" onclick="openWhatsApp()" title="WhatsApp">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="#29c781"/>
-            </svg>
-        </div>
-        <div class="s-icon" onclick="openFacebook()" title="Facebook">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#2e7ad4"/>
-            </svg>
-        </div>
-    </div>
-</div>
+  /* 3. ألوان وحدود البوكسات في الوضع الفاتح (Light Mode) */
+  body:not(.dark-mode) .admin-section-block { 
+      background: #f8fbff; 
+      border: 2px solid #2e7ad4; 
+  }
+  body:not(.dark-mode) .qbank-global-card { 
+      background: #f4f6f9; 
+      border: 2px dashed #6c757d; 
+  }
+  body:not(.dark-mode) .admin-toolbar { 
+      background: #fffaf5; 
+      border: 2px solid #e68a2e; 
+  }
+  body:not(.dark-mode) #adminResultsSentCard { 
+      background: #f5fcf8; 
+      border: 2px solid #29c781; 
+  }
+  body:not(.dark-mode) #adminLatestResultCard { 
+      background: #fff5f5; 
+      border: 2px solid #e65252; 
+  }
+  body:not(.dark-mode) .admin-history-card { 
+      background: #faf5ff; 
+      border: 2px solid #9b59b6; 
+  }
+  
+  /* 4. زر الصعود للأعلى الاحترافي */
+  #scrollTopBtn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 9999;
+      display: none;
+      background: linear-gradient(135deg, #e68a2e, #d67a1e);
+      color: white;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      align-items: center;
+      justify-content: center;
+  }
+  #scrollTopBtn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  
+  @media (max-width: 768px) {
+      .integrated-topbar { flex-direction: column; text-align: center; justify-content: center; }
+      .profile-center-block { flex-direction: column; }
+  }
+</style>
 
 <script>
 function openEmail() { window.location.href = "mailto:Muhammedkhulif@yahoo.com"; }
 function openWhatsApp() { window.open("https://wa.me/966541932559", '_blank'); }
 function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A/", '_blank'); }
 </script>
+
 <section id="authScreen" class="auth-wrap">
   <div class="auth-card glass">
     <div class="auth-head">
@@ -412,7 +494,7 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
     </div>
     <div id="adminTab" class="hidden">
       <div class="form-grid">
-        <div class="form-group"><label>اسم مستخدم </label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
+        <div class="form-group"><label>اسم صيدلي </label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
         <div class="form-group"><label>كلمة مرور المشرف</label><input id="adminPassword" class="form-control" type="password" placeholder="Admin Password"/></div>
         <button class="btn btn-primary" onclick="handleAdminLogin()">دخول المشرف</button>
       </div>
@@ -423,7 +505,7 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
 <section id="appScreen" class="hidden">
   <div class="app-shell">
 
-    <div class="topbar">
+    <div class="integrated-topbar glass section-box">
       <div class="brand">
         <div class="brand-badge">💊</div>
         <div class="kaph-header-container">
@@ -433,44 +515,61 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
           </div>
         </div>
       </div>
-      <div class="top-actions-container">
-        <div class="top-actions">
-<button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn">🌙 الثيم الغامق</button>          <button class="icon-btn" onclick="goDashboard()">🏠 الرئيسية</button>
-          <button class="icon-btn" onclick="logout()">خروج</button>
+      
+      <div class="profile-center-block">
+          <div class="social-bar" style="display: flex; gap: 12px; background: var(--surface); padding: 8px 15px; border-radius: 50px; border: 1px solid var(--border); box-shadow: var(--shadow-soft);">
+              <div class="s-icon" onclick="openEmail()" title="Email" style="cursor: pointer; transition: 0.3s; display: flex; align-items: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#e65252"/></svg>
+              </div>
+              <div class="s-icon" onclick="openWhatsApp()" title="WhatsApp" style="cursor: pointer; transition: 0.3s; display: flex; align-items: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="#29c781"/></svg>
+              </div>
+              <div class="s-icon" onclick="openFacebook()" title="Facebook" style="cursor: pointer; transition: 0.3s; display: flex; align-items: center;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#2e7ad4"/></svg>
+              </div>
+          </div>
+          <img src="https://raw.githubusercontent.com/meralmohamed121022-cyber/Drug-Monograph/858ba78ce2719a0e7069fd4807b725e0002a17d8/6_20251129_184528_0005.png" 
+               id="sys_blob_img" 
+               class="header-personal-img" 
+               alt="Mo Kholeif"
+               style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--orange); object-fit: cover; box-shadow: var(--shadow);">
+      </div>
+
+      <div class="top-actions-container" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+        <div class="top-actions" style="display: flex; gap: 5px;">
+            <button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn" style="padding: 6px 12px; font-size: 0.85rem;">🌙 Dark Mode</button>
+            <button class="icon-btn" onclick="goDashboard()" style="padding: 6px 12px; font-size: 0.85rem;">🏠 Home</button>
+            <button class="icon-btn" onclick="logout()" style="padding: 6px 12px; font-size: 0.85rem;">Logout</button>
         </div>
-        <div class="user-profile-badge">
-          <p id="welcomeText" class="authenticated-welcome">مرحباً</p>
+        <div class="user-profile-badge" style="margin: 0; padding: 4px 12px;">
+            <p id="welcomeText" class="authenticated-welcome" style="margin: 0; font-size: 0.9rem;">Welcome</p>
         </div>
       </div>
     </div>
 
-    <div id="pendingQuizAlert" class="hidden soft-card" style="background: rgba(15,169,104,0.15); color: var(--success); padding: 15px; margin-bottom: 15px; border: 1px solid var(--success); font-weight: bold; text-align: center; border-radius: 12px; cursor: pointer;" onclick="startQuiz()">
-    </div>
+    <div id="pendingQuizAlert" class="hidden soft-card" style="background: rgba(15,169,104,0.15); color: var(--success); padding: 15px; margin-bottom: 20px; border: 1px solid var(--success); font-weight: bold; text-align: center; border-radius: 12px; cursor: pointer;" onclick="startQuiz()"></div>
    
-<div class="mode-switcher">
-  <button id="dashboardBtn" class="mode-btn active student-only-tab" onclick="showSection('dashboard')">🏠 الداشبورد</button>
-  <button id="flashcardsBtn" class="mode-btn student-only-tab" onclick="showSection('flashcards')">📖 Flashcards</button>
+    <div class="mode-switcher" style="margin-bottom: 25px;">
+      <button id="dashboardBtn" class="mode-btn active student-only-tab" onclick="showSection('dashboard')">🏠 الداشبورد</button>
+      <button id="flashcardsBtn" class="mode-btn student-only-tab" onclick="showSection('flashcards')">📖 Flashcards</button>
+      <button id="quizBtn" class="mode-btn student-only-tab" onclick="startQuiz()">📝 Quiz (مخصص)</button>
+      <button id="qbankBtn" class="mode-btn student-only-tab" onclick="showSection('qbank')">🧪 QBank</button>
+      <button id="historyBtn" class="mode-btn student-only-tab" onclick="showSection('history')">📋 السجل</button>
+      <button id="resultBtn" class="mode-btn hidden student-only-tab" onclick="showSection('result')">🏆 النتيجة</button>
+      <button id="reviewBtn" class="mode-btn hidden student-only-tab" onclick="startReview()">👁️ المراجعة</button>
+      <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
+    </div>
 
-  <button id="quizBtn" class="mode-btn student-only-tab" onclick="startQuiz()">📝 Quiz (مخصص)</button>
-
-  <button id="qbankBtn" class="mode-btn student-only-tab" onclick="showSection('qbank')">🧪 QBank</button>
-  <button id="historyBtn" class="mode-btn student-only-tab" onclick="showSection('history')">📋 السجل</button>
-  
-  <button id="resultBtn" class="mode-btn hidden student-only-tab" onclick="showSection('result')">🏆 النتيجة</button>
-  <button id="reviewBtn" class="mode-btn hidden student-only-tab" onclick="startReview()">👁️ المراجعة</button>
-
-  <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
-</div>
     <section id="dashboardSection">
-      <div class="stats-grid">
-        <div class="stat-card"><span>الاسم</span><strong id="dashName">-</strong></div>
-        <div class="stat-card"><span>الرقم الوظيفي</span><strong id="dashLicense">-</strong></div>
-        <div class="stat-card"><span>آخر إجابات</span><strong id="dashAnswered">0</strong></div>
-        <div class="stat-card"><span>إجابات صحيحة</span><strong id="dashCorrect">0</strong></div>
+      <div class="stats-grid" style="margin-bottom: 20px;">
+        <div class="stat-card glass"><span>الاسم</span><strong id="dashName">-</strong></div>
+        <div class="stat-card glass"><span>الرقم الوظيفي</span><strong id="dashLicense">-</strong></div>
+        <div class="stat-card glass"><span>آخر إجابات</span><strong id="dashAnswered">0</strong></div>
+        <div class="stat-card glass"><span>إجابات صحيحة</span><strong id="dashCorrect">0</strong></div>
       </div>
       <div class="dashboard-grid">
         <div class="panel glass">
-          <h3>📊 بيانات آخر اختبار</h3>
+          <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📊 بيانات آخر اختبار</h3>
           <div class="info-list">
             <div class="info-item"><span>نوع الاختبار</span><b id="dashExamType">-</b></div>
             <div class="info-item"><span>إجمالي الأسئلة</span><b id="dashTotal">0</b></div>
@@ -481,8 +580,8 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
           </div>
         </div>
         <div class="panel glass">
-          <h3>⚡ إجراءات سريعة</h3>
-          <div class="quick-actions">
+          <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">⚡ إجراءات سريعة</h3>
+          <div class="quick-actions" style="display: grid; gap: 10px;">
             <button class="btn btn-primary" onclick="startQuiz()">ابدأ الكويز المخصص لك</button>
             <button class="btn btn-warning" onclick="startQbank()">ابدأ QBank</button>
             <button class="btn btn-secondary" onclick="showSection('flashcards')">راجع Flashcards</button>
@@ -491,7 +590,7 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
           </div>
         </div>
       </div>
-      <div class="charts-grid">
+      <div class="charts-grid" style="margin-top:20px">
         <div class="chart-card glass"><h3>🍩 مؤشرات الأداء الدائرية</h3><div class="chart-wrap"><canvas id="performanceDoughnut"></canvas></div></div>
         <div class="chart-card glass"><h3>📊 مقارنة الأداء</h3><div class="chart-wrap"><canvas id="performanceBar"></canvas></div></div>
       </div>
@@ -500,7 +599,7 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
     <section id="flashcardsSection" class="section-box glass hidden">
       <h2 class="section-title">📖 Flashcards</h2>
       <p class="section-subtitle">اضغط على أي كارت ليقلب ويظهر الإجابة.</p>
-      <div class="category-filter-bar" id="categoryFilterBar"></div>
+      <div class="category-filter-bar" id="categoryFilterBar" style="margin-bottom: 20px;"></div>
       <div class="cards-grid" id="cardsContainer"></div>
     </section>
 
@@ -508,95 +607,89 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
       <h2 class="section-title">📝 الكويز المخصص لك</h2>
       <p class="section-subtitle">هذا الاختبار تم تحضيره خصيصاً لك من قبل المشرف.</p>
       <div class="quiz-shell">
-        <div class="quiz-meta">
+        <div class="quiz-meta" style="margin-bottom: 15px;">
           <div class="meta-pill"><span>عدد الأسئلة</span><strong id="totalQuestionsLabel">0</strong></div>
           <div class="meta-pill"><span>المفتوح</span><strong id="openedQuestionsLabel">0</strong></div>
           <div class="meta-pill"><span>المجاب</span><strong id="answeredQuestionsLabel">0</strong></div>
           <div class="meta-pill"><span>النوع</span><strong>Custom Quiz</strong></div>
         </div>
-        <div class="progress-wrap"><div id="quizProgressBar" class="progress-bar">0%</div></div>
-        <div class="question-box">
+        <div class="progress-wrap" style="margin-bottom: 20px;"><div id="quizProgressBar" class="progress-bar">0%</div></div>
+        <div class="question-box glass">
           <div class="question-number" id="questionNumber">السؤال 1</div>
           <div class="question-main" id="questionText">...</div>
         </div>
         <div class="options-container" id="optionsContainer"></div>
-        <div class="controls">
-          <button class="nav-btn prev-btn" onclick="prevQuestion()">السابق</button>
-          <button class="nav-btn next-btn" onclick="nextQuestion()">التالي</button>
-          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء وإرسال للمشرف</button>
+        <div class="controls" style="display: flex; gap: 10px; margin-top: 20px;">
+          <button class="nav-btn prev-btn" style="flex:1;" onclick="prevQuestion()">السابق</button>
+          <button class="nav-btn next-btn" style="flex:1;" onclick="nextQuestion()">التالي</button>
+          <button class="nav-btn submit-btn" style="flex:2;" onclick="submitQuiz()">إنهاء وإرسال للمشرف</button>
         </div>
       </div>
     </section>
 
     <section id="qbankSection" class="section-box glass hidden">
-    <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
-    <p class="section-subtitle">اختر الأقسام التي تريد اختبار نفسك بها واسحب أسئلة عشوائية للتمرين.</p>
+      <h2 class="section-title">🧪 QBank (بنك الأسئلة)</h2>
+      <p class="section-subtitle">اختر الأقسام واسحب أسئلة عشوائية للتمرين.</p>
 
-    <div id="qbankSetup" class="soft-card" style="padding:22px; margin-bottom:18px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; flex-wrap:wrap; gap:10px;">
-            <h3 style="margin:0; font-size:1.1rem; font-weight:800;">⚙️ اختر الأقسام (Categories)</h3>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-secondary" style="padding: 4px 14px; font-size:0.85rem; min-height:35px; border-radius:12px; background:var(--surface-3);" onclick="selectAllUserQBankCats()">✅ تحديد الكل</button>
-                <button class="btn btn-secondary" style="padding: 4px 14px; font-size:0.85rem; min-height:35px; border-radius:12px; background:var(--surface-3);" onclick="deselectAllUserQBankCats()">❌ إلغاء التحديد</button>
-            </div>
-        </div>
+      <div id="qbankSetup" class="glass soft-card" style="padding:25px; margin-bottom:20px; border: 1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+              <h3 style="margin:0; color: var(--primary-3);">⚙️ إعدادات الاختبار</h3>
+              <div style="display:flex; gap:10px;">
+                  <button class="btn btn-secondary" onclick="selectAllUserQBankCats()">✅ تحديد الكل</button>
+                  <button class="btn btn-secondary" onclick="deselectAllUserQBankCats()">❌ إلغاء</button>
+              </div>
+          </div>
+          <div class="qbank-cat-grid" id="qbankCatSelector" style="margin-bottom: 20px;"></div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+              <div class="form-group" style="margin: 0;">
+                  <label style="font-weight: bold;">مستوى الصعوبة</label>
+                  <select id="qbankDifficultyFilter" class="form-control">
+                      <option value="All">منوع (الكل)</option>
+                      <option value="Easy">🟢 سهل</option>
+                      <option value="Medium">🟡 متوسط</option>
+                      <option value="Hard">🔴 صعب</option>
+                  </select>
+              </div>
+              <div class="form-group" style="margin: 0;">
+                  <label style="font-weight: bold;">🔢 عدد الأسئلة</label>
+                  <input type="number" id="qbankQuestionCount" class="form-control" value="10" min="1" max="100">
+              </div>
+          </div>
+          <button class="btn btn-warning" style="width:100%; margin-top:25px; font-size: 1.1rem; padding: 12px;" onclick="generateAndStartQbank()">🚀 ابدأ التمرين</button>
+      </div>
 
-        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">اضغط على الصندوق لتحديده أو إلغاء تحديده. سيتم سحب الأسئلة عشوائياً من الأقسام المحددة.</p>
-
-        <div class="qbank-cat-grid" id="qbankCatSelector">
-            </div>
-
-        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:20px;">
-            <div class="form-group" style="flex:1; min-width:200px;">
-                <label>مستوى الصعوبة</label>
-                <select id="qbankDifficultyFilter" class="form-control">
-                    <option value="All">منوع (الكل)</option>
-                    <option value="Easy">🟢 سهل</option>
-                    <option value="Medium">🟡 متوسط</option>
-                    <option value="Hard">🔴 صعب</option>
-                </select>
-            </div>
-            <div class="form-group" style="flex:1; min-width:200px;">
-                <label>🔢 عدد الأسئلة للتمرين</label>
-                <input type="number" id="qbankQuestionCount" class="form-control" value="10" min="1" max="100">
-            </div>
-        </div>
-
-        <button class="btn btn-warning" style="width:100%; margin-top:20px;" onclick="generateAndStartQbank()">🚀 ابدأ التمرين</button>
-    </div>
-
-    <div id="qbankQuizArea" class="quiz-shell hidden">
-        <div class="quiz-meta">
-            <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
-            <div class="meta-pill"><span>المفتوح</span><strong id="qbankOpenedQuestionsLabel">0</strong></div>
-            <div class="meta-pill"><span>المجاب</span><strong id="qbankAnsweredQuestionsLabel">0</strong></div>
-            <div class="meta-pill"><span>النوع</span><strong id="qbankCurrentBadge" style="font-size:0.9rem">QBank</strong></div>
-        </div>
-        <div class="progress-wrap"><div id="qbankProgressBar" class="progress-bar">0%</div></div>
-        <div class="question-box">
-            <div class="badge-row" style="margin-bottom:10px;">
-                <span id="qbankQuestionBadgeCategory" class="badge" style="background:var(--primary-2); color:#fff"></span>
-                <span id="qbankQuestionBadgeDiff" class="badge" style="background:var(--orange); color:#fff"></span>
-            </div>
-            <div class="question-number" id="qbankQuestionNumber">السؤال 1</div>
-            <div class="question-main" id="qbankQuestionText">...</div>
-        </div>
-        <div class="options-container" id="qbankOptionsContainer"></div>
-        <div class="controls">
-            <button class="nav-btn prev-btn" onclick="prevQbankQuestion()">السابق</button>
-            <button class="nav-btn next-btn" onclick="nextQbankQuestion()">التالي</button>
-            <button class="nav-btn submit-btn" onclick="submitQbankQuiz()">إنهاء الاختبار</button>
-        </div>
-    </div>
-</section>
+      <div id="qbankQuizArea" class="quiz-shell hidden">
+          <div class="quiz-meta" style="margin-bottom: 15px;">
+              <div class="meta-pill"><span>عدد الأسئلة</span><strong id="qbankTotalQuestionsLabel">0</strong></div>
+              <div class="meta-pill"><span>المفتوح</span><strong id="qbankOpenedQuestionsLabel">0</strong></div>
+              <div class="meta-pill"><span>المجاب</span><strong id="qbankAnsweredQuestionsLabel">0</strong></div>
+              <div class="meta-pill"><span>النوع</span><strong id="qbankCurrentBadge">QBank</strong></div>
+          </div>
+          <div class="progress-wrap" style="margin-bottom: 20px;"><div id="qbankProgressBar" class="progress-bar">0%</div></div>
+          <div class="question-box glass">
+              <div class="badge-row" style="margin-bottom:15px; display: flex; gap: 10px;">
+                  <span id="qbankQuestionBadgeCategory" class="badge" style="background:var(--primary-2); color:#fff; padding: 5px 10px; border-radius: 8px;"></span>
+                  <span id="qbankQuestionBadgeDiff" class="badge" style="background:var(--orange); color:#fff; padding: 5px 10px; border-radius: 8px;"></span>
+              </div>
+              <div class="question-number" id="qbankQuestionNumber">السؤال 1</div>
+              <div class="question-main" id="qbankQuestionText">...</div>
+          </div>
+          <div class="options-container" id="qbankOptionsContainer"></div>
+          <div class="controls" style="display: flex; gap: 10px; margin-top: 20px;">
+              <button class="nav-btn prev-btn" style="flex:1;" onclick="prevQbankQuestion()">السابق</button>
+              <button class="nav-btn next-btn" style="flex:1;" onclick="nextQbankQuestion()">التالي</button>
+              <button class="nav-btn submit-btn" style="flex:2;" onclick="submitQbankQuiz()">إنهاء الاختبار</button>
+          </div>
+      </div>
+    </section>
 
     <section id="historySection" class="section-box glass hidden">
       <h2 class="section-title">📋 سجل الاختبارات</h2>
-      <p class="section-subtitle">استعرض نتائجك السابقة واختر شهراً أو يوماً محدداً.</p>
-      <div class="history-filters">
-        <div class="form-group"><label>🗓 اختر شهر</label><input type="month" id="historyMonth" class="form-control" onchange="filterHistory()"/></div>
-        <div class="form-group"><label>📅 اختر يوم</label><input type="date" id="historyDate" class="form-control" onchange="filterHistory()"/></div>
-        <div class="form-group">
+      <p class="section-subtitle">استعرض نتائجك السابقة بدقة.</p>
+      <div class="history-filters glass soft-card" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; padding: 20px; margin-bottom: 25px; border-radius: 12px;">
+        <div class="form-group" style="margin: 0;"><label>🗓 الشهر</label><input type="month" id="historyMonth" class="form-control" onchange="filterHistory()"/></div>
+        <div class="form-group" style="margin: 0;"><label>📅 اليوم</label><input type="date" id="historyDate" class="form-control" onchange="filterHistory()"/></div>
+        <div class="form-group" style="margin: 0;">
           <label>🏷 النوع</label>
           <select id="historyType" class="form-control" onchange="filterHistory()">
             <option value="">الكل</option>
@@ -604,175 +697,192 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
             <option value="QBank">QBank</option>
           </select>
         </div>
-        <button class="btn btn-secondary" style="min-width:110px" onclick="clearHistoryFilter()">مسح الفلتر</button>
+        <div style="display: flex; align-items: flex-end;">
+            <button class="btn btn-secondary" style="width: 100%; height: 42px;" onclick="clearHistoryFilter()">مسح الفلتر</button>
+        </div>
       </div>
-      <div class="chart-card glass" style="margin-bottom:18px">
-        <h3>📈 تطور الأداء عبر الوقت</h3>
+      <div class="chart-card glass" style="margin-bottom:25px">
+        <h3 style="margin-bottom: 15px;">📈 تطور الأداء</h3>
         <div class="history-chart-wrap"><canvas id="historyLineChart"></canvas></div>
       </div>
-      <div id="historyStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px"></div>
+      <div id="historyStats" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:15px;margin-bottom:25px;"></div>
       <div id="historyContainer"><p class="history-empty">جاري التحميل...</p></div>
     </section>
 
     <section id="resultSection" class="section-box glass hidden">
       <h2 class="section-title">🏆 نتيجة الاختبار</h2>
-      <p class="section-subtitle">تقدر تحمل النتيجة كصورة أو ترسلها للمشرف، وتراجع إجاباتك.</p>
-      <div id="resultCard" class="result-card">
-        <h3>نتيجة الاختبار</h3>
+      <div id="resultCard" class="result-card glass" style="margin-bottom: 25px;">
+        <h3 style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;">الملخص</h3>
         <p id="resultName">الاسم: -</p>
         <p id="resultLicense">الرقم الوظيفي: -</p>
         <p id="resultExamType">نوع الاختبار: -</p>
         <p id="resultDate">تاريخ الاختبار: -</p>
-        <div class="result-grid">
+        <div class="result-grid" style="margin-top: 20px;">
           <div class="result-pill"><span>إجمالي الأسئلة</span><strong id="resultTotal">0</strong></div>
-          <div class="result-pill"><span>الأسئلة المفتوحة</span><strong id="resultOpened">0</strong></div>
+          <div class="result-pill"><span>المفتوحة</span><strong id="resultOpened">0</strong></div>
           <div class="result-pill"><span>المجاب</span><strong id="resultAnswered">0</strong></div>
-          <div class="result-pill"><span>الإجابات الصحيحة</span><strong id="resultCorrect">0</strong></div>
+          <div class="result-pill"><span>الصحيحة</span><strong id="resultCorrect">0</strong></div>
           <div class="result-pill"><span>نسبة الإنجاز</span><strong id="resultCompletion">0%</strong></div>
           <div class="result-pill"><span>نسبة الصح</span><strong id="resultScore">0%</strong></div>
         </div>
       </div>
-      <div class="result-actions">
-        <button class="btn btn-primary" style="background: linear-gradient(135deg, #2e7ad4, #1d5fa8);" onclick="startReview()">👁️ مراجعة الإجابات</button>
-        <button class="btn btn-primary" onclick="downloadResultImage()">📥 تحميل صورة</button>
+      <div class="result-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+        <button class="btn btn-primary" onclick="startReview()">👁️ مراجعة الإجابات</button>
+        <button class="btn btn-secondary" onclick="downloadResultImage()">📥 حفظ صورة</button>
         <button class="btn btn-warning" onclick="shareLatestResultToAdmin()">📤 إرسال للمشرف</button>
         <button class="btn btn-success" onclick="openEmailWithResult()">📧 إرسال بالإيميل</button>
         <button class="btn btn-secondary" onclick="goDashboard()">🏠 الداشبورد</button>
-        <button class="btn btn-secondary" onclick="showSection('history')">📋 السجل</button>
       </div>
     </section>
 
     <section id="reviewSection" class="section-box glass hidden">
       <h2 class="section-title">👁️ مراجعة الإجابات</h2>
-      <p class="section-subtitle">اللون الأخضر هو الإجابة الصحيحة، والأحمر هو إجابتك الخاطئة.</p>
+      <p class="section-subtitle" style="color: var(--danger); font-weight: bold;">(أخضر = صحيح ، أحمر = خطأ)</p>
       <div class="quiz-shell">
-        <div class="question-box">
+        <div class="question-box glass">
           <div class="question-number" id="reviewQuestionNumber">السؤال 1</div>
           <div class="question-main" id="reviewQuestionText">...</div>
         </div>
         <div class="options-container" id="reviewOptionsContainer"></div>
-        <div class="controls">
-          <button class="nav-btn prev-btn" onclick="prevReviewQuestion()">السابق</button>
-          <button class="nav-btn next-btn" onclick="nextReviewQuestion()">التالي</button>
-          <button class="nav-btn btn-secondary" onclick="showSection('result')">العودة للنتيجة</button>
+        <div class="controls" style="display: flex; gap: 10px; margin-top: 20px;">
+          <button class="nav-btn prev-btn" style="flex:1" onclick="prevReviewQuestion()">السابق</button>
+          <button class="nav-btn next-btn" style="flex:1" onclick="nextReviewQuestion()">التالي</button>
+          <button class="nav-btn btn-secondary" style="flex:1" onclick="showSection('result')">النتيجة</button>
         </div>
       </div>
     </section>
-<section id="adminSection" class="section-box glass hidden">
-      <h2 class="section-title">👑 لوحة تحكم المشرف (Dashboard)</h2>
-      <p class="section-subtitle">إدارة الكويزات، سحب الأسئلة، ومتابعة اليوزرز وتعيين الاختبارات لهم.</p>
+
+    <section id="adminSection" class="section-box glass hidden">
+      <h2 class="section-title">👑 لوحة تحكم المشرف</h2>
       
-      <div class="admin-section-block">
-        <h3 style="color:var(--primary-3); margin-bottom:15px;">📝 تجهيز كويز مخصص وإرساله</h3>
-        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">بإمكانك رفع أسئلة من جهازك أو سحب من بنك الأسئلة الأساسي وإرسالهم للمستخدمين المحددين.</p>
+      <div class="admin-section-block glass soft-card" style="padding: 25px; margin-bottom: 25px; border-radius: 12px;">
+        <h3 style="color:var(--primary-3); margin-bottom:15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📝 تجهيز وإرسال كويز مخصص</h3>
         
-        <div style="margin-bottom: 20px; background: var(--surface-3); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-            <label style="font-weight: 900; color: var(--text); display: block; margin-bottom: 8px;">🏷️ اسم الاختبار (اختياري - سيظهر في النتائج):</label>
-            <input type="text" id="adminCustomQuizName" class="form-control" placeholder="مثال: اختبار المضادات الحيوية - شهر مايو">
+        <div class="form-group" style="background: var(--surface-3); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <label style="font-weight: bold; margin-bottom: 8px;">🏷️ اسم الاختبار (يظهر للصيادلة وفي التقارير):</label>
+            <input type="text" id="adminCustomQuizName" class="form-control" placeholder="مثال: اختبار الأدوية - شهر مايو">
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-          <button class="btn btn-secondary" onclick="document.getElementById('importJson').click()">📥 رفع JSON</button>
-          <button class="icon-btn" onclick="showTemplateGuide('json')" title="دليل ملف JSON" style="padding: 5px 10px;">❔</button>
-
-          <button class="btn btn-secondary" onclick="document.getElementById('importExcel').click()">📊 رفع Excel</button>
-          <button class="icon-btn" onclick="showTemplateGuide('excel')" title="دليل ملف Excel" style="padding: 5px 10px;">❔</button>
-
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; align-items: center;">
+          <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('importJson').click()">📥 رفع JSON</button>
+              <button class="icon-btn" onclick="showTemplateGuide('json')" title="دليل">❔</button>
+          </div>
+          <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('importExcel').click()">📊 رفع Excel</button>
+              <button class="icon-btn" onclick="showTemplateGuide('excel')" title="دليل">❔</button>
+          </div>
           <input type="file" id="importJson" class="hidden" accept=".json" onchange="importAdminQuestions(this, 'json')">
           <input type="file" id="importExcel" class="hidden" accept=".xlsx, .xls" onchange="importAdminQuestions(this, 'excel')">
-          
-          <div style="display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border); padding:5px 15px; border-radius:10px; margin-right: auto;">
-            <label style="font-size:0.9rem; font-weight:800; margin:0;">أو اسحب من QBank:</label>
-            <input type="number" id="adminQBankCount" placeholder="العدد" style="width:70px; padding:5px; border-radius:8px; border:1px solid #ccc; text-align:center;" value="10">
-            <button class="btn btn-secondary" style="min-height:35px; padding:5px 10px; font-size:0.85rem;" onclick="pullFromQBankForAdmin()">سحب للتحضير</button>
+          <div style="display:flex; align-items:center; justify-content: space-between; background:var(--surface); border:1px solid var(--border); padding:8px 15px; border-radius:8px;">
+            <label style="font-weight:bold; margin:0; font-size: 0.9rem;">أو اسحب من QBank:</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" id="adminQBankCount" style="width:60px; padding:5px; border-radius:6px; border:1px solid #ccc; text-align:center;" value="10">
+                <button class="btn btn-secondary" style="padding:5px 10px; font-size:0.85rem;" onclick="pullFromQBankForAdmin()">سحب</button>
+            </div>
           </div>
         </div>
 
-      <div id="adminReviewSection" class="hidden" style="margin-top: 20px; padding: 15px; background: var(--surface-3); border-radius: 12px; border: 1px solid var(--primary-3);">
-           <h4 style="margin-bottom: 10px;">👀 مراجعة الأسئلة قبل الاعتماد:</h4>
-           <div id="adminReviewList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
-           
-           <div id="saveToDbContainer" style="margin-bottom: 15px;">
-               <label style="font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <div id="adminReviewSection" class="hidden" style="margin-top: 25px; padding: 20px; background: var(--surface-3); border-radius: 12px; border: 1px dashed var(--primary-3);">
+           <h4 style="margin-bottom: 15px; color: var(--primary);">👀 مراجعة الأسئلة قبل الاعتماد:</h4>
+           <div id="adminReviewList" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;"></div>
+           <div id="saveToDbContainer" style="margin-bottom: 15px; background: var(--surface); padding: 10px; border-radius: 8px;">
+               <label style="font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; margin: 0;">
                    <input type="checkbox" id="saveToDbCheckbox" checked style="width: 18px; height: 18px;">
-                   حفظ هذه الأسئلة في بنك الأسئلة الدائم (الداتابيز)
+                   حفظ هذه الأسئلة في بنك الأسئلة الدائم (QBank)
                </label>
            </div>
-           
-           <div id="adminReviewActions" style="display: flex; gap: 10px;">
-               <button class="btn btn-success" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة </button>
-               <button class="btn btn-danger" onclick="cancelStagedQuestions()">❌ إلغاء</button>
+           <div id="adminReviewActions" style="display: flex; gap: 15px;">
+               <button class="btn btn-success" style="flex:2;" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة أعلاه</button>
+               <button class="btn btn-danger" style="flex:1;" onclick="cancelStagedQuestions()">❌ إلغاء العملية</button>
            </div>
         </div>
 
-        <div id="stagedQuizInfo" style="margin-top: 15px; padding:10px; background:rgba(245,138,31,0.1); border-radius:10px; color:var(--orange); font-weight:800;">
-          💡 لا توجد أسئلة مجهزة حالياً للإرسال.
+        <div id="stagedQuizInfo" style="margin-top: 20px; padding:15px; background:rgba(245,138,31,0.1); border-radius:10px; color:var(--orange); font-weight:bold; text-align: center;">
+          💡 لم يتم تجهيز أسئلة حتى الآن.
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn btn-primary" style="flex: 1; background: var(--bg-3);" onclick="reviewStagedQuiz()">👁️ مراجعة الأسئلة المجهزة</button>
-            <button class="btn btn-warning" style="flex: 1;" onclick="assignQuizToSelectedUsers()">🚀 إرسال الكويز للمحددين</button>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="reviewStagedQuiz()">👁️ مراجعة الأسئلة المجهزة</button>
+            <button class="btn btn-warning" onclick="document.getElementById('adminUsersGrid').scrollIntoView({behavior: 'smooth', block: 'center'}); setTimeout(() => assignQuizToSelectedUsers(), 500);">🚀 إرسال الكويز للصيادلة المحددين</button>
+        </div>
+
+        <div class="qbank-global-card" style="margin-top: 30px; padding: 20px; border-radius: 12px;">
+            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;">📚 إدارة بنك الأسئلة الدائم (QBank)</h4>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 15px;">بإمكانك تصفح ومراجعة أو حذف جميع الأسئلة المحفوظة مسبقاً في الداتابيز.</p>
+            <button class="btn" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; width: 100%; padding: 12px; font-size: 1.05rem;" onclick="loadAdminGlobalQBank(); setTimeout(() => document.getElementById('adminGlobalQBankContainer').scrollIntoView({behavior: 'smooth', block: 'start'}), 300);">عرض محتوى بنك الأسئلة المحفوظ</button>
+            <div id="adminGlobalQBankContainer" class="admin-results-list hidden" style="margin-top:20px; padding: 15px; background: var(--surface-2); border-radius: 12px; border: 1px solid var(--border);"></div>
         </div>
       </div>
 
-      <div class="admin-toolbar" style="margin-top:25px;">
-        <div class="form-group" style="margin:0;flex:1;min-width:220px">
-          <label>🔍 بحث عن مستخدم</label>
-          <input id="adminUserSearch" class="form-control" type="text" placeholder="اكتب الاسم أو الرقم الوظيفي" oninput="renderAdminUsers()"/>
-        </div>
-        <button class="btn btn-secondary" onclick="selectAllAdminUsers()">تحديد الكل</button>
-        <button class="btn btn-secondary" onclick="clearAdminSelection()">إلغاء التحديد</button>
-        <button class="btn btn-primary" onclick="loadAdminLatestForSelected()">آخر نتيجة للمحدد</button>
-        <button class="btn btn-success" onclick="loadAdminHistoryForSelected()">هيستوري المحدد</button>
-        <button class="btn btn-warning" onclick="loadAdminSharedResults()">النتائج المرسلة</button>
-        <button class="btn" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; font-weight: 900; box-shadow: var(--shadow-soft);" onclick="loadAdminGlobalQBank()">📚 عرض بنك الأسئلة المحفوظ</button>
-      </div>
-      
-      <div id="adminUsersGrid" class="admin-users-grid"></div>
-      <div id="adminGlobalQBankContainer" class="admin-results-list hidden" style="margin-top:20px; padding: 15px; background: var(--surface-2); border-radius: 16px; border: 1px solid var(--border);"></div>
-
-      <div class="charts-grid" style="margin-top:18px">
-        <div class="chart-card glass">
-          <h3>أحدث النتائج للمحدد</h3>
-          <div id="adminLatestContainer" class="admin-results-list"></div>
+      <div class="glass soft-card" style="padding: 25px; margin-bottom: 25px; border-radius: 12px; display: block; width: 100%;">
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align: right;">👥 إدارة الصيادلة وتحديدهم</h3>
+        
+        <div style="margin-bottom: 20px; text-align: right;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold;">🔍 بحث سريع عن صيدلي</label>
+          <input id="adminUserSearch" class="form-control" style="width: 100%; max-width: 500px;" type="text" placeholder="اكتب الاسم أو الرقم الوظيفي..." oninput="renderAdminUsers()"/>
         </div>
         
-        <div class="chart-card glass" style="display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 25px;">
+          <button class="btn btn-secondary" style="flex: 1; min-width: 160px; padding: 12px; font-size: 0.95rem;" onclick="selectAllAdminUsers()">✅ تحديد الكل</button>
+          <button class="btn btn-danger" style="flex: 1; min-width: 160px; padding: 12px; font-size: 0.95rem; background: #e65252; color: white;" onclick="clearAdminSelection()">❌ إلغاء التحديد</button>
+          <button class="btn btn-primary" style="flex: 1; min-width: 160px; padding: 12px; font-size: 0.95rem;" onclick="loadAdminLatestForSelected(); setTimeout(() => document.getElementById('adminLatestResultCard').scrollIntoView({behavior: 'smooth', block: 'start'}), 300);">📊 آخر نتيجة للمحدد</button>
+          <button class="btn btn-success" style="flex: 1; min-width: 160px; padding: 12px; font-size: 0.95rem;" onclick="loadAdminHistoryForSelected(); setTimeout(() => document.getElementById('adminHistoryContainer').scrollIntoView({behavior: 'smooth', block: 'start'}), 300);">📋 سجل المحدد (History)</button>
+        </div>
+        
+        <div style="background: var(--surface-3); padding: 20px; border-radius: 12px; border: 1px dashed var(--primary-3);">
+          <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--primary); text-align: right;">👨‍⚕️ قائمة الصيادلة (اسحب يمين ويسار للتصفح):</h4>
+          <div id="adminUsersGrid" class="users-horizontal-slider" style="margin-bottom: 0;"></div>
+        </div>
+        <div id="adminResultsSentCard" class="chart-card glass" style="width: 100%; border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
               <h3 style="margin: 0;">النتائج المرسلة للمشرف</h3>
-              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; background: var(--surface-3); padding: 8px; border-radius: 12px; border: 1px solid var(--border);">
-                  <div style="display:flex; align-items:center; gap:4px;">
-                      <span style="font-size:0.8rem; font-weight:bold;">من:</span>
-                      <input type="date" id="exportDateFrom" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px;" onchange="filterAdminSharedResults()">
-                  </div>
-                  <div style="display:flex; align-items:center; gap:4px;">
-                      <span style="font-size:0.8rem; font-weight:bold;">إلى:</span>
-                      <input type="date" id="exportDateTo" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px;" onchange="filterAdminSharedResults()">
-                  </div>
-                  
-                  <select id="exportExamTypeFilter" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px; margin-right: 5px;" onchange="filterAdminSharedResults()">
-                      <option value="All">كل الأنواع</option>
+              <button class="btn btn-warning" onclick="loadAdminSharedResults();">تحديث النتائج 🔄</button>
+          </div>
+          <div style="background: var(--surface-3); padding: 15px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
+              <div class="form-group" style="margin:0;">
+                  <label style="font-size:0.8rem; font-weight:bold;">من تاريخ:</label>
+                  <input type="date" id="exportDateFrom" class="form-control" style="padding: 5px; height: 35px;" onchange="filterAdminSharedResults()">
+              </div>
+              <div class="form-group" style="margin:0;">
+                  <label style="font-size:0.8rem; font-weight:bold;">إلى تاريخ:</label>
+                  <input type="date" id="exportDateTo" class="form-control" style="padding: 5px; height: 35px;" onchange="filterAdminSharedResults()">
+              </div>
+              <div class="form-group" style="margin:0;">
+                  <label style="font-size:0.8rem; font-weight:bold;">نوع الاختبار:</label>
+                  <select id="exportExamTypeFilter" class="form-control" style="padding: 5px; height: 35px;" onchange="filterAdminSharedResults()">
+                      <option value="All">عرض كل الأنواع</option>
                       <option value="Custom Quiz">Quiz (مخصص)</option>
                       <option value="QBank">QBank</option>
-                      <option value="LatestCustom" style="color:var(--orange); font-weight:bold;">🔥 أحدث كويز مخصص لكل صيدلي</option>
+                      <option value="LatestCustom" style="color:var(--orange); font-weight:bold;">🔥 أحدث كويز مخصص</option>
                   </select>
-                  
-                <button class="btn" style="background: #107c41; color: white; padding: 4px 10px; font-size: 0.8rem; min-height: 32px; border-radius: 8px; margin-right: 5px;" onclick="exportAdminExcel()">Excel</button>
-<button class="btn" style="background: #da3b01; color: white; padding: 4px 10px; font-size: 0.8rem; min-height: 32px; border-radius: 8px;" onclick="exportAdminPDF()">PDF</button>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                  <button class="btn" style="flex:1; background: #107c41; color: white; height: 35px;" onclick="exportAdminExcel()">Excel</button>
+                  <button class="btn" style="flex:1; background: #da3b01; color: white; height: 35px;" onclick="exportAdminPDF()">PDF</button>
               </div>
           </div>
-          <div id="adminSharedContainer" class="admin-results-list" style="flex-grow: 1;"></div>
+          <div id="adminSharedContainer" class="admin-results-list" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="adminLatestResultCard" class="chart-card glass" style="width: 100%; border-radius: 12px;">
+          <h3 style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;">أحدث النتائج للمحدد</h3>
+          <div id="adminLatestContainer" class="admin-results-list"></div>
         </div>
 
       </div>
       
-      <div class="section-box soft-card" style="margin-top:18px">
-        <h3 style="margin-bottom:12px">هيستوري المستخدمين المحددين</h3>
+      <div class="admin-history-card glass soft-card" style="padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+        <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">سجل المستخدمين المحددين (History)</h3>
         <div id="adminHistoryContainer"></div>
       </div>
     </section>
+
+  </div> 
+</section>
+
 <div id="templateGuideModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
-  <div class="glass" style="width: min(600px, 90%); padding: 24px; position: relative;">
+  <div class="glass" style="width: min(600px, 90%); padding: 25px; position: relative; border-radius: 16px;">
     <button onclick="closeTemplateGuide()" style="position:absolute; top:15px; left:15px; background:var(--surface-3); border:1px solid var(--border); border-radius:50%; width:35px; height:35px; color:var(--danger); font-size:1.2rem; cursor:pointer; font-weight:bold;">✖</button>
     <h3 id="guideTitle" style="margin-bottom: 10px; color: var(--orange); font-weight: 900;">دليل رفع الملف</h3>
     <p id="guideDesc" style="color: var(--muted); margin-bottom: 15px; font-size: 0.95rem; line-height: 1.8;"></p>
@@ -784,8 +894,8 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
 </div>
 
 <div id="questionEditModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
-  <div class="glass" style="width: min(500px, 90%); padding: 24px; position: relative; max-height: 90vh; overflow-y: auto;">
-    <h3 style="margin-bottom: 15px; color: var(--orange);" id="qModalTitle">إضافة سؤال جديد</h3>
+  <div class="glass" style="width: min(500px, 90%); padding: 25px; position: relative; max-height: 90vh; overflow-y: auto; border-radius: 16px;">
+    <h3 style="margin-bottom: 20px; color: var(--orange); border-bottom: 1px solid var(--border); padding-bottom: 10px;" id="qModalTitle">إضافة سؤال جديد</h3>
     <input type="hidden" id="sqId" value="">
     
     <div class="form-group">
@@ -798,7 +908,7 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
         <span>رابط الصورة (اختياري)</span>
         <div style="display: flex; gap: 8px; align-items: center;">
           <a href="https://postimages.org/" target="_blank" style="text-decoration: none;">
-            <button class="icon-btn" style="min-height: 25px; padding: 2px 10px; font-size: 0.75rem; background: var(--surface-3); border: 1px solid var(--primary);" title="ارفع الصورة هنا">🌐 ارفع صورة</button>
+            <button class="icon-btn" style="min-height: 25px; padding: 4px 10px; font-size: 0.75rem; background: var(--surface-3); border: 1px solid var(--primary);" title="ارفع الصورة هنا">🌐 ارفع صورة</button>
           </a>
           <span onclick="showToast('ادخل الموقع، ارفع صورتك، وانسخ الـ Direct Link اللي آخره .jpg أو .png وحطه هنا.', 'warning')" style="cursor: help; color: var(--primary); font-weight: 900; font-size: 1.1rem;">❓</span>
         </div>
@@ -806,21 +916,22 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
       <input type="text" id="sqImageUrl" class="form-control" placeholder="https://i.postimg.cc/xxx/image.jpg">
     </div>
     
-    <div class="form-group" style="display:flex; gap:10px;">
-       <div style="flex:1"><label>القسم</label><input type="text" id="sqCategory" class="form-control" placeholder="CVS, GIT..."></div>
-       <div style="flex:1">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+       <div class="form-group" style="margin:0"><label>القسم</label><input type="text" id="sqCategory" class="form-control" placeholder="CVS, GIT..."></div>
+       <div class="form-group" style="margin:0">
           <label>الصعوبة</label>
           <select id="sqDifficulty" class="form-control">
              <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
           </select>
        </div>
     </div>
+    
     <div class="form-group"><label>الاختيار الأول</label><input type="text" id="sqOpt0" class="form-control"></div>
     <div class="form-group"><label>الاختيار الثاني</label><input type="text" id="sqOpt1" class="form-control"></div>
     <div class="form-group"><label>الاختيار الثالث (اختياري)</label><input type="text" id="sqOpt2" class="form-control"></div>
     <div class="form-group"><label>الاختيار الرابع (اختياري)</label><input type="text" id="sqOpt3" class="form-control"></div>
     
-    <div class="form-group">
+    <div class="form-group" style="margin-top: 15px;">
       <label>الإجابة الصحيحة</label>
       <select id="sqCorrect" class="form-control">
          <option value="0">الاختيار الأول</option>
@@ -830,12 +941,13 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
       </select>
     </div>
     
-    <div style="display: flex; gap: 10px; margin-top: 20px;">
-       <button class="btn btn-success" style="flex:1;" onclick="saveSingleQuestion()">💾 حفظ السؤال</button>
-       <button class="btn btn-danger" style="flex:1;" onclick="document.getElementById('questionEditModal').classList.add('hidden')">إلغاء</button>
+    <div style="display: flex; gap: 15px; margin-top: 25px;">
+       <button class="btn btn-success" style="flex:2; padding: 12px;" onclick="saveSingleQuestion()">💾 حفظ السؤال</button>
+       <button class="btn btn-danger" style="flex:1; padding: 12px;" onclick="document.getElementById('questionEditModal').classList.add('hidden')">إلغاء</button>
     </div>
   </div>
 </div>
+
 <div id="toastContainer"></div>
 
 <div id="newQuizModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(8px);">
@@ -844,11 +956,30 @@ function openFacebook() { window.open("https://www.facebook.com/share/1Ghv7eEw6A
         <h2 style="color: var(--success); margin-bottom: 15px; font-weight: 900;">كويز جديد بانتظارك!</h2>
         <p id="newQuizModalText" style="color: var(--muted); margin-bottom: 25px; line-height: 1.8; font-size: 1.05rem;"></p>
         <div style="display: flex; gap: 12px;">
-            <button class="btn btn-success" style="flex: 1; font-size: 1.1rem;" onclick="closeNewQuizModalAndStart()">البدء الآن 🚀</button>
-            <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('newQuizModal').classList.add('hidden')">لاحقاً</button>
+            <button class="btn btn-success" style="flex: 1; font-size: 1.1rem; padding: 12px;" onclick="closeNewQuizModalAndStart()">البدء الآن 🚀</button>
+            <button class="btn btn-secondary" style="flex: 1; padding: 12px;" onclick="document.getElementById('newQuizModal').classList.add('hidden')">لاحقاً</button>
         </div>
     </div>
 </div>
+
+<button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="العودة لأعلى">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
+<script>
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scrollTopBtn');
+    if(btn) {
+        if (window.scrollY > 300) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+});
+</script>
 <script>
 // ==================== CONFIG ====================
 const SUPABASE_URL = "https://ukowgpoiidcqfvtnxfwe.supabase.co";
@@ -1024,11 +1155,14 @@ function shuffleArray(array) {
 function toggleTheme() {
   document.body.classList.toggle("dark-mode");
   const themeBtn = document.getElementById("themeToggleBtn");
+  
   if (document.body.classList.contains("dark-mode")) {
-      themeBtn.innerHTML = "☀️ الثيم الفاتح";
+      themeBtn.innerHTML = "☀️ Light Mode";
   } else {
-      themeBtn.innerHTML = "🌙 الثيم الغامق";
+      themeBtn.innerHTML = "🌙 Dark Mode";
   }
+  
+  // تحديث التشارلتس عشان الألوان تظبط مع الثيم الجديد
   setTimeout(updateDashboardCharts, 100);
 }
 function switchAuthTab(tabName, btn) {
@@ -1108,7 +1242,7 @@ async function handleAdminLogin() {
   const username = document.getElementById("adminUsername").value.trim();
   const password = document.getElementById("adminPassword").value.trim();
   
-  if (!username || !password) return setStatus("أدخل اسم مستخدم المشرف وكلمة المرور.", "error");
+  if (!username || !password) return setStatus("أدخل اسم صيدلي المشرف وكلمة المرور.", "error");
   
   setStatus("⏳ جاري تسجيل الدخول كأدمن...", "success");
   try {
@@ -1583,7 +1717,7 @@ async function assignQuizToSelectedUsers() {
     return alert("⚠️ يرجى تجهيز واعتماد أسئلة أولاً.");
   }
   if (adminSelectedLicenses.size === 0) {
-    return alert("⚠️ يرجى تحديد مستخدم واحد على الأقل من القائمة بالأسفل.");
+    return alert("⚠️ يرجى تحديد صيدلي واحد على الأقل من القائمة بالأسفل.");
   }
 
   // 1. قراءة اسم الكويز من الحقل الجديد
@@ -1942,7 +2076,7 @@ async function saveSingleQuestion() {
 // let currentQuizName = "Custom Quiz"; 
 
 async function startQuiz() {
-  // 1. التأكد من وجود بيانات المستخدم ورقم الرخصة قبل أي إجراء
+  // 1. التأكد من وجود بيانات الصيدلي ورقم الرخصة قبل أي إجراء
   if (!currentUser || !currentUser.license_number) {
     alert("يجب تسجيل الدخول أولاً!");
     return;
@@ -2561,7 +2695,7 @@ async function loadAdminUsers() {
 function renderAdminUsers() {
   const grid = document.getElementById("adminUsersGrid"); const q = (document.getElementById("adminUserSearch").value||"").trim().toLowerCase();
   const filtered = adminUsersData.filter(u => (!q || (u.name||"").toLowerCase().includes(q) || (u.license_number||"").toLowerCase().includes(q)));
-  if (!filtered.length) { grid.innerHTML = `<div class="history-empty">لا يوجد مستخدمون.</div>`; return; }
+  if (!filtered.length) { grid.innerHTML = `<div class="history-empty">لا يوجد صيادلهون.</div>`; return; }
   grid.innerHTML = filtered.map(u => `<label class="admin-user-card"><div class="admin-user-head"><strong>${u.name}</strong><input type="checkbox" ${adminSelectedLicenses.has(u.license_number)?"checked":""} onchange="toggleAdminUserSelection('${u.license_number}',this.checked)"/></div><span>${u.license_number}</span></label>`).join("");
 }
 function toggleAdminUserSelection(lic, chk) { chk ? adminSelectedLicenses.add(lic) : adminSelectedLicenses.delete(lic); }
@@ -2580,7 +2714,7 @@ function renderAdminResultCard(r, includeShared=false) {
 async function loadAdminLatestForSelected() {
   if (!isAdminSession) return;
   const container = document.getElementById("adminLatestContainer"); const sel = [...adminSelectedLicenses];
-  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
+  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر صيدلانياًا.</div>`; return; }
   try {
     const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=${sel.length}`);
     
@@ -2595,7 +2729,7 @@ async function loadAdminLatestForSelected() {
 async function loadAdminHistoryForSelected() {
   if (!isAdminSession) return;
   const container = document.getElementById("adminHistoryContainer"); const sel = [...adminSelectedLicenses];
-  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
+  if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر صيدلانياًا.</div>`; return; }
   try {
     const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=400`);
     
