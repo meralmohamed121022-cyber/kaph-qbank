@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/meralmohamed121022-cyber/Drug-Monograph/858ba78ce2719a0e7069fd4807b725e0002a17d8/6_20251129_184528_0005.png">
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -265,6 +266,10 @@ button,input,select,textarea{font-family:inherit}
     position: relative;
     z-index: 1000;
 }
+/* الكلاس ده هيخفي زراير الطلاب لما نكون في وضع المشرف */
+body.admin-active .student-only-tab {
+    display: none !important;
+}
 </style>
 </head>
 <body>
@@ -330,14 +335,14 @@ button,input,select,textarea{font-family:inherit}
             gap: 10px;
         }
     }
+    
 </style>
 
 <div id="profile-header-bar">
     <img src="https://raw.githubusercontent.com/meralmohamed121022-cyber/Drug-Monograph/858ba78ce2719a0e7069fd4807b725e0002a17d8/6_20251129_184528_0005.png" 
          id="sys_blob_img" 
          class="header-personal-img" 
-         alt="Mo Kholeif"
-         onclick="goDashboard()">
+         alt="Mo Kholeif">
 
     <div class="social-bar">
         <div class="s-icon" onclick="openEmail()" title="Email">
@@ -436,22 +441,20 @@ button,input,select,textarea{font-family:inherit}
     <div id="pendingQuizAlert" class="hidden soft-card" style="background: rgba(15,169,104,0.15); color: var(--success); padding: 15px; margin-bottom: 15px; border: 1px solid var(--success); font-weight: bold; text-align: center; border-radius: 12px; cursor: pointer;" onclick="startQuiz()">
     </div>
    
+<div class="mode-switcher">
+  <button id="dashboardBtn" class="mode-btn active student-only-tab" onclick="showSection('dashboard')">🏠 الداشبورد</button>
+  <button id="flashcardsBtn" class="mode-btn student-only-tab" onclick="showSection('flashcards')">📖 Flashcards</button>
 
-   <div class="mode-switcher">
-  <button id="dashboardBtn" class="mode-btn active" onclick="showSection('dashboard')">🏠 الداشبورد</button>
-  <button id="flashcardsBtn" class="mode-btn" onclick="showSection('flashcards')">📖 Flashcards</button>
+  <button id="quizBtn" class="mode-btn student-only-tab" onclick="startQuiz()">📝 Quiz (مخصص)</button>
 
-  <button id="quizBtn" class="mode-btn" onclick="startQuiz()">📝 Quiz (مخصص)</button>
-
-  <button id="qbankBtn" class="mode-btn" onclick="showSection('qbank')">🧪 QBank</button>
-  <button id="historyBtn" class="mode-btn" onclick="showSection('history')">📋 السجل</button>
-  <button id="resultBtn" class="mode-btn hidden" onclick="showSection('result')">🏆 النتيجة</button>
-
-  <button id="reviewBtn" class="mode-btn hidden" onclick="startReview()">👁️ المراجعة</button>
+  <button id="qbankBtn" class="mode-btn student-only-tab" onclick="showSection('qbank')">🧪 QBank</button>
+  <button id="historyBtn" class="mode-btn student-only-tab" onclick="showSection('history')">📋 السجل</button>
+  
+  <button id="resultBtn" class="mode-btn hidden student-only-tab" onclick="showSection('result')">🏆 النتيجة</button>
+  <button id="reviewBtn" class="mode-btn hidden student-only-tab" onclick="startReview()">👁️ المراجعة</button>
 
   <button id="adminBtn" class="mode-btn hidden" onclick="showSection('admin')">👑 Admin</button>
 </div>
-
     <section id="dashboardSection">
       <div class="stats-grid">
         <div class="stat-card"><span>الاسم</span><strong id="dashName">-</strong></div>
@@ -514,7 +517,7 @@ button,input,select,textarea{font-family:inherit}
         <div class="controls">
           <button class="nav-btn prev-btn" onclick="prevQuestion()">السابق</button>
           <button class="nav-btn next-btn" onclick="nextQuestion()">التالي</button>
-          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء وإرسال للأدمن</button>
+          <button class="nav-btn submit-btn" onclick="submitQuiz()">إنهاء وإرسال للمشرف</button>
         </div>
       </div>
     </section>
@@ -607,7 +610,7 @@ button,input,select,textarea{font-family:inherit}
 
     <section id="resultSection" class="section-box glass hidden">
       <h2 class="section-title">🏆 نتيجة الاختبار</h2>
-      <p class="section-subtitle">تقدر تحمل النتيجة كصورة أو ترسلها للأدمن، وتراجع إجاباتك.</p>
+      <p class="section-subtitle">تقدر تحمل النتيجة كصورة أو ترسلها للمشرف، وتراجع إجاباتك.</p>
       <div id="resultCard" class="result-card">
         <h3>نتيجة الاختبار</h3>
         <p id="resultName">الاسم: -</p>
@@ -626,7 +629,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="result-actions">
         <button class="btn btn-primary" style="background: linear-gradient(135deg, #2e7ad4, #1d5fa8);" onclick="startReview()">👁️ مراجعة الإجابات</button>
         <button class="btn btn-primary" onclick="downloadResultImage()">📥 تحميل صورة</button>
-        <button class="btn btn-warning" onclick="shareLatestResultToAdmin()">📤 إرسال للأدمن</button>
+        <button class="btn btn-warning" onclick="shareLatestResultToAdmin()">📤 إرسال للمشرف</button>
         <button class="btn btn-success" onclick="openEmailWithResult()">📧 إرسال بالإيميل</button>
         <button class="btn btn-secondary" onclick="goDashboard()">🏠 الداشبورد</button>
         <button class="btn btn-secondary" onclick="showSection('history')">📋 السجل</button>
@@ -649,15 +652,19 @@ button,input,select,textarea{font-family:inherit}
         </div>
       </div>
     </section>
-
-   <section id="adminSection" class="section-box glass hidden">
+<section id="adminSection" class="section-box glass hidden">
       <h2 class="section-title">👑 لوحة تحكم المشرف (Dashboard)</h2>
       <p class="section-subtitle">إدارة الكويزات، سحب الأسئلة، ومتابعة اليوزرز وتعيين الاختبارات لهم.</p>
       
       <div class="admin-section-block">
         <h3 style="color:var(--primary-3); margin-bottom:15px;">📝 تجهيز كويز مخصص وإرساله</h3>
-        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">بإمكانك رفع أسئلة من جهازك (JSON/Excel) أو سحب عدد من بنك الأسئلة الأساسي وإرسالهم للمستخدمين المحددين في القائمة بالأسفل.</p>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:15px;">بإمكانك رفع أسئلة من جهازك أو سحب من بنك الأسئلة الأساسي وإرسالهم للمستخدمين المحددين.</p>
         
+        <div style="margin-bottom: 20px; background: var(--surface-3); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+            <label style="font-weight: 900; color: var(--text); display: block; margin-bottom: 8px;">🏷️ اسم الاختبار (اختياري - سيظهر في النتائج):</label>
+            <input type="text" id="adminCustomQuizName" class="form-control" placeholder="مثال: اختبار المضادات الحيوية - شهر مايو">
+        </div>
+
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
           <button class="btn btn-secondary" onclick="document.getElementById('importJson').click()">📥 رفع JSON</button>
           <button class="icon-btn" onclick="showTemplateGuide('json')" title="دليل ملف JSON" style="padding: 5px 10px;">❔</button>
@@ -675,16 +682,18 @@ button,input,select,textarea{font-family:inherit}
           </div>
         </div>
 
-        <div id="adminReviewSection" class="hidden" style="margin-top: 20px; padding: 15px; background: var(--surface-3); border-radius: 12px; border: 1px solid var(--primary-3);">
+      <div id="adminReviewSection" class="hidden" style="margin-top: 20px; padding: 15px; background: var(--surface-3); border-radius: 12px; border: 1px solid var(--primary-3);">
            <h4 style="margin-bottom: 10px;">👀 مراجعة الأسئلة قبل الاعتماد:</h4>
            <div id="adminReviewList" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px;"></div>
-           <div style="margin-bottom: 15px;">
+           
+           <div id="saveToDbContainer" style="margin-bottom: 15px;">
                <label style="font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                    <input type="checkbox" id="saveToDbCheckbox" checked style="width: 18px; height: 18px;">
                    حفظ هذه الأسئلة في بنك الأسئلة الدائم (الداتابيز)
                </label>
            </div>
-           <div style="display: flex; gap: 10px;">
+           
+           <div id="adminReviewActions" style="display: flex; gap: 10px;">
                <button class="btn btn-success" onclick="approveStagedQuestions()">✅ اعتماد الأسئلة </button>
                <button class="btn btn-danger" onclick="cancelStagedQuestions()">❌ إلغاء</button>
            </div>
@@ -698,7 +707,6 @@ button,input,select,textarea{font-family:inherit}
             <button class="btn btn-primary" style="flex: 1; background: var(--bg-3);" onclick="reviewStagedQuiz()">👁️ مراجعة الأسئلة المجهزة</button>
             <button class="btn btn-warning" style="flex: 1;" onclick="assignQuizToSelectedUsers()">🚀 إرسال الكويز للمحددين</button>
         </div>
-        
       </div>
 
       <div class="admin-toolbar" style="margin-top:25px;">
@@ -711,23 +719,45 @@ button,input,select,textarea{font-family:inherit}
         <button class="btn btn-primary" onclick="loadAdminLatestForSelected()">آخر نتيجة للمحدد</button>
         <button class="btn btn-success" onclick="loadAdminHistoryForSelected()">هيستوري المحدد</button>
         <button class="btn btn-warning" onclick="loadAdminSharedResults()">النتائج المرسلة</button>
-        <button class="btn btn-secondary" style="border-color: var(--primary);" onclick="loadAdminGlobalQBank()">📚 عرض بنك الأسئلة المحفوظ</button>
+        <button class="btn" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none; font-weight: 900; box-shadow: var(--shadow-soft);" onclick="loadAdminGlobalQBank()">📚 عرض بنك الأسئلة المحفوظ</button>
       </div>
       
       <div id="adminUsersGrid" class="admin-users-grid"></div>
-      
-      <div id="adminGlobalQBankContainer" class="admin-results-list hidden" style="margin-top:20px; padding: 15px; background: var(--surface-2); border-radius: 16px; border: 1px solid var(--border);">
-         </div>
+      <div id="adminGlobalQBankContainer" class="admin-results-list hidden" style="margin-top:20px; padding: 15px; background: var(--surface-2); border-radius: 16px; border: 1px solid var(--border);"></div>
 
       <div class="charts-grid" style="margin-top:18px">
         <div class="chart-card glass">
           <h3>أحدث النتائج للمحدد</h3>
           <div id="adminLatestContainer" class="admin-results-list"></div>
         </div>
-        <div class="chart-card glass">
-          <h3>النتائج المرسلة للأدمن</h3>
-          <div id="adminSharedContainer" class="admin-results-list"></div>
+        
+        <div class="chart-card glass" style="display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+              <h3 style="margin: 0;">النتائج المرسلة للمشرف</h3>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; background: var(--surface-3); padding: 8px; border-radius: 12px; border: 1px solid var(--border);">
+                  <div style="display:flex; align-items:center; gap:4px;">
+                      <span style="font-size:0.8rem; font-weight:bold;">من:</span>
+                      <input type="date" id="exportDateFrom" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px;" onchange="filterAdminSharedResults()">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:4px;">
+                      <span style="font-size:0.8rem; font-weight:bold;">إلى:</span>
+                      <input type="date" id="exportDateTo" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px;" onchange="filterAdminSharedResults()">
+                  </div>
+                  
+                  <select id="exportExamTypeFilter" class="form-control" style="min-height: 32px; padding: 2px 8px; font-size: 0.8rem; width: auto; border-radius: 8px; margin-right: 5px;" onchange="filterAdminSharedResults()">
+                      <option value="All">كل الأنواع</option>
+                      <option value="Custom Quiz">Quiz (مخصص)</option>
+                      <option value="QBank">QBank</option>
+                      <option value="LatestCustom" style="color:var(--orange); font-weight:bold;">🔥 أحدث كويز مخصص لكل صيدلي</option>
+                  </select>
+                  
+                <button class="btn" style="background: #107c41; color: white; padding: 4px 10px; font-size: 0.8rem; min-height: 32px; border-radius: 8px; margin-right: 5px;" onclick="exportAdminExcel()">Excel</button>
+<button class="btn" style="background: #da3b01; color: white; padding: 4px 10px; font-size: 0.8rem; min-height: 32px; border-radius: 8px;" onclick="exportAdminPDF()">PDF</button>
+              </div>
+          </div>
+          <div id="adminSharedContainer" class="admin-results-list" style="flex-grow: 1;"></div>
         </div>
+
       </div>
       
       <div class="section-box soft-card" style="margin-top:18px">
@@ -735,9 +765,6 @@ button,input,select,textarea{font-family:inherit}
         <div id="adminHistoryContainer"></div>
       </div>
     </section>
-
-  </div>
-</section>
 <div id="templateGuideModal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
   <div class="glass" style="width: min(600px, 90%); padding: 24px; position: relative;">
     <button onclick="closeTemplateGuide()" style="position:absolute; top:15px; left:15px; background:var(--surface-3); border:1px solid var(--border); border-radius:50%; width:35px; height:35px; color:var(--danger); font-size:1.2rem; cursor:pointer; font-weight:bold;">✖</button>
@@ -843,15 +870,15 @@ let doughnutChart          = null;
 let barChart               = null;
 let historyLineChart       = null;
 let latestReviewPayload = null;
-
-
+let adminExportData = []; // متغير لتخزين أحدث نتائج معروضة للتصدير
+let originalSharedResults = []; // لحفظ النسخة الأصلية قبل الفلترة
 // User Custom Quiz State
 let quizQuestions = [];
 let currentQuestionIndex   = 0;
 let userAnswers            = [];
 let openedQuestions        = new Set();
 let currentAssignedQuizId  = null;
-
+let currentQuizName = "Custom Quiz";
 // QBank State
 let qbankCurrentQuestionIndex = 0;
 let qbankUserAnswers       = [];
@@ -1095,7 +1122,7 @@ async function handleAdminLogin() {
     };
     
     // ==========================================
-    // السطر السحري للأدمن: حفظ الجلسة في المتصفح
+    // السطر السحري للمشرف: حفظ الجلسة في المتصفح
     localStorage.setItem("kaph_auth", JSON.stringify({ type: 'admin', data: currentUser }));
     // ==========================================
 
@@ -1151,6 +1178,13 @@ function showSection(name) {
   // السطر ده بيجبر المتصفح يطلع لأول الصفحة فوراً قبل أي تبديل
   window.scrollTo({ top: 0, behavior: 'instant' });
 
+  // التعديل السحري هنا: إضافة أو إزالة وضع الأدمن عشان نخفي زراير الطلاب
+  if (name === "admin") {
+      document.body.classList.add("admin-active");
+  } else {
+      document.body.classList.remove("admin-active");
+  }
+
   const map = {
     dashboard:"dashboardSection", flashcards:"flashcardsSection",
     quiz:"quizSection", qbank:"qbankSection",
@@ -1191,6 +1225,7 @@ function showSection(name) {
       loadAdminSharedResults(); 
   }
 }
+
 function goDashboard() { showSection("dashboard"); }
 
 // ==================== DASHBOARD ====================
@@ -1376,7 +1411,11 @@ async function importAdminQuestions(input, type) {
     try {
       let parsed = [];
       if (type === 'json') {
-        parsed = JSON.parse(e.target.result);
+        const rawJson = JSON.parse(e.target.result);
+        parsed = rawJson.map(q => ({
+            ...q,
+            image_url: q.image_url ? String(q.image_url).trim() : ""
+        }));
       } else if (type === 'excel') {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, {type: 'array'});
@@ -1389,8 +1428,9 @@ async function importAdminQuestions(input, type) {
               question: String(r[0]||''),
               options: opts,
               correct: parseInt(r[5]) || 0,
-              category: r[6] || "General",
-              difficulty: r[7] || "Medium",
+              category: r[6] ? String(r[6]).trim() : "General",
+              difficulty: r[7] ? String(r[7]).trim() : "Medium",
+              image_url: r[8] ? String(r[8]).trim() : "", 
               type: opts.length === 2 ? 'T/F' : 'MCQ'
            };
         });
@@ -1400,10 +1440,24 @@ async function importAdminQuestions(input, type) {
       
       tempParsedQuestions = parsed;
       renderAdminReviewList();
+      
+      const saveContainer = document.getElementById("saveToDbContainer");
+      if (saveContainer) saveContainer.style.display = "block";
+      
+      const saveCheckbox = document.getElementById("saveToDbCheckbox");
+      if (saveCheckbox) saveCheckbox.checked = true;
+
+      const actionsDiv = document.getElementById('adminReviewActions');
+      if (actionsDiv) actionsDiv.style.display = 'flex';
+
       document.getElementById('adminReviewSection').classList.remove('hidden');
 
     } catch (err) {
-      alert("خطأ في قراءة الملف: " + err.message);
+      if (typeof showToast === 'function') {
+          showToast("خطأ في قراءة الملف: " + err.message, "error");
+      } else {
+          alert("خطأ في قراءة الملف: " + err.message);
+      }
     }
   };
   
@@ -1411,7 +1465,6 @@ async function importAdminQuestions(input, type) {
   else reader.readAsArrayBuffer(file);
   input.value = ""; 
 }
-
 function renderAdminReviewList() {
   const list = document.getElementById("adminReviewList");
   list.innerHTML = "";
@@ -1477,11 +1530,46 @@ function cancelStagedQuestions() {
 }
 
 async function pullFromQBankForAdmin() {
-  const count = parseInt(document.getElementById("adminQBankCount").value) || 10;
-  tempParsedQuestions = shuffleArray([...qbankQuestionsDB]).slice(0, count);
+  // 1. التأكد إن بنك الأسئلة فيه داتا، لو فاضي (بسبب ريفريش مثلاً) هنسحبه الأول
+  if (!qbankQuestionsDB || qbankQuestionsDB.length === 0) {
+      if (typeof showToast === 'function') showToast("⏳ جاري تحميل الأسئلة من الداتابيز...", "warning");
+      await syncQuestionsFromDB();
+  }
+
+  // لو لسه فاضي بعد المحاولة
+  if (!qbankQuestionsDB || qbankQuestionsDB.length === 0) {
+      if (typeof showToast === 'function') showToast("⚠️ بنك الأسئلة فارغ في الداتابيز!", "error");
+      return;
+  }
+
+  // 2. قراءة العدد اللي المشرف كتبه (الافتراضي 10 لو المربع فاضي)
+  const countInput = document.getElementById("adminQBankCount");
+  const requestedCount = (countInput && parseInt(countInput.value) > 0) ? parseInt(countInput.value) : 10;
+
+  // 3. خلط الأسئلة وسحب العدد المطلوب عشوائياً
+  const shuffled = shuffleArray([...qbankQuestionsDB]);
+  tempParsedQuestions = shuffled.slice(0, requestedCount);
+
+  // 4. عرض الأسئلة في بوكس المراجعة
   renderAdminReviewList();
-  document.getElementById("saveToDbCheckbox").checked = false; 
+  
+  // 5. إخفاء خيار "الحفظ في الداتابيز" بالكامل لأن الأسئلة دي من الداتابيز أصلاً
+  const saveContainer = document.getElementById("saveToDbContainer");
+  if (saveContainer) saveContainer.style.display = "none";
+  
+  const saveCheckbox = document.getElementById("saveToDbCheckbox");
+  if (saveCheckbox) saveCheckbox.checked = false; 
+  
+  // إظهار زراير الاعتماد والإلغاء
+  const actionsDiv = document.getElementById('adminReviewActions');
+  if (actionsDiv) actionsDiv.style.display = 'flex';
+  
+  // إظهار بوكس المراجعة
   document.getElementById('adminReviewSection').classList.remove('hidden');
+  
+  if (typeof showToast === 'function') {
+      showToast(`✅ تم سحب ${tempParsedQuestions.length} أسئلة عشوائية بنجاح! راجعها ثم اضغط اعتماد.`, "success");
+  }
 }
 
 async function assignQuizToSelectedUsers() {
@@ -1492,13 +1580,22 @@ async function assignQuizToSelectedUsers() {
     return alert("⚠️ يرجى تحديد مستخدم واحد على الأقل من القائمة بالأسفل.");
   }
 
+  // 1. قراءة اسم الكويز من الحقل الجديد
+  const customQuizNameInput = document.getElementById("adminCustomQuizName");
+  const finalExamName = (customQuizNameInput && customQuizNameInput.value.trim() !== "") ? customQuizNameInput.value.trim() : "Custom Quiz";
+
   try {
-    // تجهيز البيانات المرسلة لكل صيدلي محدد
+    // 2. الخدعة البرمجية: تغليف البيانات عشان نحفظ الاسم والأسئلة مع بعض
+    const wrappedData = {
+        quiz_name: finalExamName,
+        questions: adminStagedQuestions
+    };
+
+    // 3. تجهيز البيانات المرسلة لكل صيدلي محدد
     const payload = Array.from(adminSelectedLicenses).map(lic => ({
       admin_username: currentUser.name || 'Admin', 
       license_number: lic,
-      // هنا بنبعت المصفوفة اللي فيها الأسئلة والصور (image_url) اللي اتراجعت
-      questions_data: adminStagedQuestions,
+      questions_data: wrappedData, // إرسال البيانات المتغلفة
       is_completed: false,
       created_at: new Date().toISOString()
     }));
@@ -1518,8 +1615,8 @@ async function assignQuizToSelectedUsers() {
     // إخفاء بوكس المراجعة لو كان مفتوح
     document.getElementById('adminReviewSection').classList.add('hidden');
     
-    // تحديث السجل للأدمن (اختياري لو حابب تشوف النتائج الجديدة)
-    // await loadAdminSharedResults();
+    // تصفير حقل اسم الكويز عشان الكويزات الجاية
+    if(customQuizNameInput) customQuizNameInput.value = "";
 
   } catch (err) {
     alert("❌ حصلت مشكلة أثناء الإرسال: " + err.message);
@@ -1835,6 +1932,9 @@ async function saveSingleQuestion() {
   }
 }
 // ==================== USER: CUSTOM ASSIGNED QUIZ ====================
+// التأكد من وجود المتغير (لو مش موجود ضيفه في بداية ملف الجافاسكريبت)
+// let currentQuizName = "Custom Quiz"; 
+
 async function startQuiz() {
   // 1. التأكد من وجود بيانات المستخدم ورقم الرخصة قبل أي إجراء
   if (!currentUser || !currentUser.license_number) {
@@ -1866,14 +1966,22 @@ async function startQuiz() {
             fetchedData = JSON.parse(fetchedData);
         }
         
+        // --- التعديل السحري هنا: فك تغليفة اسم الكويز والأسئلة ---
+        if (!Array.isArray(fetchedData) && fetchedData.questions) {
+            currentQuizName = fetchedData.quiz_name || "Custom Quiz";
+            quizQuestions = fetchedData.questions;
+        } else {
+            currentQuizName = "Custom Quiz";
+            quizQuestions = fetchedData; // دعم للكويزات القديمة (Backward Compatibility)
+        }
+        
         // 4. التحقق من أن البيانات عبارة عن مصفوفة أسئلة صحيحة وليست فارغة لمنع تحطم الواجهة
-        if (!Array.isArray(fetchedData) || fetchedData.length === 0) {
+        if (!Array.isArray(quizQuestions) || quizQuestions.length === 0) {
             alert("⚠️ الكويز المخصص لك لا يحتوي على أسئلة أو أن صيغته غير صحيحة.");
             return;
         }
         
         // تحديث المتغيرات العامة (State) الخاصة ببيانات الاختبار
-        quizQuestions = fetchedData;
         currentAssignedQuizId = quizRecord.id;
         currentQuestionIndex = 0;
         userAnswers = new Array(quizQuestions.length).fill(null);
@@ -1882,6 +1990,10 @@ async function startQuiz() {
         // تحديث إحصائيات الواجهة
         const totalLabel = document.getElementById("totalQuestionsLabel");
         if (totalLabel) totalLabel.textContent = quizQuestions.length;
+        
+        // إظهار اسم الكويز للصيدلي في الواجهة (فوق شريط التقدم)
+        const typeBadge = document.querySelector(".quiz-meta .meta-pill:last-child strong");
+        if(typeBadge) typeBadge.textContent = currentQuizName;
         
         // إخفاء إشعار "يوجد كويز جديد"
         const pendingAlert = document.getElementById("pendingQuizAlert");
@@ -1900,7 +2012,6 @@ async function startQuiz() {
     alert("⚠️ مشكلة في الاتصال بالسيرفر. تأكد من الإنترنت وحاول مرة أخرى.");
   }
 }
-
 function renderQuestion() {
   if (!quizQuestions.length) return;
   const q = quizQuestions[currentQuestionIndex];
@@ -1971,17 +2082,16 @@ async function submitQuiz() {
   if (pendingAlert) pendingAlert.classList.add("hidden");
   if (typeof hasShownQuizPopup !== 'undefined') hasShownQuizPopup = false; 
 
-  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
+  // تمرير اسم الاختبار المتغير بدلا من الاسم الثابت
+  await saveExamResult(typeof currentQuizName !== 'undefined' ? currentQuizName : "Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
   
   if (typeof showToast === "function") {
-      showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
+      showToast("تم إنهاء الاختبار وإرسال النتيجة للمشرف بنجاح!", "success");
   } else {
-      alert("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!");
+      alert("تم إنهاء الاختبار وإرسال النتيجة للمشرف بنجاح!");
   }
   
-  // تصفير الـ ID عشان الكويز ميفتحش تاني من الداشبورد
   currentAssignedQuizId = null;
-  // ⚠️ ملحوظة: شيلنا سطر quizQuestions = [] عشان المراجعة تشتغل
 }
 function updateQuizMeta(totalId, openedId, answeredId, barId, questions, answers, opened) {
   const answered = answers.filter(v=>v!==null).length;
@@ -2421,8 +2531,8 @@ async function shareLatestResultToAdmin() {
   if (!latestSavedResultId) { alert("لا يمكن إرسال النتيجة قبل حفظها."); return; }
   try {
     await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?id=eq.${latestSavedResultId}`, { method:"PATCH", body:JSON.stringify({ shared_with_admin:true, shared_at:new Date().toISOString() }) });
-    alert("✅ تم إرسال النتيجة للأدمن بنجاح.");
-  } catch(e) { alert("❌ فشل إرسال النتيجة للأدمن: " + e.message); }
+    alert("✅ تم إرسال النتيجة للمشرف بنجاح.");
+  } catch(e) { alert("❌ فشل إرسال النتيجة للمشرف: " + e.message); }
 }
 async function downloadResultImage() {
   const card = document.getElementById("resultCard"); const canvas = await html2canvas(card,{scale:2,backgroundColor:null,useCORS:true});
@@ -2458,7 +2568,7 @@ function clearAdminSelection() { adminSelectedLicenses = new Set(); renderAdminU
 
 function renderAdminResultCard(r, includeShared=false) {
   const scoreColor = getScoreColor(r.score_percentage||0);
-  return `<div class="admin-result-card"><div class="top"><div><strong style="font-size:1rem">${r.name||r.users?.name||"-"}</strong><div style="color:var(--muted);font-size:.9rem">${r.license_number||"-"}</div></div><div style="text-align:left"><div style="font-weight:900">${r.exam_type||"-"}</div><div style="color:var(--muted);font-size:.85rem">${formatDate(r.exam_date||r.created_at)}</div></div></div><div class="meta"><div><div style="color:var(--muted);font-size:.8rem">إجمالي</div><strong>${r.total_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">مجاب</div><strong>${r.answered_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">صح</div><strong>${r.correct_answers??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">الإنجاز</div><strong>${Number(r.completion_percentage||0).toFixed(2)}%</strong></div><div><div style="color:var(--muted);font-size:.8rem">نسبة الصح</div><strong style="color:${scoreColor}">${Number(r.score_percentage||0).toFixed(2)}%</strong></div></div>${includeShared ? `<div style="margin-top:10px;color:var(--muted);font-size:.85rem">تم الإرسال للأدمن: ${r.shared_at?formatDate(r.shared_at):"نعم"}</div>` : ""}</div>`;
+  return `<div class="admin-result-card"><div class="top"><div><strong style="font-size:1rem">${r.name||r.users?.name||"-"}</strong><div style="color:var(--muted);font-size:.9rem">${r.license_number||"-"}</div></div><div style="text-align:left"><div style="font-weight:900">${r.exam_type||"-"}</div><div style="color:var(--muted);font-size:.85rem">${formatDate(r.exam_date||r.created_at)}</div></div></div><div class="meta"><div><div style="color:var(--muted);font-size:.8rem">إجمالي</div><strong>${r.total_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">مجاب</div><strong>${r.answered_questions??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">صح</div><strong>${r.correct_answers??0}</strong></div><div><div style="color:var(--muted);font-size:.8rem">الإنجاز</div><strong>${Number(r.completion_percentage||0).toFixed(2)}%</strong></div><div><div style="color:var(--muted);font-size:.8rem">نسبة الصح</div><strong style="color:${scoreColor}">${Number(r.score_percentage||0).toFixed(2)}%</strong></div></div>${includeShared ? `<div style="margin-top:10px;color:var(--muted);font-size:.85rem">تم الإرسال للمشرف: ${r.shared_at?formatDate(r.shared_at):"نعم"}</div>` : ""}</div>`;
 }
 
 async function loadAdminLatestForSelected() {
@@ -2467,29 +2577,101 @@ async function loadAdminLatestForSelected() {
   if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
   try {
     const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=${sel.length}`);
+    
+    // السطر الجديد لحفظ البيانات للتصدير
+    adminExportData = rows; 
+
     if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج.</div>`; return; }
     container.innerHTML = rows.map(r=>renderAdminResultCard(r)).join("");
   } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
 }
+
 async function loadAdminHistoryForSelected() {
   if (!isAdminSession) return;
   const container = document.getElementById("adminHistoryContainer"); const sel = [...adminSelectedLicenses];
   if (!sel.length) { container.innerHTML = `<div class="history-empty">اختر مستخدمًا.</div>`; return; }
   try {
     const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&license_number=${buildInFilter(sel)}&order=created_at.desc&limit=400`);
+    
+    // السطر الجديد لحفظ البيانات للتصدير
+    adminExportData = rows; 
+
     if (!rows.length) { container.innerHTML=`<div class="history-empty">لا يوجد هيستوري.</div>`; return; }
     container.innerHTML = `<table class="admin-history-table"><thead><tr><th>الاسم</th><th>الرقم الوظيفي</th><th>النوع</th><th>إجمالي</th><th>صح</th><th>النسبة</th><th>التاريخ</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r.users?.name||"-"}</td><td>${r.license_number||"-"}</td><td>${r.exam_type||"-"}</td><td>${r.total_questions??0}</td><td>${r.correct_answers??0}</td><td style="font-weight:900;color:${getScoreColor(r.score_percentage||0)}">${Number(r.score_percentage||0).toFixed(2)}%</td><td>${formatDate(r.exam_date||r.created_at)}</td></tr>`).join("")}</tbody></table>`;
   } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
 }
+
 async function loadAdminSharedResults() {
   if (!isAdminSession) return;
   const container = document.getElementById("adminSharedContainer");
   container.innerHTML = `<div class="history-empty">⏳ جاري تحميل النتائج...</div>`;
   try {
     const rows = await supabaseRequest(`${SUPABASE_URL}/rest/v1/results?select=*,users(name)&shared_with_admin=eq.true&order=shared_at.desc&limit=50`);
-    if (!rows.length) { container.innerHTML=`<div class="history-empty">لا توجد نتائج مرسلة.</div>`; return; }
-    container.innerHTML = rows.map(r=>renderAdminResultCard(r, true)).join("");
+    
+    // التعديل هنا: بنحفظ الداتا الأصلية ونشغل الفلتر
+    originalSharedResults = rows;
+    filterAdminSharedResults(); 
+    
   } catch(e) { container.innerHTML = `<div class="history-empty">خطأ: ${e.message}</div>`; }
+}
+
+// الدالة دي ضرورية جداً عشان الفلتر والتصدير يشتغلوا مع بعض في قسم (النتائج المرسلة)
+function filterAdminSharedResults() {
+  const filterVal = document.getElementById("exportExamTypeFilter") ? document.getElementById("exportExamTypeFilter").value : "All";
+  const dateFrom = document.getElementById("exportDateFrom") ? document.getElementById("exportDateFrom").value : "";
+  const dateTo = document.getElementById("exportDateTo") ? document.getElementById("exportDateTo").value : "";
+  const container = document.getElementById("adminSharedContainer");
+  
+  // بنبدأ دايماً من النسخة الأصلية للبيانات
+  let filtered = originalSharedResults;
+
+  // 1. الفلترة بالتاريخ (من - إلى)
+  if (dateFrom) {
+      filtered = filtered.filter(r => new Date(r.shared_at || r.created_at) >= new Date(dateFrom));
+  }
+  if (dateTo) {
+      let toDate = new Date(dateTo);
+      toDate.setDate(toDate.getDate() + 1); // بنزود يوم عشان الفلتر يشمل اليوم اللي اختاره كامل لآخره
+      filtered = filtered.filter(r => new Date(r.shared_at || r.created_at) < toDate);
+  }
+
+  // 2. الفلترة بنوع الكويز أو (أحدث كويز مخصص)
+  if (filterVal === "LatestCustom") {
+      // أ) نستبعد كويزات بنك الأسئلة (QBank) لأننا عايزين المخصص بس
+      let customQuizzes = filtered.filter(r => r.exam_type !== "QBank");
+      
+      // ب) نجمع أحدث كويز لكل صيدلي بناءً على الرقم الوظيفي
+      let latestPerUser = {};
+      customQuizzes.forEach(r => {
+          const lic = r.license_number;
+          if (!latestPerUser[lic] || new Date(r.shared_at || r.created_at) > new Date(latestPerUser[lic].shared_at || latestPerUser[lic].created_at)) {
+              latestPerUser[lic] = r;
+          }
+      });
+      filtered = Object.values(latestPerUser);
+      
+      // ج) نرتبهم من الأحدث للأقدم
+      filtered.sort((a, b) => new Date(b.shared_at || b.created_at) - new Date(a.shared_at || a.created_at));
+      
+  } else if (filterVal !== "All") {
+      if (filterVal === "Custom Quiz") {
+          // لو اختار كويز مخصص، بنجيب أي حاجة مش QBank (عشان لو الأدمن مسمي الكويز باسم تاني)
+          filtered = filtered.filter(r => r.exam_type !== "QBank");
+      } else {
+          // لو اختار QBank
+          filtered = filtered.filter(r => r.exam_type === filterVal);
+      }
+  }
+  
+  // 3. حفظ الداتا المتفلترة عشان زراير الإكسبورت (إكسيل و PDF) تسحبها
+  adminExportData = filtered; 
+  
+  // 4. رسم النتائج في الواجهة
+  if (!filtered.length) { 
+      container.innerHTML = `<div class="history-empty">لا توجد نتائج مطابقة للبحث أو التاريخ.</div>`; 
+      return; 
+  }
+  container.innerHTML = filtered.map(r => renderAdminResultCard(r, true)).join("");
 }
 // =========================================================================
 // ==================== THE MAGIC OVERRIDE BLOCK 🚀 ====================
@@ -2645,16 +2827,119 @@ window.addEventListener("DOMContentLoaded", async () => {
     // في حالة مفيش نت، ممكن تختار تدخله بالبيانات المحفوظة أو تسيبه في صفحة اللوج إن
   }
 });
-// 2. دالة جديدة للأدمن لمراجعة الكويز المجهز قبل إرساله
+// 2. دالة جديدة للمشرف لمراجعة الكويز المجهز قبل إرساله
 function reviewStagedQuiz() {
     if (adminStagedQuestions.length === 0) return showToast("لا توجد أسئلة مجهزة لمراجعتها.", "warning");
     
     // هنستخدم نفس مصفوفة المراجعة بس هنملاها بالأسئلة المجهزة
     tempParsedQuestions = [...adminStagedQuestions];
     renderAdminReviewList();
+    
+    // --- التعديلات الجديدة لإخفاء أزرار الحفظ والاعتماد ---
+    const saveContainer = document.getElementById("saveToDbContainer");
+    if (saveContainer) saveContainer.style.display = "none";
+    
+    const actionsDiv = document.getElementById('adminReviewActions');
+    if(actionsDiv) actionsDiv.style.display = 'none';
+    // ----------------------------------------------------
+
     document.getElementById('adminReviewSection').classList.remove('hidden');
+    
     // نطلع لفوق علشان يشوف المراجعة
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==================== EXPORT EXCEL & PDF ====================
+function exportAdminExcel() {
+    if (!adminExportData || adminExportData.length === 0) {
+        return showToast("لا توجد بيانات حالية للتصدير. قم بعرض النتائج أولاً.", "warning");
+    }
+    
+    const exportArr = adminExportData.map(r => ({
+        "اسم الصيدلي": r.users?.name || r.name || "-",
+        "الرقم الوظيفي": r.license_number || "-",
+        "نوع الاختبار": r.exam_type || "-",
+        "إجمالي الأسئلة": r.total_questions || 0,
+        "الأسئلة المجابة": r.answered_questions || 0,
+        "الإجابات الصحيحة": r.correct_answers || 0,
+        "نسبة الإنجاز": (Number(r.completion_percentage) || 0).toFixed(2) + "%",
+        "النسبة المئوية (Score)": (Number(r.score_percentage) || 0).toFixed(2) + "%",
+        "تاريخ الاختبار": formatDate(r.exam_date || r.created_at)
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportArr);
+    const wscols = [{wch: 25}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 25}];
+    ws['!cols'] = wscols;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "نتائج الصيادلة");
+    const dateStr = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `KAPH_Pharmacists_Results_${dateStr}.xlsx`);
+}
+
+function exportAdminPDF() {
+    if (!adminExportData || adminExportData.length === 0) {
+        return showToast("لا توجد بيانات حالية للتصدير. قم بعرض النتائج أولاً.", "warning");
+    }
+
+    let printWindow = window.open('', '', 'width=900,height=700');
+    let tableRows = adminExportData.map(r => {
+        const score = Number(r.score_percentage) || 0;
+        return `
+        <tr>
+            <td>${r.users?.name || r.name || "-"}</td>
+            <td>${r.license_number || "-"}</td>
+            <td>${r.exam_type || "-"}</td>
+            <td>${r.total_questions || 0}</td>
+            <td>${r.correct_answers || 0}</td>
+            <td style="font-weight:bold; color:${getScoreColor(score)}">${score.toFixed(2)}%</td>
+            <td>${formatDate(r.exam_date || r.created_at)}</td>
+        </tr>`;
+    }).join('');
+
+    let html = `
+    <html dir="rtl" lang="ar">
+    <head>
+        <title>تقرير نتائج KAPH</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+            body { font-family: 'Cairo', sans-serif; padding: 30px; color: #0b1e35; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0f3d73; padding-bottom: 15px; }
+            h2 { color: #0f3d73; margin: 0; font-size: 24px; font-weight: 900; }
+            .subtitle { color: #64748b; font-size: 14px; margin-top: 5px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #d1d5db; padding: 12px 8px; text-align: center; font-size: 14px; }
+            th { background-color: #0f3d73; color: white; font-weight: 700; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .footer { margin-top: 40px; text-align: left; font-size: 12px; color: #64748b; direction: ltr; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h2>📊 تقرير أداء الصيادلة - منصة KAPH</h2>
+            <div class="subtitle">تقرير شامل لنتائج الاختبارات المخصصة وبنك الأسئلة</div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم الصيدلي</th>
+                    <th>الرقم الوظيفي</th>
+                    <th>نوع الاختبار</th>
+                    <th>الأسئلة</th>
+                    <th>الصح</th>
+                    <th>النسبة (Score)</th>
+                    <th>التاريخ</th>
+                </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <div class="footer">Generated by Knowledge Of Aldawaa Pharmacists Hub | ${new Date().toLocaleString("ar-EG")}</div>
+        <script>window.onload = function() { window.print(); setTimeout(() => window.close(), 500); }<\/script>
+    </body>
+    </html>`;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
 }
 // =========================================================================
 </script>
