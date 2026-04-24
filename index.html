@@ -254,9 +254,109 @@ button,input,select,textarea{font-family:inherit}
 @keyframes fadeOutDown {
   to { opacity: 0; transform: translateY(20px); }
 }
+/* تأكد أن الـ app-shell بيبدأ من الصفر بدون هوامش علوية تخفي الهيدر */
+.app-shell {
+    margin-top: 0 !important;
+    padding-top: 10px !important;
+}
+
+/* لو التوب بار مختفي، اتأكد إنه مش ماخد position absolute بشكل غلط */
+.topbar {
+    position: relative;
+    z-index: 1000;
+}
 </style>
 </head>
 <body>
+    <style>
+    /* حاوية الهيدر الشخصي */
+    #profile-header-bar {
+        display: flex;
+        align-items: center; /* محاذاة في المنتصف عمودياً */
+        justify-content: center; /* توسيط في نص الصفحة */
+        gap: 20px;
+        padding: 15px 25px;
+        width: 100%;
+        background: rgba(13, 39, 71, 0.3); /* خلفية داكنة شفافة */
+        border-radius: var(--radius);
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+    }
+
+    /* تصميم الصورة الشخصية */
+    .header-personal-img {
+        width: 80px; /* صغرنا الحجم شوية عشان يركب جنب الأيقونات */
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid var(--orange);
+        box-shadow: var(--shadow);
+        object-fit: cover;
+        transition: 0.4s ease;
+        cursor: pointer;
+    }
+
+    .header-personal-img:hover {
+        transform: scale(1.1) rotate(-5deg);
+        border-color: #fff;
+    }
+
+    /* بار التواصل */
+    .social-bar {
+        display: flex;
+        gap: 15px;
+        background: var(--surface); /* متناسق مع الثيم */
+        padding: 12px 20px;
+        border-radius: 50px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-soft);
+    }
+
+    /* تصميم الأيقونات */
+    .s-icon {
+        transition: transform 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    .s-icon:hover {
+        transform: translateY(-5px);
+    }
+
+    /* استجابة الموبايل */
+    @media (max-width: 600px) {
+        #profile-header-bar {
+            flex-direction: column; /* يرجعوا تحت بعض في الموبايل */
+            gap: 10px;
+        }
+    }
+</style>
+
+<div id="profile-header-bar">
+    <img src="https://raw.githubusercontent.com/meralmohamed121022-cyber/Drug-Monograph/858ba78ce2719a0e7069fd4807b725e0002a17d8/6_20251129_184528_0005.png" 
+         id="sys_blob_img" 
+         class="header-personal-img" 
+         alt="Mo Kholeif"
+         onclick="goDashboard()">
+
+    <div class="social-bar">
+        <div class="s-icon" onclick="openEmail()" title="Email">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#e65252"/>
+            </svg>
+        </div>
+        <div class="s-icon" onclick="openWhatsApp()" title="WhatsApp">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" fill="#29c781"/>
+            </svg>
+        </div>
+        <div class="s-icon" onclick="openFacebook()" title="Facebook">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#2e7ad4"/>
+            </svg>
+        </div>
+    </div>
+</div>
 <section id="authScreen" class="auth-wrap">
   <div class="auth-card glass">
     <div class="auth-head">
@@ -956,28 +1056,49 @@ function logout() {
 
 // ==================== NAVIGATION ====================
 function showSection(name) {
+  // السطر ده بيجبر المتصفح يطلع لأول الصفحة فوراً قبل أي تبديل
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
   const map = {
     dashboard:"dashboardSection", flashcards:"flashcardsSection",
     quiz:"quizSection", qbank:"qbankSection",
     history:"historySection", result:"resultSection", admin:"adminSection", review:"reviewSection"
   };
   
-  Object.values(map).forEach(id => { const el=document.getElementById(id); if(el) el.classList.add("hidden"); });
-  document.getElementById(map[name])?.classList.remove("hidden");
-  
-  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById(`${name}Btn`)?.classList.add("active");
+  // إخفاء كل السكاشن
+  Object.values(map).forEach(id => { 
+    const el = document.getElementById(id); 
+    if(el) el.classList.add("hidden"); 
+  });
 
-  // التعديل المهم هنا:
-  if (name === "qbank") {
-      startQbank(); // دي اللي هتشغل السحب فوراً أول ما تفتح التاب
+  // إظهار السكشن المطلوب
+  const targetSection = document.getElementById(map[name]);
+  if (targetSection) {
+      targetSection.classList.remove("hidden");
   }
   
-  if (name === "dashboard") setTimeout(updateDashboardCharts, 80);
-  if (name === "history") loadHistory();
-  if (name === "admin") { loadAdminUsers(); loadAdminSharedResults(); }
-}
+  // تحديث حالة الأزرار (Active)
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+  const targetBtn = document.getElementById(`${name}Btn`);
+  if (targetBtn) targetBtn.classList.add("active");
 
+  // تشغيل الوظائف الخاصة بكل قسم
+  if (name === "qbank") {
+      startQbank(); 
+  }
+  
+  if (name === "dashboard") {
+      setTimeout(updateDashboardCharts, 80);
+      loadDashboard(); // ضفتلك دي عشان يتأكد من تحديث البيانات أول ما ترجع للداشبورد
+  }
+
+  if (name === "history") loadHistory();
+  
+  if (name === "admin") { 
+      loadAdminUsers(); 
+      loadAdminSharedResults(); 
+  }
+}
 function goDashboard() { showSection("dashboard"); }
 
 // ==================== DASHBOARD ====================
