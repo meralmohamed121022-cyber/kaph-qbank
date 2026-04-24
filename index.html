@@ -402,8 +402,8 @@ button,input,select,textarea{font-family:inherit}
     <div id="adminTab" class="hidden">
       <div class="form-grid">
         <div class="form-group"><label>اسم مستخدم </label><input id="adminUsername" class="form-control" type="text" placeholder="Admin Username"/></div>
-        <div class="form-group"><label>كلمة مرور الأدمن</label><input id="adminPassword" class="form-control" type="password" placeholder="Admin Password"/></div>
-        <button class="btn btn-primary" onclick="handleAdminLogin()">دخول الأدمن</button>
+        <div class="form-group"><label>كلمة مرور المشرف</label><input id="adminPassword" class="form-control" type="password" placeholder="Admin Password"/></div>
+        <button class="btn btn-primary" onclick="handleAdminLogin()">دخول المشرف</button>
       </div>
     </div>
   </div>
@@ -493,7 +493,7 @@ button,input,select,textarea{font-family:inherit}
 
     <section id="quizSection" class="section-box glass hidden">
       <h2 class="section-title">📝 الكويز المخصص لك</h2>
-      <p class="section-subtitle">هذا الاختبار تم تحضيره خصيصاً لك من قبل الأدمن.</p>
+      <p class="section-subtitle">هذا الاختبار تم تحضيره خصيصاً لك من قبل المشرف.</p>
       <div class="quiz-shell">
         <div class="quiz-meta">
           <div class="meta-pill"><span>عدد الأسئلة</span><strong id="totalQuestionsLabel">0</strong></div>
@@ -647,7 +647,7 @@ button,input,select,textarea{font-family:inherit}
     </section>
 
     <section id="adminSection" class="section-box glass hidden">
-      <h2 class="section-title">👑 لوحة تحكم الأدمن (Dashboard)</h2>
+      <h2 class="section-title">👑 لوحة تحكم المشرف (Dashboard)</h2>
       <p class="section-subtitle">إدارة الكويزات، سحب الأسئلة، ومتابعة اليوزرز وتعيين الاختبارات لهم.</p>
       
       <div class="admin-section-block">
@@ -1019,7 +1019,7 @@ async function handleAdminLogin() {
   const username = document.getElementById("adminUsername").value.trim();
   const password = document.getElementById("adminPassword").value.trim();
   
-  if (!username || !password) return setStatus("أدخل اسم مستخدم الأدمن وكلمة المرور.", "error");
+  if (!username || !password) return setStatus("أدخل اسم مستخدم المشرف وكلمة المرور.", "error");
   
   setStatus("⏳ جاري تسجيل الدخول كأدمن...", "success");
   try {
@@ -1027,10 +1027,10 @@ async function handleAdminLogin() {
       `${SUPABASE_URL}/rest/v1/admin_users?select=*&username=eq.${sanitizeValue(username)}&password=eq.${sanitizeValue(password)}&limit=1`
     );
     
-    if (!rows.length) return setStatus("بيانات الأدمن غير صحيحة.", "error");
+    if (!rows.length) return setStatus("بيانات المشرف غير صحيحة.", "error");
     
     isAdminSession = true;
-    // حفظ بيانات الأدمن في متغير اليوزر الحالي
+    // حفظ بيانات المشرف في متغير اليوزر الحالي
     currentUser = { 
         name: rows[0].display_name || "Admin", 
         license_number: "ADMIN", 
@@ -1049,7 +1049,7 @@ async function handleAdminLogin() {
     document.getElementById("appScreen").classList.remove("hidden");
     document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
     
-    // إعداد واجهة الأدمن
+    // إعداد واجهة المشرف
     document.getElementById("adminBtn").classList.remove("hidden");
     document.getElementById("dashboardBtn").classList.add("hidden");
     document.getElementById("flashcardsBtn").classList.add("hidden");
@@ -1061,10 +1061,10 @@ async function handleAdminLogin() {
     await loadAdminSharedResults();
     showSection("admin");
     
-    showToast("مرحباً بك يا دكتور.. تم تفعيل دخول الأدمن وحفظ الجلسة 👑", "success");
+    showToast("مرحباً بك يا دكتور.. تم تفعيل دخول المشرف وحفظ الجلسة 👑", "success");
 
   } catch(e) { 
-    setStatus(`خطأ في دخول الأدمن: ${e.message}`, "error"); 
+    setStatus(`خطأ في دخول المشرف: ${e.message}`, "error"); 
   }
 }
 function openForgotWhatsApp() {
@@ -1162,9 +1162,9 @@ async function loadDashboard() {
     const alertDiv = document.getElementById("pendingQuizAlert");
     
     if (pending && pending.length > 0) {
-        let adName = pending[0].admin_username || "الأدمن";
+        let adName = pending[0].admin_username || "المشرف";
         
-        // التأكد إن لقب Dr مش موجود أصلاً في اسم الأدمن علشان ميتكررش
+        // التأكد إن لقب Dr مش موجود أصلاً في اسم المشرف علشان ميتكررش
         const nameLower = adName.toLowerCase().trim();
         if (!nameLower.startsWith("dr.") && !nameLower.startsWith("dr ") && !nameLower.startsWith("د.")) {
             adName = `Dr. ${adName}`;
@@ -1740,7 +1740,9 @@ async function startQuiz() {
         showSection("quiz");
         renderQuestion();
     } else {
-        alert("🎉 مفيش كويزات مخصصة جديدة ليك حالياً من الأدمن. تقدر تتدرب في الـ QBank براحتك!");
+
+        alert("🎉 مفيش كويزات مخصصة جديدة ليك حالياً من المشرف. تقدر تتدرب في الـ QBank براحتك!");
+
     }
   } catch (e) {
     alert("مشكلة في الاتصال بالسيرفر. تأكد من الإنترنت.");
@@ -2246,7 +2248,7 @@ function closeNewQuizModalAndStart() {
     startQuiz(); // هتشغل دالة الكويز
 }
 
-// 3. استبدال دالة الـ Dashboard عشان تعرض البوب أب واسم الأدمن بـ .Dr
+// 3. استبدال دالة الـ Dashboard عشان تعرض البوب أب واسم المشرف بـ .Dr
 let hasShownQuizPopup = false;
 async function loadDashboard() {
   if (!currentUser || isAdminSession) return;
@@ -2263,7 +2265,7 @@ async function loadDashboard() {
     const pending = await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?select=admin_username&license_number=eq.${sanitizeValue(currentUser.license_number)}&is_completed=eq.false&limit=1`);
     const alertDiv = document.getElementById("pendingQuizAlert");
     if (pending && pending.length > 0) {
-        let adName = pending[0].admin_username || "الأدمن";
+        let adName = pending[0].admin_username || "المشرف";
         if (!adName.toLowerCase().startsWith("dr.") && !adName.toLowerCase().startsWith("د.")) { adName = `Dr. ${adName}`; }
         
         if(alertDiv) {
