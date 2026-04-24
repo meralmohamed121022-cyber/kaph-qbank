@@ -1692,7 +1692,6 @@ function addSelectedDbQuestionsToStaged() {
   
   checkboxes.forEach(c => c.checked = false);
 }
-
 // Modal Add/Edit
 function openAddQuestionModal() {
   document.getElementById("qModalTitle").textContent = "إضافة سؤال جديد";
@@ -2117,30 +2116,36 @@ function startReview() {
     reviewUserAnswers = userAnswers;
   }
   
-  if (!reviewUserAnswers || reviewUserAnswers.length === 0 || !reviewUserAnswers.some(ans => ans !== null)) {
-      alert("لا توجد إجابات للمراجعة.");
+  if (!reviewQuestions || reviewQuestions.length === 0) {
+      alert("عذراً، بيانات الأسئلة غير متوفرة للمراجعة حالياً.");
       return;
   }
 
   reviewCurrentIndex = 0;
+  
+  // السطر اللي كان ناقص عشان الشاشة متبقاش بيضاء
+  renderReviewQuestion(); 
+  
   showSection("review");
 }
 
 function renderReviewQuestion() {
+  if (!reviewQuestions || reviewQuestions.length === 0) return;
   const q = reviewQuestions[reviewCurrentIndex];
   
-  // استخدام parseInt للتأكد إن المقارنة بين أرقام مش نصوص
-  const userAns = parseInt(reviewUserAnswers[reviewCurrentIndex]);
+  // تأمين قراءة الإجابات
+  const userAnsVal = reviewUserAnswers ? reviewUserAnswers[reviewCurrentIndex] : null;
+  const userAns = (userAnsVal !== null && userAnsVal !== undefined) ? parseInt(userAnsVal) : null;
   const correctAns = parseInt(q.correct);
 
   document.getElementById("reviewQuestionNumber").textContent = `السؤال ${reviewCurrentIndex + 1} من ${reviewQuestions.length}`;
   
-  // إضافة دعم الصورة في المراجعة
-  let questionHTML = `<div>${q.question}</div>`;
-  if (q.image_url && q.image_url.trim() !== "") {
+  // عرض الصورة إن وجدت
+  let questionHTML = `<div style="margin-bottom: 10px;">${q.question}</div>`;
+  if (q.image_url && String(q.image_url).trim() !== "") {
     questionHTML += `
-      <div style="margin-top: 15px; text-align: center;">
-        <img src="${q.image_url}" style="max-width: 100%; max-height: 250px; border-radius: 12px; border: 1px solid var(--border);">
+      <div style="margin: 15px 0; text-align: center; width: 100%;">
+        <img src="${String(q.image_url).trim()}" style="max-width: 100%; max-height: 250px; border-radius: 12px; border: 2px solid var(--border); box-shadow: var(--shadow-soft); cursor: zoom-in; object-fit: contain; background: #f9f9f9;" onclick="window.open(this.src, '_blank')">
       </div>`;
   }
   document.getElementById("reviewQuestionText").innerHTML = questionHTML;
@@ -2148,33 +2153,39 @@ function renderReviewQuestion() {
   const c = document.getElementById("reviewOptionsContainer");
   c.innerHTML = "";
   
-  if (q.options.length === 2) {
+  // تأمين قراءة الاختيارات
+  let optionsArr = [];
+  try {
+      optionsArr = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+  } catch(e) { optionsArr = q.options || []; }
+
+  if (optionsArr.length === 2) {
     c.style.display = "grid"; c.style.gridTemplateColumns = "1fr 1fr"; c.style.gap = "15px";
   } else {
     c.style.display = "flex"; c.style.flexDirection = "column"; c.style.gap = "12px";
   }
 
-  q.options.forEach((opt, i) => {
+  optionsArr.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
     btn.style.cursor = "default";
     
     let optText = String(opt).replace(/^[A-D][-.]\s*/i, "").trim();
     
-    // منطق الألوان والأيقونات
+    // الألوان 
     if (i === correctAns) {
       btn.classList.add("correct-answer");
-      optText += " ✅ (الصحيحة)";
-    } 
-    if (i === userAns && userAns !== correctAns) {
+      optText += i === userAns ? " ✅ (إجابتك صحيحة)" : " ✅ (الإجابة الصحيحة)";
+    } else if (i === userAns) {
       btn.classList.add("wrong-answer");
-      optText += " ❌ (إجابتك)";
+      optText += " ❌ (إجابتك خاطئة)";
     }
 
     btn.textContent = optText;
     c.appendChild(btn);
   });
 }
+
 function prevReviewQuestion() { if (reviewCurrentIndex > 0) { reviewCurrentIndex--; renderReviewQuestion(); } }
 function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } }
 
@@ -2439,15 +2450,31 @@ async function loadDashboard() {
 
 // 4. إصلاح مشكلة المراجعة (منع مسح الأسئلة بعد التسليم)
 async function submitQuiz() { 
-  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
   if (currentAssignedQuizId) {
-     try { await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { method: "PATCH", body: JSON.stringify({ is_completed: true }) }); } 
-     catch (e) { console.warn("Failed to mark complete", e); }
+     try { 
+         await supabaseRequest(`${SUPABASE_URL}/rest/v1/assigned_quizzes?id=eq.${currentAssignedQuizId}`, { 
+             method: "PATCH", 
+             body: JSON.stringify({ is_completed: true }) 
+         }); 
+     } catch (e) { console.warn("Failed to mark complete", e); }
   }
-  showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
-  // متشيلش مصفوفة quizQuestions علشان المراجعة تلاقيها
-}
 
+  const pendingAlert = document.getElementById("pendingQuizAlert");
+  if (pendingAlert) pendingAlert.classList.add("hidden");
+  if (typeof hasShownQuizPopup !== 'undefined') hasShownQuizPopup = false; 
+
+  await saveExamResult("Custom Quiz", quizQuestions, userAnswers, openedQuestions, true); 
+  
+  if (typeof showToast === "function") {
+      showToast("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!", "success");
+  } else {
+      alert("تم إنهاء الاختبار وإرسال النتيجة للأدمن بنجاح!");
+  }
+  
+  // تصفير الـ ID عشان الكويز ميفتحش تاني من الداشبورد
+  currentAssignedQuizId = null;
+  // ⚠️ ملحوظة: شيلنا سطر quizQuestions = [] عشان المراجعة تشتغل
+}
 // علشان زرار المراجعة يفتح الصح دايما
 const originalShowSection = showSection;
 showSection = function(name) {
