@@ -973,18 +973,28 @@ async function handleRegister() {
 async function handleLogin() {
   clearStatus();
   isAdminSession = false;
-  const license  = document.getElementById("loginLicense").value.trim();
+  const license = document.getElementById("loginLicense").value.trim();
   const password = document.getElementById("loginPassword").value.trim();
-  if (!license||!password) return setStatus("أدخل الرقم الوظيفي وكلمة المرور.", "error");
+  
+  if (!license || !password) return setStatus("أدخل الرقم الوظيفي وكلمة المرور.", "error");
   
   setStatus("⏳ جاري تسجيل الدخول...", "success");
   try {
     const users = await supabaseRequest(
       `${SUPABASE_URL}/rest/v1/users?select=*&license_number=eq.${sanitizeValue(license)}&password=eq.${sanitizeValue(password)}&limit=1`
     );
+    
     if (!users.length) return setStatus("بيانات الدخول غير صحيحة.", "error");
+    
     currentUser = users[0];
-    latestResultData    = null;
+    
+    // ==========================================
+    // السطر السحري: حفظ بيانات الدخول في المتصفح
+    // بنحفظ نوع الدخول (user) والبيانات كاملة عشان المحرك التلقائي
+    localStorage.setItem("kaph_auth", JSON.stringify({ type: 'user', data: currentUser }));
+    // ==========================================
+
+    latestResultData = null;
     latestSavedResultId = null;
     
     await syncQuestionsFromDB();
@@ -993,32 +1003,53 @@ async function handleLogin() {
     document.getElementById("appScreen").classList.remove("hidden");
     document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
     document.getElementById("adminBtn").classList.add("hidden");
+    
     initFlashcards();
     await loadDashboard();
     showSection("dashboard");
-  } catch(e) { setStatus(`خطأ في تسجيل الدخول: ${e.message}`, "error"); }
+    
+    showToast("تم تسجيل الدخول وحفظ الجلسة بنجاح ✅", "success");
+
+  } catch(e) { 
+    setStatus(`خطأ في تسجيل الدخول: ${e.message}`, "error"); 
+  }
 }
 async function handleAdminLogin() {
   clearStatus();
   const username = document.getElementById("adminUsername").value.trim();
   const password = document.getElementById("adminPassword").value.trim();
-  if (!username||!password) return setStatus("أدخل اسم مستخدم الأدمن وكلمة المرور.", "error");
+  
+  if (!username || !password) return setStatus("أدخل اسم مستخدم الأدمن وكلمة المرور.", "error");
   
   setStatus("⏳ جاري تسجيل الدخول كأدمن...", "success");
   try {
     const rows = await supabaseRequest(
       `${SUPABASE_URL}/rest/v1/admin_users?select=*&username=eq.${sanitizeValue(username)}&password=eq.${sanitizeValue(password)}&limit=1`
     );
-    if (!rows.length) return setStatus("بيانات الأدمن غير صحيحة.", "error");
-    isAdminSession = true;
-    currentUser = { name: rows[0].display_name || "Admin", license_number: "ADMIN", username: rows[0].username };
     
+    if (!rows.length) return setStatus("بيانات الأدمن غير صحيحة.", "error");
+    
+    isAdminSession = true;
+    // حفظ بيانات الأدمن في متغير اليوزر الحالي
+    currentUser = { 
+        name: rows[0].display_name || "Admin", 
+        license_number: "ADMIN", 
+        username: rows[0].username,
+        password: rows[0].password // بنحفظ الباسورد هنا عشان "محرك التحقق" يحتاجه
+    };
+    
+    // ==========================================
+    // السطر السحري للأدمن: حفظ الجلسة في المتصفح
+    localStorage.setItem("kaph_auth", JSON.stringify({ type: 'admin', data: currentUser }));
+    // ==========================================
+
     await syncQuestionsFromDB();
 
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("appScreen").classList.remove("hidden");
     document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
     
+    // إعداد واجهة الأدمن
     document.getElementById("adminBtn").classList.remove("hidden");
     document.getElementById("dashboardBtn").classList.add("hidden");
     document.getElementById("flashcardsBtn").classList.add("hidden");
@@ -1029,7 +1060,12 @@ async function handleAdminLogin() {
     await loadAdminUsers();
     await loadAdminSharedResults();
     showSection("admin");
-  } catch(e) { setStatus(`خطأ في دخول الأدمن: ${e.message}`, "error"); }
+    
+    showToast("مرحباً بك يا دكتور.. تم تفعيل دخول الأدمن وحفظ الجلسة 👑", "success");
+
+  } catch(e) { 
+    setStatus(`خطأ في دخول الأدمن: ${e.message}`, "error"); 
+  }
 }
 function openForgotWhatsApp() {
   const license = document.getElementById("forgotLicense").value.trim();
@@ -2286,6 +2322,49 @@ function deselectAllUserQBankCats() {
         showToast("تم إلغاء تحديد الأقسام", "warning");
     }
 }
+window.addEventListener("DOMContentLoaded", async () => {
+  const savedAuth = localStorage.getItem("kaph_auth");
+  if (!savedAuth) return;
+
+  const auth = JSON.parse(savedAuth);
+  const cachedData = auth.data;
+
+  try {
+    let isValid = false;
+    // التحقق "لايف" من سوبابيز بدون طلب كتابة باسورد
+    if (auth.type === 'admin') {
+      const check = await supabaseRequest(`${SUPABASE_URL}/rest/v1/admin_users?username=eq.${cachedData.username}&password=eq.${cachedData.password}&limit=1`);
+      if (check.length) isValid = true;
+    } else {
+      const check = await supabaseRequest(`${SUPABASE_URL}/rest/v1/users?license_number=eq.${cachedData.license_number}&password=eq.${cachedData.password}&limit=1`);
+      if (check.length) isValid = true;
+    }
+
+    if (isValid) {
+      currentUser = cachedData;
+      document.getElementById("authScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      document.getElementById("welcomeText").innerHTML = `مرحباً <strong>${currentUser.name}</strong>`;
+
+      if (auth.type === 'admin') {
+        isAdminSession = true;
+        document.getElementById("adminBtn").classList.remove("hidden");
+        showSection("admin");
+      } else {
+        isAdminSession = false;
+        loadDashboard();
+        showSection("dashboard");
+      }
+      showToast("تم الدخول التلقائي بنجاح 🛡️", "success");
+    } else {
+      // لو الحساب اتمسح أو الباسورد اتغير من الداتابيز
+      localStorage.removeItem("kaph_auth");
+    }
+  } catch (e) {
+    console.error("Auto-auth failed:", e);
+    // في حالة مفيش نت، ممكن تختار تدخله بالبيانات المحفوظة أو تسيبه في صفحة اللوج إن
+  }
+});
 // =========================================================================
 </script>
 </body>
