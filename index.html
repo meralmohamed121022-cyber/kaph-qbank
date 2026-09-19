@@ -596,12 +596,12 @@
       font-weight: 900
     }
 
-    .info-list {
+    .warning-list {
       display: grid;
       gap: 10px
     }
 
-    .info-item {
+    .warning-item {
       padding: 13px 14px;
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -613,7 +613,7 @@
       font-size: .95rem
     }
 
-    .info-item b {
+    .warning-item b {
       font-weight: 900
     }
 
@@ -1648,7 +1648,7 @@
       </div>
       <div id="adminTab" class="hidden">
         <div class="form-grid">
-          <div class="form-group"><label>اسم صيدلي </label><input id="adminUsername" class="form-control" type="text"
+          <div class="form-group"><label>اسم المشرف</label><input id="adminUsername" class="form-control" type="text"
               placeholder="Admin Username" /></div>
           <div class="form-group"><label>كلمة مرور المشرف</label><input id="adminPassword" class="form-control"
               type="password" placeholder="Admin Password" /></div>
@@ -1750,13 +1750,13 @@
           <div class="panel glass">
             <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">📊 بيانات آخر
               اختبار</h3>
-            <div class="info-list">
-              <div class="info-item"><span>نوع الاختبار</span><b id="dashExamType">-</b></div>
-              <div class="info-item"><span>إجمالي الأسئلة</span><b id="dashTotal">0</b></div>
-              <div class="info-item"><span>الأسئلة المفتوحة</span><b id="dashOpened">0</b></div>
-              <div class="info-item"><span>نسبة الإنجاز</span><b id="dashCompletion">0%</b></div>
-              <div class="info-item"><span>نسبة الصح</span><b id="dashScore">0%</b></div>
-              <div class="info-item"><span>تاريخ آخر اختبار</span><b id="dashDate">-</b></div>
+            <div class="warning-list">
+              <div class="warning-item"><span>نوع الاختبار</span><b id="dashExamType">-</b></div>
+              <div class="warning-item"><span>إجمالي الأسئلة</span><b id="dashTotal">0</b></div>
+              <div class="warning-item"><span>الأسئلة المفتوحة</span><b id="dashOpened">0</b></div>
+              <div class="warning-item"><span>نسبة الإنجاز</span><b id="dashCompletion">0%</b></div>
+              <div class="warning-item"><span>نسبة الصح</span><b id="dashScore">0%</b></div>
+              <div class="warning-item"><span>تاريخ آخر اختبار</span><b id="dashDate">-</b></div>
             </div>
           </div>
           <div class="panel glass">
@@ -3533,7 +3533,7 @@
     }
 
     function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); } }
-    function nextQuestion() { if (currentQuestionIndex < quizQuestions.length - 1) { currentQuestionIndex++; renderQuestion(); } }
+    function nextQuestion() { if (currentQuestionIndex < quizQuestions.length - 1) { currentQuestionIndex++; renderQuestion(); } else { showToast('هذا هو السؤال الأخير', 'warning'); } }
 
     async function submitQuiz() {
       if (currentAssignedQuizId) {
@@ -3728,7 +3728,7 @@
     }
 
     function prevQbankQuestion() { if (qbankCurrentQuestionIndex > 0) { qbankCurrentQuestionIndex--; renderQbankQuestion(); } }
-    function nextQbankQuestion() { if (qbankCurrentQuestionIndex < activeQbankQuestions.length - 1) { qbankCurrentQuestionIndex++; renderQbankQuestion(); } }
+    function nextQbankQuestion() { if (qbankCurrentQuestionIndex < activeQbankQuestions.length - 1) { qbankCurrentQuestionIndex++; renderQbankQuestion(); } else { showToast('هذا هو السؤال الأخير', 'warning'); } }
     async function submitQbankQuiz() { await saveExamResult("QBank", activeQbankQuestions, qbankUserAnswers, qbankOpenedQuestions, false); }
 
     // ==================== SAVE RESULT ====================
@@ -3896,7 +3896,7 @@
       });
     }
     function prevReviewQuestion() { if (reviewCurrentIndex > 0) { reviewCurrentIndex--; renderReviewQuestion(); } }
-    function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } }
+    function nextReviewQuestion() { if (reviewCurrentIndex < reviewQuestions.length - 1) { reviewCurrentIndex++; renderReviewQuestion(); } else { showToast('هذا هو السؤال الأخير', 'warning'); } }
 
     // ==================== CHARTS & OTHERS ====================
     function getChartColors() {
